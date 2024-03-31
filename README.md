@@ -4,6 +4,12 @@ RIA (Reference Image Application) is a cross platform image organizer for both W
 # Installation
 Download the latest verion or compile it from source and run the RIA. Note that RIA expects the font and icon images to be in an image folder in the directory you run it from.
 
+### Tested Distros:
+- Arch
+- Ubuntu
+
+> **_NOTE:_** The Linux version relies on Zenity to get add new folders to the folder view.
+> 
 # Image Board
 **ESC** - Unselect all images 
 
@@ -135,4 +141,4 @@ Windows:
 g++ main.cpp windows/glad/glad.c -o RIA windows/glfw/libglfw3.a -lopengl32 -lgdi32 -lole32 -loleaut32 -luuid -static -static-libgcc -static-libstdc++
 ```
 
-> **_NOTE:_**  Command may vary between distros/OS. 
+> **_NOTE:_**  The command may vary between distros/OS. 
