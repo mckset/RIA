@@ -13,6 +13,10 @@ static void Error(int e, const char* desc){
 	fprintf(stderr, "Error #%d: %s\n", e, desc);
 }
 
+void Maximize(GLFWwindow* w, int max){
+	maximize = max;
+}
+
 void GetScrollWheel(GLFWwindow* w, double x, double y){
 	if (w != Import.w){
 		if (!menu || mouse.position.x > Width/3){

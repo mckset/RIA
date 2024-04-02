@@ -62,6 +62,7 @@ char p[4096]; // 4096 is the max size path size for Linux, 256 for windows
 void Save();
 void Load();
 void ResetImport();
+void Maximize(GLFWwindow*, int);
 
 #include "macros.hpp"
 

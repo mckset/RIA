@@ -9,12 +9,11 @@ int CreateWindows(){
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, sampleSize);
+	//glfwWindowHint(GLFW_MAXIMIZED , GL_TRUE);
 	mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-	if (Width == -1)
-		Width = mode->width;
-	if (Height = -1)
-		Height = mode->height-42;
+	Width = mode->width;
+	Height = mode->height-42;
 
 	//
 	// Main Window
@@ -30,6 +29,7 @@ int CreateWindows(){
 	glfwSetWindowIcon(Main.w, 1, i); 
 	stbi_image_free(i[0].pixels);
 	glfwSetScrollCallback(Main.w, GetScrollWheel);
+	glfwSetWindowMaximizeCallback(Main.w, Maximize);
 	Main.visible = true;
 
 	//
@@ -61,6 +61,14 @@ void Init(){
 	sShape.Init(shapeV, shapeF);
 	Load();
 	InitMenu();
+	Main.width = Width;
+	Main.height = Height;
+	if (maximize)
+		glfwMaximizeWindow(Main.w);
+	else
+		Main.Resize(Width, Height);
+
+		
 }
 
 int main(){

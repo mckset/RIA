@@ -17,7 +17,7 @@ class Scrollbar{
 				shape.Draw(position, size, bar, fixed);
 
 				// Notch
-				shape.Draw(position.Add((float)notchSize, size.y - (size.y)*((float)(scroll)/(float)(end+notchSize*2))), Vector2{size.x-notchSize*2, -16}, notch, true);
+				shape.Draw(position.Add((float)notchSize, size.y - (size.y)*((float)(scroll)/(float)(end+notchSize*4))), Vector2{size.x-notchSize*2, -16}, notch, true);
 			}else{
 				// Backing
 				shape.Draw(position, size, bar, fixed);

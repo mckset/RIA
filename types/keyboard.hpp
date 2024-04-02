@@ -3,39 +3,37 @@ class Keyboard{
 		int event;
 		int newKey;
 		int prevKey;
-		int* keys;
-		int keySize;
+		vector<int> keys;
 
 		bool GetKey(int key){
-			for (int i = 0; i < keySize; i++)
-				if (keys[i] == key)
+			for (auto k : keys)
+				if (k == key)
 					return true;
 			return false;
 		}
 
 		void AddKey(int key){
 			newKey = key;
-			int* temp = keys;
-			keys = (int*)malloc(sizeof(int) * (keySize+1));
-			for (int i = 0; i < keySize; i++)
-				keys[i] = temp[i];
-			keys[keySize] = key;
-			keySize++;
+			bool exists = false;
+			for (auto k : keys)
+				if (k == key){
+					exists = true;
+					return;
+				}
+			if (!exists)
+				keys.push_back(key);
 		}
 
 		void DelKey(int key){
-			int* temp = keys;
-			keys = (int*)malloc(sizeof(int) * (keySize-1));
-			bool removed = false;
-			for (int i = 0; i < keySize; i++){
-				if (!removed && keys[i] != key)
-					keys[i] = temp[i];
-				else if (keys[i] == key)
-					removed = true;
-				else
-					keys[i-1] = temp[i];
-			}
-			keySize--;
+			bool exists = false;
+			for (int i = 0; i < keys.size(); i++)
+				if (keys[i] == key){
+					exists = true;
+					vector<int>:: iterator k = keys.begin();
+					advance(k,i);
+					keys.erase(k);
+					return;
+				}
 		}
 		
 };

@@ -97,7 +97,7 @@ void DrawApp(){
 	//
 	if (previewImg.loaded){
 		sShape.Use();
-		shape.Draw(Vector2 {(float)Width/5*4-fontSize*4, 0}, Vector2{(float)Width/5+fontSize*4, (float)Width/5+fontSize*4}, menuBackground, true);
+		shape.Draw(Vector2{(float)Width/5*4-fontSize*4, 0}, Vector2{(float)Width/5+fontSize*4, (float)Width/5+fontSize*4}, menuBackground, true);
 
 		sImage.Use();
 
@@ -241,11 +241,12 @@ void DrawTags(){
 
 	// Scroll bar
 	tagScroll.end -= Height;
+	tagScroll.end += fontSize*2;
 	if (tagScroll.end < 0){
 		tagScroll.end = 0;
 		tagScroll.scroll = 0;
 	}
 
 	sShape.Use();
-	tagScroll.Draw(Vector2{(float)Width/3-scrollbarSize, 0}, Vector2{scrollbarSize, (float)Height});
+	tagScroll.Draw(Vector2{(float)Width/3-scrollbarSize, 8}, Vector2{scrollbarSize, (float)Height-16});
 }

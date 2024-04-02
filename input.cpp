@@ -19,10 +19,8 @@ void MainInput(){
 		ResetImages();
 		TagWin.Hide();
 		rmMenu.Reset();
-	}
-
-	if (keyboard.newKey == KEY_S)
 		Save();
+	}
 
 	// Menu toggle
 	if ((keyboard.newKey == KEY_TAB) || mouse.Click(LM_DOWN) && openLoc.Hover()){
@@ -50,6 +48,17 @@ void MainInput(){
 		rmMenu.Reset();
 	}
 	
+	// Movement
+	if (keyboard.GetKey(KEY_W) || keyboard.GetKey(KEY_UP))
+		View.y += viewSpeed;
+	if (keyboard.GetKey(KEY_S) || keyboard.GetKey(KEY_DOWN))
+		View.y -= viewSpeed;
+	if (keyboard.GetKey(KEY_A) || keyboard.GetKey(KEY_LEFT))
+		View.x -= viewSpeed;
+	if (keyboard.GetKey(KEY_D) || keyboard.GetKey(KEY_RIGHT))
+		View.x += viewSpeed;
+
+
 
 	//
 	// Side bar stuff (Most input for the side bar is in table.hpp and tag.hpp1)
@@ -297,10 +306,13 @@ void MainInput(){
 	// RM Menu
 	//
 	if (mouse.state == RM_UP && mouse.prevState == RM_DOWN && !imgScale){
-		rmMenu.Reset();
-		drawMouseMenu = !drawMouseMenu;
-		rmMenu.position = mouse.position;
-		mouse.state = -1;
+		// Check that the mouse is not in the menu and a preview image is not loaded
+		if ((!menu || mouse.position.x > (float)Width/3) && !previewImg.loaded){
+			rmMenu.Reset();
+			drawMouseMenu = !drawMouseMenu;
+			rmMenu.position = mouse.position;
+			mouse.state = -1;
+		}
 	}else if (mouse.state == RM_UP && !mouse.drag){
 		imgScale = false;
 		mouse.state = -1;

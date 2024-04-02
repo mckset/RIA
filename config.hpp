@@ -27,5 +27,7 @@ const int gridSize = 128; // The grid in the background
 const int minSize = 32; // Minimum image size
 const int scrollbarSize = 32; 
 const int sampleSize = 8; // Anti-Aliasing level
+const int viewSpeed = 16; // How fast to move the view
 
 bool drawOrigin = true;
+bool maximize = true;

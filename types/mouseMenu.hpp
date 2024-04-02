@@ -2,7 +2,10 @@
 // The mouse menu is hard coded for now
 //
 
+void AppendToTag(int, int);
 int CheckTags(Tag);
+int ExistsInTag(Tag, string);
+
 
 class MenuItem{
 	public:
@@ -13,7 +16,7 @@ class MenuItem{
 
 class Menu{
 	public:
-		int t = 0; // Type of menu 0 - 
+		int t = 0; // Type of menu 0 - default | 1 - tag
 		vector<Menu> tagsMenu; // Use vector so it can use the same code without needing to copy the whole class
 		vector<MenuItem> items;
 		int expand = 0;
@@ -77,62 +80,74 @@ class Menu{
 							sImage.Use();
 							font.Write(tag.name, Vector2{position.x+size*8+24, y2}, size*3/4, fontColor, true, size*8-48);
 							
+							// Sub tag clicked
 							if (mouse.position.Within(Vector2{position.x+size*8, y2}, Vector2{(float)size*8, (float)size})){
 								sShape.Use();
 								shape.Draw(Vector2{position.x+size*8, y2}, Vector2{(float)size*8, (float)size}, highlight, true);
+
+								if (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)){
+									AppendToTag(tagIndex, subIndex);
+								}
 							}
 							
 							y2-=size;
 							subIndex++;
 						}
 					}
-
+				}
 
 				//
 				// Menu options
 				//
 				
-				}else if (mouse.position.Within(Vector2{position.x, y}, Vector2{(float)size*8, (float)size})){
+				if (mouse.position.Within(Vector2{position.x, y}, Vector2{(float)size*8, (float)size})){
 
 					// List tags
 					if (t == 0){
-						if (!strcmp("Tag", item.name.data()) && !expand){
-							expand = 1;
-							tagsMenu[0].items.clear();
-							for (auto tag : tags){
-								tagsMenu[0].items.push_back(MenuItem{tag.name, 0, tag.color});
+						if (!strcmp("Tag", item.name.data())){
+							if (!expand){
+								expand = 1;
+								tagsMenu[0].items.clear();
+								for (auto tag : tags){
+									tagsMenu[0].items.push_back(MenuItem{tag.name, 0, tag.color});
+								}
+								tagsMenu[0].position = Vector2 {position.x + fontSize*8, y+size};
 							}
-							tagsMenu[0].position = Vector2 {position.x + fontSize*8, y+size};
-						}else if (strcmp("Tag", item.name.data()))
-							expand = 0;
+							if (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)){
+								menu = true;
+								tagView = true;
+							}
 
+						}else if (strcmp("Tag", item.name.data()) && expand)
+							expand = 0;
 					}
 
-					sShape.Use();
-					shape.Draw(Vector2{position.x, y}, Vector2{(float)size*8, (float)size}, highlight, true);
-
+					if (strcmp("Tag", item.name.data()) || t == 1){
+						sShape.Use();
+						shape.Draw(Vector2{position.x, y}, Vector2{(float)size*8, (float)size}, highlight, true);
+					}
 
 					// Main functions
 					if (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)){
 
 						// Basic functions
 						if (t == 0){
-							if (!strcmp("Tags", item.name.data())){
-								keyboard.newKey = item.action;
-								mouse.state = -1;
-							}else if (selImgs.size()){
+							if (selImgs.size()){
 								if (!strcmp("Resize", item.name.data())){
 									imgScale = true;
 									mouse.dragOff = mouse.position;
 									mouse.drag = true;
 									mouse.state = RM_UP;
 									mouse.prevState = RM_DOWN;
-								}else{
+								}else if (strcmp("Tag", item.name.data())){
 									keyboard.newKey = item.action;
 									mouse.state = -1;
 								}
 							}
 
+						// Tags	
+						}else if (t == 1){
+							AppendToTag(tagIndex, -1);
 						}
 						
 						Reset();
@@ -142,7 +157,7 @@ class Menu{
 				tagIndex++;
 				y-=size;
 			}
-			if (!mouse.position.Within(position, Vector2{(float)size*8, (float)size}) && (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN))){
+			if (!mouse.position.Within(position, Vector2{(float)size*8, (float)size}) && (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)) && t == 0){
 				mouse.state = -1;
 				Reset();
 			}
@@ -164,6 +179,67 @@ void InitMenu(){
 	rmMenu.items.push_back(MenuItem{"Resize"});
 	rmMenu.items.push_back(MenuItem{"Rotate", KEY_R});
 	rmMenu.items.push_back(MenuItem{"Tag", KEY_TILDE});
+}
+
+void AppendToTag(int tag, int sub){
+	
+	// Gets wheter to append or remove from the tag
+	bool append = false;
+
+	// Regular tag
+	if (sub == -1){
+		for (auto i : selImgs)
+			if (!ExistsInTag(tags[tag], imgs[i].path)){
+				append = true;
+				break;
+			}
+	}else
+		for (auto i : selImgs)
+			if (!ExistsInTag(tags[tag].subTags[sub], imgs[i].path)){
+				append = true;
+				break;
+			}
+
+	if (append){
+
+		// Regular tag images
+		for (auto i : selImgs)
+			if (!ExistsInTag(tags[tag], imgs[i].path))
+				tags[tag].imgs.push_back(File{GetName(imgs[i].path), imgs[i].path});
+		
+		// Sub tag
+		if (sub != -1){
+			for (auto i : selImgs)
+				if (!ExistsInTag(tags[tag].subTags[sub], imgs[i].path))
+					tags[tag].subTags[sub].imgs.push_back(File{GetName(imgs[i].path), imgs[i].path});
+		}
+
+	// Removing an image
+	}else{
+		
+		// Regular tag images
+		if (sub == -1){
+			for (auto i : selImgs){
+				int imgIndex = ExistsInTag(tags[tag], imgs[i].path);
+				if (imgIndex){
+					vector<File>:: iterator img = tags[tag].imgs.begin();
+					advance(img, imgIndex-1);
+					tags[tag].imgs.erase(img);
+				}
+			}
+
+		// Sub tag
+		}else{
+			for (auto i : selImgs){
+				int imgIndex = ExistsInTag(tags[tag].subTags[sub], imgs[i].path);
+				if (imgIndex){
+					vector<File>:: iterator img = tags[tag].subTags[sub].imgs.begin();
+					advance(img, imgIndex-1);
+					tags[tag].subTags[sub].imgs.erase(img);
+				}
+			}
+		}
+	}
 }
 
 int CheckTags(Tag tag){
@@ -190,4 +266,14 @@ int CheckTags(Tag tag){
 		}
 	}
 	return state;
+}
+
+int ExistsInTag(Tag tag, string s){
+	for (int i = 0; i < tag.imgs.size(); i++){
+		printf("%d %s\n", tag.imgs.size(), tag.imgs[i].path.data());
+		printf("%s\n", s.data());
+		if (!strcmp(tag.imgs[i].path.data(), s.data()))
+			return i+1;
+	}
+	return 0;
 }

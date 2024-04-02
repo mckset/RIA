@@ -154,6 +154,7 @@ void Load(){
 	f.read(reinterpret_cast<char*>(&View.x), sizeof(float));
 	f.read(reinterpret_cast<char*>(&View.y), sizeof(float));
 	f.read(reinterpret_cast<char*>(&Scale), sizeof(float));
+	f.read(reinterpret_cast<char*>(&maximize), sizeof(float));
 
 	printf("[Loading] Finished\n");
 	f.close();
@@ -266,6 +267,7 @@ void Save(){
 	w.write(reinterpret_cast<const char*>(&View.x), sizeof(float));
 	w.write(reinterpret_cast<const char*>(&View.y), sizeof(float));
 	w.write(reinterpret_cast<const char*>(&Scale), sizeof(float));
+	w.write(reinterpret_cast<const char*>(&maximize), sizeof(bool));
 
 	w.close();
 	printf("\n");
