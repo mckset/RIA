@@ -47,6 +47,7 @@ Download the latest verion from release page for your operating system or compil
 
 
 # Folder View (**TAB**)
+Contains saved paths to folders that contain the images that you want to tag/use.
 
 **DELETE** (While hovered overthe main folder) - Remove the folder from the view.
 
@@ -58,6 +59,8 @@ Download the latest verion from release page for your operating system or compil
 
 
 # Tag View (**~**)
+Only contains images that have been tagged under said tags.
+
 
 **LMB Click** - Expand a tags and display its contents. While previewing an image, a white box will appear on the left side of any of the tags it belongs to.
 
