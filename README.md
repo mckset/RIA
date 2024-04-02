@@ -1,18 +1,33 @@
-# RIA
+# RIA (Early release)
 RIA (Reference Image Application) is a cross platform image organizer for both Windows and Linux designed to help artists organize their reference material through the use of tags and folders. 
 
 # Installation
 Download the latest verion from release page for your operating system or compile it from source and run RIA. Note that RIA expects the font and icon images to be in the image folder in the directory you run it from.
-> **_NOTE:_** The Windows command prompt will open as display debug information
+> **_NOTE:_** Currently, the Windows command prompt will open as display debug information
 
 ### Tested Distros:
 - Arch
 - Ubuntu
 
-> **_NOTE:_** The Linux version relies on Zenity to get add new folders to the folder view.
+> **_NOTE:_** The Linux version relies on Zenity to add new folders to the folder view.
 
 # Image Board
-**ESC** - Unselect all images 
+
+**ESC** - Save the boards current state
+
+**Left mouse click** - Select an image
+
+**Left shift + left mouse click** - Select multiple images
+
+**Left mouse drag** - Select images in a window
+
+**Right mouse click** - Open image options menu
+
+**Right mouse drag** - Scale images
+
+**Left-Shift + Right mouse drag** - Scale images while maintaining their ratio
+
+**Scroll wheel** - Zoom in/out
 
 **DELETE** - Remove all selected images from the board
 
@@ -20,29 +35,15 @@ Download the latest verion from release page for your operating system or compil
 
 **R** - Rotate the selected images (Cancelled by RMB or ESC and confirmed by LM)
 
-**S** - Save the current state of the program. Any edits made without saving the program will be lost on closing.
+**WASD/Arrow keys/Middle mouse drag** - Move the image board view
 
-**SPACE** - Toggle origin
+**SPACE** - Toggle the origin display
 
 **TAB** - Open the folder view
 
 **V** - Flip selected images vertically
 
 **~** - Open the tag view
-
-**Left mouse click** - Select an image
-
-**Left shift + left mouse click** - Select multiple images
-
-**left mouse drag** - Select images in a window
-
-**RMB drag** - Scale images
-
-**L-Shift + RM drag** - Scale images while maintaining their ratio
-
-**MMB Drag** - Move the view
-
-**Scroll wheel** - Zoom in/out
 
 
 # Folder View (**TAB**)
@@ -51,16 +52,16 @@ Download the latest verion from release page for your operating system or compil
 
 **LMB Click** (Folder) - Expand a folder and display its contents. If a file is tagged, a white box will be displayed on the left side of the file.
 
-**LMB Click** (File) - Load the image into the preview on the bottom right side of the screen.
+**LMB Click** (File) - Load the image into the preview on the bottom right side of the screen. Files that already have been tagged are indicated with a white bar to the left of the file name.
 
 **The "+" Button**  - Add a new location to the view. 
 
 
 # Tag View (**~**)
 
-**LMB Click** - Expand a tags and display its contents.
+**LMB Click** - Expand a tags and display its contents. While previewing an image, a white box will appear on the left side of any of the tags it belongs to.
 
-**LMB Click** (File) - Load the image into the preview on the bottom right side of the screen. Images 
+**LMB Click** (File) - Load the image into the preview on the bottom right side of the screen.
 
 **RMB Click** - Add/remove an image from a tag/sub tag.
 
@@ -70,11 +71,9 @@ Download the latest verion from release page for your operating system or compil
 
 **The "+" Button** (Tag header) - Add a new sub tag to the tag.
 
-
-Right clicking a tag without an image in the preview will allow you to edit the tag. Right clicking a tag while previewing an image will add or remove the image from the tag/sub tag. If the preview image is already tagged, a white box will appear on the left side of the tag. Clicking a file in the tag view will load a preview.
-
 # Import (**Import Button**)
-Image packs are saved to the shared directory and must follow a similar format to the example below.
+Image packs are an experimental idea only found in RIA. An image pack contains pre-tagged files so they can easily be shared between users. Follow the below instructions for how to create an image pack. Image packs use folders a categories instead of tags and relies on the images to be manually tagged by one users before being able to be shared. While importing an image pack, it gives you the option to exclude folders int the image pack from being imported. EX) An image pack has 3 categories: Buildings, Landscapes, and Clothes. A user can choose to only import images from the Buildings and Landscapes folder and all the images in the Clothes folder will remain without being added to RIA. 
+> **_NOTE:_**  When creating an image pack, it only checks the tags that are in your program. If you hit the create button on a previously imported image pack and removed some of the tags prior, it will overwrite the import file and remove the untagged images from the import file.
 
 Importing
 ---------
@@ -94,15 +93,15 @@ Creating
 Image Pack Layout Example
 ------------------
 ```
-[Folder] Photographs
+[Folder] Photographs (Image pack name)
 
-	-> [Folder] Buildings
+	-> [Folder] Buildings (Category)
  
 		-> [Image] New York.png
   
 			ect
    
-	-> [Folder] Trees
+	-> [Folder] Trees (Category)
  
 		-> [Image] Oak.png
   
