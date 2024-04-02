@@ -25,7 +25,19 @@ class Vector2{
 
 		float Distance(Vector2 v2){return (abs(x-v2.x) + abs(y-v2.y));}
 
-		bool Within(Vector2 origin, Vector2 size){return (x > origin.x && x < origin.x + size.x && y > origin.y && y < origin.y + size.y);}
+		bool Within(Vector2 origin, Vector2 size){
+			if (size.x < 0){
+				origin.x += size.x;
+				size.x = -size.x;
+			}
+			if (size.y < 0){
+				origin.y += size.y;
+				size.y = -size.y;
+			}
+
+			return (x > origin.x && x < origin.x + size.x && y > origin.y && y < origin.y + size.y);
+		}
+		
 		bool Equal(Vector2 v){return (v.x == x && v.y == y);}
 
 };

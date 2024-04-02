@@ -11,8 +11,10 @@ int CreateWindows(){
 	glfwWindowHint(GLFW_SAMPLES, sampleSize);
 	mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
-	Width = mode->width;
-	Height = mode->height;
+	if (Width == -1)
+		Width = mode->width;
+	if (Height = -1)
+		Height = mode->height-42;
 
 	//
 	// Main Window
@@ -58,13 +60,14 @@ void Init(){
 	sImage.Init(imageV, imageF);
 	sShape.Init(shapeV, shapeF);
 	Load();
+	InitMenu();
 }
 
 int main(){
 	printf("[Initializing]\n");
-	
 
 	if (!CreateWindows()){
+		printf("%s\n", path.data());
 		printf("image/icon.png not missing!\n");	
 		return -1;
 	}

@@ -53,7 +53,7 @@ void Load(){
 	}
 
 	printf("[Loading] Sorting locations\n");
-	sort(locations.begin(), locations.end(), SortTable);
+	sort(locations.begin(), locations.end(), locations[0].SortTable);
 
 	
 	// Tags

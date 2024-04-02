@@ -1,3 +1,7 @@
+//
+// The mouse class holds information about the state of the mouse and provides functions for accessing/altering the mouse
+//
+
 class Mouse{
 	public:	
 		Vector2 position; // Cursor position

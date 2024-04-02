@@ -1,8 +1,10 @@
+//
+// Responsible for handling mouse and keyboard events in the main window
+//
+
 void MainInput();
 void ResetImages();
 Vector2 MouseToScreenSpace(Vector2);
-
-bool rot = false; // Rotate name was already taken
 
 void MainInput(){
 	shift = keyboard.GetKey(KEY_LEFT_SHIFT);
@@ -16,29 +18,38 @@ void MainInput(){
 		rot = false;
 		ResetImages();
 		TagWin.Hide();
+		rmMenu.Reset();
 	}
 
 	if (keyboard.newKey == KEY_S)
 		Save();
 
 	// Menu toggle
-	if (keyboard.newKey == KEY_TAB){
+	if ((keyboard.newKey == KEY_TAB) || mouse.Click(LM_DOWN) && openLoc.Hover()){
 		if (!menu)
 			menu = true;
 		else if (menu && !tagView)
 			menu = false;
 		tagView = false;
+		rmMenu.Reset();
 	}
 
 	// Tag toggle
-	if (keyboard.newKey == KEY_TILDE){
+	if ((keyboard.newKey == KEY_TILDE) || mouse.Click(LM_DOWN) && openTags.Hover()){
 		if (!menu && !tagView)
 			menu = true;
 		else if (menu && tagView)
 			menu = false;
 		tagView = !tagView;
+		rmMenu.Reset();
 	}
 
+	// Close Menu
+	if (mouse.Click(LM_DOWN) && menu && closeB.Hover()){
+		menu = false;
+		rmMenu.Reset();
+	}
+	
 
 	//
 	// Side bar stuff (Most input for the side bar is in table.hpp and tag.hpp1)
@@ -52,7 +63,7 @@ void MainInput(){
 				string folder = GetFolder();
 				if (folder.length()){
 					locations.push_back(Table{GetName(folder), folder});
-					sort(locations.begin(), locations.end(), SortTable);
+					sort(locations.begin(), locations.end(), locations[0].SortTable);
 				}
 			}
 		}
@@ -100,7 +111,7 @@ void MainInput(){
 		//
 		if (rot)
 			for (auto img : selImgs){
-				imgs[img].angle = (mouse.dragOff.x-mouse.position.x)*(float)RADIANS;
+				imgs[img].angle = ((mouse.dragOff.x-mouse.position.x) + (mouse.dragOff.y-mouse.position.y))*(float)RADIANS;
 				if (shift)
 					imgs[img].angle = (int)((imgs[img].angle*(float)DEGREES)/15)*15*(float)RADIANS;
 			}
@@ -216,11 +227,23 @@ void MainInput(){
 		}else if (mouse.Click(RM_DOWN)){
 			
 			// Prepare for scaling
-			if (!rot){
+			if (!rot && !imgScale){
 				mouse.dragOff = Vector2{mouse.position.x, mouse.position.y};
 				mouse.drag = true;
+			}else if (imgScale)
+				imgScale = false;
+			else{
+				for (auto img : selImgs)
+					imgs[img].prevAngle = imgs[img].angle;
+				rot = false;
+				mouse.dragOff = mouse.position;
+				mouse.state = -1;
 			}
-		}else if (mouse.state == RM_DOWN && selImgs.size() && mouse.position.x != mouse.dragOff.x && mouse.drag){
+
+		}else if (mouse.state == RM_DOWN && selImgs.size() && abs(mouse.position.x - mouse.dragOff.x) > 16)
+			imgScale = true;
+
+		if (imgScale){
 			// Get corner of the group of images
 			Vector2 min = imgs[selImgs[0]].position;
 			for (auto img : selImgs){
@@ -268,9 +291,22 @@ void MainInput(){
 				selImgs.push_back(i);
 				imgs[i].selected = true;
 			}
-			
-		
 	}
+
+	//
+	// RM Menu
+	//
+	if (mouse.state == RM_UP && mouse.prevState == RM_DOWN && !imgScale){
+		rmMenu.Reset();
+		drawMouseMenu = !drawMouseMenu;
+		rmMenu.position = mouse.position;
+		mouse.state = -1;
+	}else if (mouse.state == RM_UP && !mouse.drag){
+		imgScale = false;
+		mouse.state = -1;
+	}
+	
+	
 
 	keyboard.newKey = -1;
 	mouse.prevState = mouse.state;

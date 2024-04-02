@@ -45,7 +45,7 @@ string DrawImport(){
 				shape.Draw(Vector2{fontSize/4, y+fontSize/4}, Vector2{fontSize/2, fontSize/2}, White, true);
 			
 			sImage.Use();
-			font.Write(folders.folders[i].name, Vector2{16, y}, fontSize, fontColor, true);
+			font.Write(folders.folders[i].name, Vector2{24, y}, fontSize, fontColor, true);
 
 			if (y > fontSize && mouse.position.Within(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize})){
 				sShape.Use();
@@ -62,6 +62,15 @@ string DrawImport(){
 			y-=fontSize;
 			importScroll.end += fontSize;
 		}
+
+		if (!folders.folders.size()){
+			sImage.Use();
+			font.Write("No image packs found.", Vector2{16, y}, fontSize, fontColor, true);
+			font.Write("Ensure that your image", Vector2{16, y-fontSize}, fontSize, fontColor, true);
+			font.Write("packs are saved to the", Vector2{16, y-fontSize*2}, fontSize, fontColor, true);
+			font.Write("shared folder.", Vector2{16, y-fontSize*3}, fontSize, fontColor, true);
+		}
+
 		importB.position = Vector2{0, 0};
 		importB.size = Vector2{(float)Width/2-scrollbarSize/2, fontSize};
 		createB.position = Vector2{(float)Width/2-scrollbarSize/2, 0};
@@ -82,7 +91,7 @@ string DrawImport(){
 						folders.path = folders.folders[i].path;
 						folders.GetFiles();
 						CreateImport();
-						importTime = 120;
+						importTime = 600;
 						Import.Hide();
 						return "Created import file";
 					}
@@ -96,12 +105,12 @@ string DrawImport(){
 						importFile = importPath+  slash + "import.dat";
 						if (!LoadImport()){
 							Import.Hide();
-							importTime = 120;
+							importTime = 600;
 							return "Missing/corrupt import data";
 						}
 						folders.path = folders.folders[i].path;
 						folders.GetFiles();
-						sort(folders.folders.begin(), folders.folders.end(), SortTable);
+						sort(folders.folders.begin(), folders.folders.end(), folders.SortTable);
 						for (int f = 0; f < folders.folders.size(); f++){
 							folders.folders[f].expand = true;
 							folders.folders[f].GetFiles();
@@ -163,7 +172,7 @@ string DrawImport(){
 		if (!importTags.size()){
 			ImportTags();
 			Import.Hide();
-			importTime = 120;
+			importTime = 600;
 			return "Removed imported images";
 		}
 
@@ -207,7 +216,7 @@ string DrawImport(){
 		else if ((mouse.Click(LM_DOWN) && importB.Hover()) || keyboard.newKey == KEY_ENTER){
 			ImportTags();
 			Import.Hide();
-			importTime = 120;
+			importTime = 600;
 			return "Successfully imported tags";
 		}
 	}

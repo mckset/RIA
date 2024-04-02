@@ -1,10 +1,6 @@
 //
-// macro.hpp
+// Includes common variables and functions that are used throughout the engine that are not specific to the engine itself. 
 //
-/*
-	Includes common variables and functions that are used throughout the game engine
-	that are not specific to the engine itself. 
-*/
 
 #include <string>
 #include <string.h>
@@ -194,7 +190,7 @@ string Upper(string s){
 	return s;
 }
 
-// Removes The from the beginning of a string
+// Removes "The" from the beginning of a string
 string SortFormat(string s){
 	string out = s;
 	if (!strcmp(Lower(s.substr(0,4)).data(), "the ")){

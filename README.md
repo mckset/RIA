@@ -1,15 +1,16 @@
 # RIA
-RIA (Reference Image Application) is a cross platform image organizer for both Windows and Linux designed to help artist organize their reference material through the use of tags and folders. 
+RIA (Reference Image Application) is a cross platform image organizer for both Windows and Linux designed to help artists organize their reference material through the use of tags and folders. 
 
 # Installation
-Download the latest verion or compile it from source and run the RIA. Note that RIA expects the font and icon images to be in an image folder in the directory you run it from.
+Download the latest verion from release page for your operating system or compile it from source and run RIA. Note that RIA expects the font and icon images to be in the image folder in the directory you run it from.
+> **_NOTE:_** The Windows command prompt will open as display debug information
 
 ### Tested Distros:
 - Arch
 - Ubuntu
 
 > **_NOTE:_** The Linux version relies on Zenity to get add new folders to the folder view.
-> 
+
 # Image Board
 **ESC** - Unselect all images 
 
@@ -17,7 +18,7 @@ Download the latest verion or compile it from source and run the RIA. Note that 
 
 **H** - Flip selected images horizontally
 
-**R** - Rotate the selected images (Cancelled by RM or ESC and confirmed by LM)
+**R** - Rotate the selected images (Cancelled by RMB or ESC and confirmed by LM)
 
 **S** - Save the current state of the program. Any edits made without saving the program will be lost on closing.
 
@@ -29,41 +30,41 @@ Download the latest verion or compile it from source and run the RIA. Note that 
 
 **~** - Open the tag view
 
-**LM click** - Select an image
+**Left mouse click** - Select an image
 
-**L-Shift + LM click** - Select multiple images
+**Left shift + left mouse click** - Select multiple images
 
-**LM drag** - Select images in a window
+**left mouse drag** - Select images in a window
 
-**RM drag** - Scale images
+**RMB drag** - Scale images
 
 **L-Shift + RM drag** - Scale images while maintaining their ratio
 
-**MM Drag** - Move the view
+**MMB Drag** - Move the view
 
 **Scroll wheel** - Zoom in/out
 
 
 # Folder View (**TAB**)
 
-**DELETE** (While hovered over a location) - Remove the folder from the view.
+**DELETE** (While hovered overthe main folder) - Remove the folder from the view.
 
-**LM Click** (Folder) - Expand a folder and display its contents. If a file is tagged, a white box will be displayed on the left side of the file.
+**LMB Click** (Folder) - Expand a folder and display its contents. If a file is tagged, a white box will be displayed on the left side of the file.
 
-**LM Click** (File) - Load the image into the preview on the bottom right side of the screen.
+**LMB Click** (File) - Load the image into the preview on the bottom right side of the screen.
 
 **The "+" Button**  - Add a new location to the view. 
 
 
 # Tag View (**~**)
 
-**LM Click** - Expand a tags and display its contents.
+**LMB Click** - Expand a tags and display its contents.
 
-**LM Click** (File) - Load the image into the preview on the bottom right side of the screen. Images 
+**LMB Click** (File) - Load the image into the preview on the bottom right side of the screen. Images 
 
-**RM Click** - Add/remove an image from a tag/sub tag.
+**RMB Click** - Add/remove an image from a tag/sub tag.
 
-**RM Click** (No preview image) - Edit a tag/sub tag.
+**RMB Click** (No preview image) - Edit a tag/sub tag.
 
 **The "+" Button** - Add a new tag to the view.
 
@@ -77,8 +78,8 @@ Image packs are saved to the shared directory and must follow a similar format t
 
 Importing
 ---------
-1) Click on an image pack to import and press the import button.
-2) Select the folders from the image pack you want to import.
+1) Click on an image pack to import and press the import button. The image pack with a square indicates that the image pack is selected.
+2) Select/deselect the folders from the image pack you want to import. Folders with a square next to them are selected. 
 3) Verify you want to import the tags. Pressing the sub tag button will enable/disable importing sub tags.
 > **_NOTE:_**  Imported tags do not overwrite color values of existing tags with the same name
 
@@ -86,7 +87,7 @@ Creating
 --------
 1) Create a new folder in the shared directory with the name of your image pack.
 2) Create subfolders to categorizes the images you will be using.
-3) Tag the image in RIA.
+3) Tag the images in RIA.
 4) Open the import menu, select your image pack and press the create button. 
 > **_NOTE:_**  Importing only uses the first level of folders in an image pack. further subdirectories are ignored
 
@@ -142,3 +143,4 @@ g++ main.cpp windows/glad/glad.c -o RIA windows/glfw/libglfw3.a -lopengl32 -lgdi
 ```
 
 > **_NOTE:_**  The command may vary between distros/OS. 
+

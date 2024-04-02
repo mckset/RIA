@@ -105,7 +105,7 @@ void SetKeyboardState(GLFWwindow* w, int key, int code, int action, int mod){
 
 void SetMouseState(GLFWwindow* w, int button, int action, int mod){
 	mouse.state = button*10 + action;
-	if ((mouse.state != LM_DOWN && mouse.state != RM_DOWN) && mouse.drag)
+	if (mouse.state != LM_DOWN && mouse.state != RM_DOWN && mouse.drag)
 		mouse.drag = false;
 }
 

@@ -1,3 +1,7 @@
+//
+// Stores location information in a recusive list and displays it as a table
+//
+
 using namespace std;
 #if UBUNTU
 	#include <experimental/filesystem>
@@ -7,8 +11,6 @@ using namespace std;
 	namespace fs = std::filesystem;
 #endif
 
-
-void SortFolders(int, int);
 bool IsImage(string);
 
 class Table{
@@ -21,9 +23,10 @@ class Table{
 		vector<Table> folders;
 		vector<File> files;
 
-		bool Draw(Vector2 position, Vector2 size, int m = -1, int sub = -1){
+
+		bool Draw(Vector2 position, Vector2 size, int sub = -1){
 			if (!inited)
-				GetFiles(m, sub);
+				GetFiles();
 
 			listSize = 0;
 
@@ -51,7 +54,7 @@ class Table{
 					expand = !expand;
 					for (int i = 0; i < folders.size(); i++)
 						folders[i].inited = false;
-					mouse.state = mouse.prevState;
+					mouse.prevState = mouse.state;
 				}else{
 					sShape.Use();
 					shape.Draw(position, size, highlight, true);
@@ -65,7 +68,7 @@ class Table{
 				// Folders
 				for (int i = 0; i < folders.size(); i++){
 					if (position.y - listSize > -fontSize)
-						bool update = folders[i].Draw(position.Add(16, -listSize), Vector2{size.x - 16, size.y}, m, i);
+						bool update = folders[i].Draw(position.Add(16, -listSize), Vector2{size.x - 16, size.y}, i);
 					listSize += folders[i].listSize;
 				}
 				// Files
@@ -112,7 +115,7 @@ class Table{
 			return false;
 		}
 
-		void GetFiles(int i = -1, int sub = -1){
+		void GetFiles(){
 			folders.clear();
 			files.clear();
 			struct stat s;
@@ -139,8 +142,8 @@ class Table{
 							//printf("Image: %s\n", GetName(p).data());
 					}
 			}
+			sort(folders.begin(), folders.end(), SortTable);
 			sort(files.begin(), files.end(), SortFile);
-			SortFolders(i, sub);
 			inited = true;
 		}
 
@@ -157,10 +160,26 @@ class Table{
 			return listSize;
 		}
 
+		static bool SortTable(Table t1, Table t2){
+			int max = t1.name.length() <= t2.name.length() ? t1.name.length() : t2.name.length();
+
+			string n1 = SortFormat(Lower(t1.name));	
+			string n2 = SortFormat(Lower(t2.name));
+
+			for (int i = 0; i < max; i++){
+				if (n1[i] != n2[i]){
+					// Because unicode characters are negative, the sorter adds 512 to the characters as an int
+					int c1 = n1[i] + 512*(n1[i]<0), 
+						c2 = n2[i] + 512*(n2[i]<0);
+					return (c1 < c2);
+				}
+			}
+			return false;
+		}
 };
 
 
-bool SortTable(Table, Table);
+
 
 bool IsImage(string path){
 	char ext[5];

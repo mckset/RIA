@@ -1,7 +1,9 @@
 void DrawTag();
 void TagInput();
+void ResetTagEdit();
 
-Button addTag = Button{"+", menuBackground, highlight};
+
+Button addTag = Button{"Add Tag", menuBackground, highlight};
 
 void DrawTag(){
 	sShape.Use();
@@ -11,8 +13,8 @@ void DrawTag(){
 	tagName.size = Vector2{(float)Width-64, (float)scrollbarSize};
 	tagName.background = Color{(float)rgb[0].scroll/255, (float)rgb[1].scroll/255, (float)rgb[2].scroll/255, 1};
 	tagName.Draw();
-	addTag.position = Vector2{(float)Width-fontSize*2, 0};
-	addTag.size = Vector2{fontSize*2, fontSize*2};
+	addTag.position = Vector2{8, 0};
+	addTag.size = Vector2{fontSize*8, fontSize*2};
 	addTag.Draw();
 }
 
@@ -43,6 +45,10 @@ void TagInput(){
 				sort(tags[editTag].subTags.begin(), tags[editTag].subTags.end(), SortTag);
 			else
 				sort(tags.begin(), tags.end(), SortTag);
+			
+			ResetTagEdit();
+			keyboard.newKey = -1;
+			mouse.prevState = mouse.state;
 			return;
 		}
 	}
@@ -58,4 +64,14 @@ void TagInput(){
 	
 	keyboard.newKey = -1;
 	mouse.prevState = mouse.state;
+}
+
+void ResetTagEdit(){
+	editTag = -1;
+	editSub = -1;
+	tagName.text = "";
+	tagName.background = Black;
+	rgb[0].scroll = 0;
+	rgb[1].scroll = 0;
+	rgb[2].scroll = 0;
 }

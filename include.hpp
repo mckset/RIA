@@ -44,7 +44,7 @@ string GetName(string);
 	#include <unistd.h>
 #endif
 
-int Width, Height;
+int Width = -1, Height = -1;
 uint vertexArray, vertexBuffer, elementBuffer;
 const GLFWvidmode* mode;
 
@@ -108,11 +108,19 @@ Scrollbar tagScroll = Scrollbar{scrollbarBacking, scrollbarNotch, highlight, Tra
 Scrollbar locScroll = Scrollbar{scrollbarBacking, scrollbarNotch, highlight, Transparent};
 Scrollbar importScroll = Scrollbar{scrollbarBacking, scrollbarNotch, highlight, Transparent};
 
+
+bool rot = false; // Rotate name was already taken. Rotate images
+bool imgScale = false; // If the program should scale images
+int drawMouseMenu = 0; // Draws the right click menu when true
+
+
 #include "types/tag.hpp"
 vector<Tag> tags;
 
 #include "types/table.hpp"
 vector<Table> locations;
+
+#include "types/mouseMenu.hpp"
 
 #include "modules/sort.cpp"
 #include "handler.cpp"

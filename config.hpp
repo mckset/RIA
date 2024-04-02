@@ -5,10 +5,14 @@ Color locationHeading = {.05f, .05f, .05f, .5};
 Color fieldBack = Color{.1, .1, .1, 1};
 Color fontColor = White;
 Color grid = Color {.25f, .25f, .25f, 1};
-Color highlight = Color {.5, .5, .5, .75};
+Color highlight = Color {.7, .7, .7, .75};
 Color imageBorder = Color{.1, .1, .1, 1};
 Color cOrigin = Color {1, 1, 1, .5};
 Color menuBackground = Color {0, 0, 0, .5};
+
+Color RMMenuBacking = Color {0, 0, 0, .5};
+
+// Scroll bar
 Color scrollbarBacking = Color {.2, .2, .2, .5};
 Color scrollbarNotch = Color {.5, .5, .5, .5};
 Color cSelector = Color{0,1,1,.1f};

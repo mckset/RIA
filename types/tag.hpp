@@ -4,6 +4,8 @@ class File{
 		string path = "";
 };
 bool SortFile(File, File);
+void AppendTag(Image);
+
 
 class Tag{
 	public:

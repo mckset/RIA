@@ -1,10 +1,19 @@
+//
+// Responsible for rendering everything except the import window
+//
+
+
 void DrawApp();
 void DrawLocations();
 void DrawTags();
 
 bool selector = false;
 
-Button import = Button{"Import", menuBackground, highlight};
+Button import = Button{"Image Packs", menuBackground, highlight};
+Button openTags = Button{"Tags", menuBackground, highlight};
+Button openLoc = Button{"Locations", menuBackground, highlight};
+Button closeB = Button{"Close", menuBackground, highlight};
+
 string importText = "";
 int importTime = 0;
 
@@ -75,12 +84,13 @@ void DrawApp(){
 	
 	// Import Text
 	}else if (importTime > 0){
-		importTime--;;
+		importTime--;
 		font.Write(importText, Vector2{0,46}, fontSize, Black, true, Width, 1);
 		font.Write(importText, Vector2{0,48}, fontSize, White, true, Width, 1);
 	}
 
-	
+	if (drawMouseMenu)
+		rmMenu.Draw(fontSize);
 
 	//
 	// Image preview
@@ -108,6 +118,9 @@ void DrawApp(){
 		}
 	}
 
+
+	openTags.size = Vector2{fontSize*4, fontSize*1};
+	openLoc.size = Vector2{fontSize*4, fontSize*1};
 	if (menu){
 		sShape.Use();
 		shape.Draw(Vector2{0}, Vector2{(float)Width/3, (float)Height}, menuBackground, true);
@@ -116,15 +129,37 @@ void DrawApp(){
 		else
 			DrawLocations();
 
-		// Add button
-		add.position = Vector2{(float)Width/3-fontSize*2-scrollbarSize, 0};
+		// Menu Buttons
+		if (!tagView){
+			openTags.position = Vector2{(float)Width/3-fontSize+scrollbarSize, (float)Height-fontSize};
+			openLoc.position = Vector2{-(float)Width/3-fontSize+scrollbarSize, -(float)Height-fontSize};
+			openTags.Draw();
+		}else{
+			openTags.position = Vector2{-(float)Width/3-fontSize+scrollbarSize, -(float)Height-fontSize};
+			openLoc.position = Vector2{(float)Width/3-fontSize+scrollbarSize, (float)Height-fontSize};
+			openLoc.Draw();
+		}
+		closeB.position = Vector2{(float)Width/3-fontSize+scrollbarSize, (float)Height-fontSize*2};
+		closeB.size = Vector2{fontSize*4, fontSize*1};
+
+
+		add.position = Vector2{(float)Width/3-fontSize*2-scrollbarSize, (float)Height-fontSize*2};
 		add.size = Vector2{fontSize*2, fontSize*2};
+
 		add.Draw();
+		closeB.Draw();
+		
+	}else{
+		openTags.position = Vector2{8, (float)Height-fontSize-8};
+		openLoc.position = Vector2{8, (float)Height-fontSize*2-8};
+		openTags.Draw();
+		openLoc.Draw();
 	}
 
+
 	// Import button
-	import.position = Vector2{(float)Width - fontSize*3-8, (float)Height - fontSize-8};
-	import.size = Vector2{fontSize*3, fontSize};
+	import.position = Vector2{(float)Width - fontSize*5-12, (float)Height - fontSize-8};
+	import.size = Vector2{fontSize*5, fontSize};
 	import.Draw();
 	
 }
@@ -133,13 +168,21 @@ void DrawApp(){
 // Locations
 //
 void DrawLocations(){
-	float y = Height-fontSize+locScroll.scroll;
+	float y = Height-fontSize*2+locScroll.scroll;
 	locScroll.end = 0;
+
+	sShape.Use();
+	shape.Draw(Vector2{0, y}, Vector2{(float)Width/3-scrollbarSize, fontSize*2}, menuBackground, true);
+
+	sImage.Use();
+	font.Write("Folders", Vector2{8, y}, fontSize*1.5, fontColor, true, (float)Width/3-scrollbarSize);
+
+	y-=fontSize;
 
 	// Locations
 	for (int i = 0; i < locations.size(); i++){
 		if (y > -fontSize){
-			bool del = locations[i].Draw(Vector2{0, y}, Vector2{(float)Width/3-scrollbarSize, fontSize}, i);
+			bool del = locations[i].Draw(Vector2{0, y}, Vector2{(float)Width/3-scrollbarSize, fontSize});
 			if (del){
 				vector<Table>:: iterator t = locations.begin();
 				advance(t, i);
@@ -169,8 +212,17 @@ void DrawLocations(){
 // Tags
 //
 void DrawTags(){
-	float y = Height-fontSize+tagScroll.scroll;
+	float y = Height-fontSize*2+tagScroll.scroll;
 	tagScroll.end = 0;
+
+	sShape.Use();
+	shape.Draw(Vector2{0, y}, Vector2{(float)Width/3-scrollbarSize, fontSize*2}, menuBackground, true);
+
+	sImage.Use();
+	font.Write("Tags", Vector2{8, y}, fontSize*1.5, fontColor, true, (float)Width/3-scrollbarSize);
+
+	y-=fontSize;
+
 	for (int i = 0; i < tags.size(); i++){
 		if (y > -fontSize){
 			bool del = tags[i].Draw(Vector2{0, y}, Vector2{(float)Width/3-scrollbarSize, fontSize}, i);
