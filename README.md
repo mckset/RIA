@@ -3,7 +3,7 @@ RIA (Reference Image Application) is a cross platform image organizer for both W
 
 # Installation
 Download the latest verion from release page for your operating system or compile it from source and run RIA. Note that RIA expects the font and icon images to be in the image folder in the directory you run it from.
-> **_NOTE:_** Currently, the Windows command prompt will open as display debug information
+> **_NOTE:_** Currently, the Windows command prompt will open as a display debug information
 
 ### Tested Distros:
 - Arch
