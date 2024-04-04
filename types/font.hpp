@@ -17,7 +17,7 @@ class Font{
 			//printf("%s\n", text);
 
 			if (align == 1)
-				position.x = position.x + limit/2 - (text.length() * fontSize)/4;\
+				position.x = position.x + limit/2 - (text.length() * fontSize)/4;
 			if (limit != Width)
 				limit = position.x + limit;
 			float off = 0;

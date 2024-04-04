@@ -11,24 +11,16 @@ class Field{
 		string text = "";
 		bool active = false;
 
-		void Draw(bool fixed = true){
+		void Draw(bool fixed = true, bool centerText = false){
 			sShape.Use();
 			shape.Draw(position, size, active ? activeC : background, fixed);
 			shape.DrawBox(position, size, border, borderWidth, fixed);
 			
 			sImage.Use();
 			if (!text.length() && !active)
-				font.Write(emptyText.data(), position.Add(4,0), size.y/4*3, textC, fixed);
+				font.Write(emptyText.data(), position.Add(4,0), size.y/4*3, textC, fixed, size.x, centerText);
 			else
-				font.Write(text.data(), position.Add(4,0), size.y/4*3, textC, fixed);
-
-			/*
-			sFont.Use();
-			if (text.length() == 0 && !active)
-				font.Write(emptyText, position.Add(4, size.y/2-4), 1.0f, textC);
-			else
-				font.Write(text, position.Add(4, size.y/2-4), 1.0f, textC);
-			*/
+				font.Write(text.data(), position.Add(4,0), size.y/4*3, textC, fixed, size.x, centerText);
 		}
 
 		void CheckClick(){

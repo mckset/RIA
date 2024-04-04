@@ -29,6 +29,8 @@ class Image{
 
 		// Draws to pixel size
 		void Draw(Vector2 position, Vector2 size, Color color, int i, bool fixed = false){
+			if (!loaded)
+				return;
 			size = size.Multiply(2); // Compensates for -1:1 grid size
 			tR = Vector2{!hFlip ? position.x+size.x/2 : position.x, !vFlip ? position.y+size.y/2 : position.y};
 			tL = Vector2{!hFlip ? position.x : position.x+size.x/2, !vFlip ? position.y+size.y/2 : position.y};

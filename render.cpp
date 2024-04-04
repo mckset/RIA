@@ -13,6 +13,7 @@ Button import = Button{"Image Packs", menuBackground, highlight};
 Button openTags = Button{"Tags", menuBackground, highlight};
 Button openLoc = Button{"Locations", menuBackground, highlight};
 Button closeB = Button{"Close", menuBackground, highlight};
+Button helpB = Button{"Help", menuBackground, highlight};
 
 string importText = "";
 int importTime = 0;
@@ -39,11 +40,11 @@ void DrawApp(){
 	// Images
 	//
 	sImage.Use();
-	for (auto img : imgs){
-		img.Draw();
-		if (img.selected){
+	for (int i = 0; i < imgs.size(); i++){
+		imgs[i].Draw();
+		if (imgs[i].selected){
 			sShape.Use();
-			img.DrawOutline(borderSize/Scale, imageBorder);
+			imgs[i].DrawOutline(borderSize/Scale, imageBorder);
 			sImage.Use();
 		}
 	}
@@ -121,6 +122,7 @@ void DrawApp(){
 
 	openTags.size = Vector2{fontSize*4, fontSize*1};
 	openLoc.size = Vector2{fontSize*4, fontSize*1};
+	helpB.size = Vector2{fontSize*4, fontSize*1};
 	if (menu){
 		sShape.Use();
 		shape.Draw(Vector2{0}, Vector2{(float)Width/3, (float)Height}, menuBackground, true);
@@ -133,27 +135,28 @@ void DrawApp(){
 		if (!tagView){
 			openTags.position = Vector2{(float)Width/3-fontSize+scrollbarSize, (float)Height-fontSize};
 			openLoc.position = Vector2{-(float)Width/3-fontSize+scrollbarSize, -(float)Height-fontSize};
+			add.position = Vector2{(float)Width/3-fontSize*2-scrollbarSize, (float)Height-fontSize*2+locScroll.scroll};
 			openTags.Draw();
 		}else{
 			openTags.position = Vector2{-(float)Width/3-fontSize+scrollbarSize, -(float)Height-fontSize};
 			openLoc.position = Vector2{(float)Width/3-fontSize+scrollbarSize, (float)Height-fontSize};
+			add.position = Vector2{(float)Width/3-fontSize*2-scrollbarSize, (float)Height-fontSize*2+tagScroll.scroll};
 			openLoc.Draw();
 		}
+		add.size = Vector2{fontSize*2, fontSize*2};
 		closeB.position = Vector2{(float)Width/3-fontSize+scrollbarSize, (float)Height-fontSize*2};
 		closeB.size = Vector2{fontSize*4, fontSize*1};
 
-
-		add.position = Vector2{(float)Width/3-fontSize*2-scrollbarSize, (float)Height-fontSize*2};
-		add.size = Vector2{fontSize*2, fontSize*2};
-
-		add.Draw();
+		add.Draw(false, true);
 		closeB.Draw();
 		
 	}else{
 		openTags.position = Vector2{8, (float)Height-fontSize-8};
 		openLoc.position = Vector2{8, (float)Height-fontSize*2-8};
+		helpB.position = Vector2{8, (float)Height-fontSize*3-8};
 		openTags.Draw();
 		openLoc.Draw();
+		helpB.Draw();
 	}
 
 
@@ -175,7 +178,7 @@ void DrawLocations(){
 	shape.Draw(Vector2{0, y}, Vector2{(float)Width/3-scrollbarSize, fontSize*2}, menuBackground, true);
 
 	sImage.Use();
-	font.Write("Folders", Vector2{8, y}, fontSize*1.5, fontColor, true, (float)Width/3-scrollbarSize);
+	font.Write("Locations", Vector2{8, y}, fontSize*1.5, fontColor, true, (float)Width/3-scrollbarSize);
 
 	y-=fontSize;
 

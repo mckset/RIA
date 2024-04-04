@@ -6,7 +6,6 @@ class File{
 bool SortFile(File, File);
 void AppendTag(Image);
 
-
 class Tag{
 	public:
 		string name;
@@ -40,6 +39,14 @@ class Tag{
 				add.size = Vector2{fontSize, fontSize};
 				add.Draw();
 			}
+			editB.position = position;
+			editB.size = Vector2{fontSize, fontSize};
+			editB.Draw();
+
+			if (mouse.Click(LM_DOWN) && editB.Hover()){
+				mouse.state = RM_DOWN;
+			}
+			
 
 			listSize = size.y;
 			int subPos = 1;
@@ -72,7 +79,7 @@ class Tag{
 					// Image Tagged Indicator (ITI)
 					if (previewImg.loaded && !strcmp(previewPath.data(), imgs[i].path.data())){
 						sShape.Use();
-						shape.Draw(position.Add(size.y/2, size.y/4), Vector2{size.y/2, size.y/2}, White, true);
+						shape.Draw(position.Add(size.y+size.y/2, size.y/4), Vector2{size.y/2, size.y/2}, White, true);
 						shape.Draw(position.Subtract(0.0f, size.y*subPos), size, highlight, true);
 						sImage.Use();
 					}
@@ -103,7 +110,7 @@ class Tag{
 				sShape.Use();
 				for (int i = 0; i < imgs.size(); i++)
 					if (previewImg.loaded && !strcmp(previewPath.data(), imgs[i].path.data()))
-						shape.Draw(position.Add(size.y/2, size.y/4), Vector2{size.y/2, size.y/2}, White, true);
+						shape.Draw(position.Add(size.y+size.y/2, size.y/4), Vector2{size.y/2, size.y/2}, White, true);
 					
 				
 			}

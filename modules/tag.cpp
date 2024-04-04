@@ -2,20 +2,24 @@ void DrawTag();
 void TagInput();
 void ResetTagEdit();
 
-
-Button addTag = Button{"Add Tag", menuBackground, highlight};
+Button addTag = Button{"Confirm", menuBackground, highlight, false, true};
+Button delTag = Button{"Delete", menuBackground, highlight, false, true};
 
 void DrawTag(){
 	sShape.Use();
-	for (int i = 0; i < 3; i++)
-		rgb[i].Draw(Vector2{32, (float)Height/5*i + Height/5}, Vector2{(float)Width-64, (float)scrollbarSize/2});
-	tagName.position = Vector2{32, (float)Height/5*4};
-	tagName.size = Vector2{(float)Width-64, (float)scrollbarSize};
+	rgb[0].Draw(Vector2{32, (float)Height/4 - (float)Height/6}, Vector2{(float)Width-64, (float)scrollbarSize}, true, rgb[1].scrollLock || rgb[2].scrollLock);
+	rgb[1].Draw(Vector2{32, (float)Height/4*2 - (float)Height/6}, Vector2{(float)Width-64, (float)scrollbarSize}, true, rgb[0].scrollLock || rgb[2].scrollLock);
+	rgb[2].Draw(Vector2{32, (float)Height/4*3 - (float)Height/6}, Vector2{(float)Width-64, (float)scrollbarSize}, true, rgb[0].scrollLock || rgb[1].scrollLock);
+	tagName.position = Vector2{0, (float)Height/5*4};
+	tagName.size = Vector2{(float)Width, (float)Height/5};
 	tagName.background = Color{(float)rgb[0].scroll/255, (float)rgb[1].scroll/255, (float)rgb[2].scroll/255, 1};
-	tagName.Draw();
-	addTag.position = Vector2{8, 0};
-	addTag.size = Vector2{fontSize*8, fontSize*2};
-	addTag.Draw();
+	tagName.Draw(true, true);
+	addTag.position = Vector2{0, (float)Height/5*4-fontSize};
+	addTag.size = Vector2{(float)Width/2, fontSize};
+	delTag.position = Vector2{(float)Width/2, (float)Height/5*4-fontSize};
+	delTag.size = Vector2{(float)Width/2, fontSize};
+	addTag.Draw(false, true);
+	delTag.Draw(false, true);
 }
 
 void TagInput(){
@@ -40,6 +44,38 @@ void TagInput(){
 				tags[editTag].subTags[editSub].name = tagName.text;
 				tags[editTag].subTags[editSub].color = tagName.background;
 			}
+			TagWin.Hide();
+			if (editSub == -2 || editSub >= 0)
+				sort(tags[editTag].subTags.begin(), tags[editTag].subTags.end(), SortTag);
+			else
+				sort(tags.begin(), tags.end(), SortTag);
+			
+			ResetTagEdit();
+			keyboard.newKey = -1;
+			mouse.prevState = mouse.state;
+			return;
+		}else if (delTag.Hover()){
+			// New Tag
+			if (editTag == -1)
+				return;
+			
+			// Edit Tag
+			else if (editSub == -1){
+				vector<Tag>:: iterator t = tags.begin();
+				advance(t, editTag);
+				tags.erase(t);
+
+			// New Sub Tag
+			}else if (editSub == -2)
+				return;
+			
+			// Edit Sub Tag
+			else{
+				vector<Tag>:: iterator t = tags[editTag].subTags.begin();
+				advance(t, editSub);
+				tags[editTag].subTags.erase(t);
+			}
+
 			TagWin.Hide();
 			if (editSub == -2 || editSub >= 0)
 				sort(tags[editTag].subTags.begin(), tags[editTag].subTags.end(), SortTag);

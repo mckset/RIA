@@ -1,19 +1,29 @@
-string DrawImport();
 void CreateImport();
-void ImportTags();
-bool LoadImport();
+Tag CleanTag(Tag, bool);
+
+string DrawImport();
+string DrawPacks();
+string DrawFolders();
+string DrawImportTags();
+
 void FilterTags();
+void ImportTags();
+bool IsImportTag(Tag);
+bool LoadImport();
 
 int stage = 0; // Stage of importing files
 
 Button createB = Button{"Create", importButton, highlight};
+Button openB = Button{"Open", importButton, highlight};
 Button importB = Button{"Import", importButton, highlight};
 
 Table folders;
 
 string importPath = "";
 string importFile = "";
-vector<Tag> importTags;
+
+vector<Tag> importTags; // A list of only tags and images that will be imported 
+vector<Tag> completeTags; // A list of all the tags and images in an image pack
 
 void ResetImport(){
 	stage = 0;
@@ -27,211 +37,311 @@ void ResetImport(){
 
 	folders.path = path + slash + "shared";
 	folders.GetFiles();
+	completeTags.clear();
 }
 
-string DrawImport(){
-	float y = Height-fontSize+importScroll.scroll;
-	importScroll.end = 0;
+//
+// Display image packs and return any errors
+//
+string DrawPacks(){
+	float y = Height-fontSize*2+importScroll.scroll;
 
-	//
-	// Main menu
-	//
-	if (stage == 0){
-		for (int i = 0; i < folders.folders.size(); i++){
-			sShape.Use();
-			shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, backing, true);
-			// Active indicator
-			if (folders.folders[i].expand)
-				shape.Draw(Vector2{fontSize/4, y+fontSize/4}, Vector2{fontSize/2, fontSize/2}, White, true);
+	for (int i = 0; i < folders.folders.size(); i++){
+		sShape.Use();
+		shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, backing, true);
+		// Active indicator
+		if (folders.folders[i].expand)
+			shape.Draw(Vector2{fontSize/4, y+fontSize/4}, Vector2{fontSize/2, fontSize/2}, White, true);
 			
-			sImage.Use();
-			font.Write(folders.folders[i].name, Vector2{24, y}, fontSize, fontColor, true);
+		sImage.Use();
+		font.Write(folders.folders[i].name, Vector2{24, y}, fontSize, fontColor, true, (float)Width-scrollbarSize-48);
 
-			if (y > fontSize && mouse.position.Within(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize})){
-				sShape.Use();
-				shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, highlight, true);
+		if (y > fontSize && mouse.position.Within(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize})){
+			sShape.Use();
+			shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, highlight, true);
 
-				// On click
-				if (mouse.Click(LM_DOWN)){
-					for (int f = 0; f < folders.folders.size(); f++)
-						folders.folders[f].expand = false;
-					folders.folders[i].expand = true;
-				}
+			// On click
+			if (mouse.Click(LM_DOWN) && y <= (float)Height-fontSize*2 && y >= (float)fontSize*2){
+				for (int f = 0; f < folders.folders.size(); f++)
+					folders.folders[f].expand = false;
+				folders.folders[i].expand = true;
 			}
-
-			y-=fontSize;
-			importScroll.end += fontSize;
 		}
 
-		if (!folders.folders.size()){
-			sImage.Use();
-			font.Write("No image packs found.", Vector2{16, y}, fontSize, fontColor, true);
-			font.Write("Ensure that your image", Vector2{16, y-fontSize}, fontSize, fontColor, true);
-			font.Write("packs are saved to the", Vector2{16, y-fontSize*2}, fontSize, fontColor, true);
-			font.Write("shared folder.", Vector2{16, y-fontSize*3}, fontSize, fontColor, true);
-		}
-
-		importB.position = Vector2{0, 0};
-		importB.size = Vector2{(float)Width/2-scrollbarSize/2, fontSize};
-		createB.position = Vector2{(float)Width/2-scrollbarSize/2, 0};
-		createB.size = Vector2{(float)Width/2-scrollbarSize/2, fontSize};
 		y-=fontSize;
+		importScroll.end += fontSize;
+	}
+	importScroll.end += fontSize;
+	if (!folders.folders.size()){
+		sImage.Use();
+		font.Write("No image packs found.", Vector2{16, y}, fontSize, fontColor, true);
+		font.Write("Ensure that your image", Vector2{16, y-fontSize}, fontSize, fontColor, true);
+		font.Write("packs are saved to the", Vector2{16, y-fontSize*2}, fontSize, fontColor, true);
+		font.Write("shared folder.", Vector2{16, y-fontSize*3}, fontSize, fontColor, true);
+	}else{
+		sShape.Use();
+		shape.Draw(Vector2{0, (float)Height-fontSize}, Vector2{(float)Width-scrollbarSize, fontSize}, importButton, true );
+		sImage.Use();
+		font.Write("Image Packs", Vector2{24, (float)Height-fontSize}, fontSize, fontColor, true, (float)Width-scrollbarSize-24, true);
+	}
+	importB.position = Vector2{0, 0};
+	importB.size = Vector2{(float)Width/3-scrollbarSize/3, fontSize};
+	openB.position = Vector2{(float)Width/3-scrollbarSize/3, 0};
+	openB.size = Vector2{(float)Width/3-scrollbarSize/3, fontSize};
+	createB.position = Vector2{(float)Width/3*2-scrollbarSize/3*2, 0};
+	createB.size = Vector2{(float)Width/3-scrollbarSize/3, fontSize};
 
-		createB.Draw();
-		importB.Draw();
+	createB.Draw(false, true);
+	openB.Draw(false, true);
+	importB.Draw(false, true);
 
-		if (mouse.Click(LM_DOWN)){
+	if (mouse.Click(LM_DOWN)){
 
-			// Create import file
-			if (createB.Hover()){
-				for (int i = 0; i < folders.folders.size(); i++){
-					if (folders.folders[i].expand){
-						importPath = folders.folders[i].path;
-						importFile = importPath + slash + "import.dat";
-						folders.path = folders.folders[i].path;
+		// Create import file
+		if (createB.Hover()){
+			for (int i = 0; i < folders.folders.size(); i++){
+				if (folders.folders[i].expand){
+					struct stat st;
+
+					importPath = folders.folders[i].path;
+					importFile = importPath + slash + "import.dat";
+					folders.path = folders.folders[i].path;
+
+					if (stat(importFile.data(), &st) == 0){
+						stage = -1;
+						importB.text = "Cancel";
+						createB.text = "Overwrite";
+						return "";
+					}else{
 						folders.GetFiles();
 						CreateImport();
-						importTime = 600;
+						importTime = 400;
 						Import.Hide();
 						return "Created import file";
 					}
 				}
+			}
 
-			// Import tags
-			}else if (importB.Hover()){
-				for (int i = 0; i < folders.folders.size(); i++){
-					if (folders.folders[i].expand){
-						importPath = folders.folders[i].path;
-						importFile = importPath+  slash + "import.dat";
-						if (!LoadImport()){
-							Import.Hide();
-							importTime = 600;
-							return "Missing/corrupt import data";
-						}
-						folders.path = folders.folders[i].path;
-						folders.GetFiles();
-						sort(folders.folders.begin(), folders.folders.end(), folders.SortTable);
-						for (int f = 0; f < folders.folders.size(); f++){
-							folders.folders[f].expand = true;
-							folders.folders[f].GetFiles();
-						}
-						stage++;
-						importB.text = "Import Folders";
-						break;
+		// Import tags
+		}else if (importB.Hover()){
+			for (int i = 0; i < folders.folders.size(); i++){
+				if (folders.folders[i].expand){
+					importPath = folders.folders[i].path;
+					importFile = importPath+  slash + "import.dat";
+					if (!LoadImport()){
+						Import.Hide();
+						importTime = 400;
+						return "Missing/corrupt import data";
 					}
+					folders.path = folders.folders[i].path;
+					folders.GetFiles();
+					sort(folders.folders.begin(), folders.folders.end(), folders.SortTable);
+					for (int f = 0; f < folders.folders.size(); f++){
+						folders.folders[f].expand = true;
+						folders.folders[f].GetFiles();
+					}
+					stage++;
+					importB.text = "Import Folders";
+					break;
 				}
 			}
+
+		// Open folder
+		}else if (openB.Hover()){
+			OpenShared();
 		}
+	}
+	return "";
+}
 
-	//
-	// List Folder info
-	//
-	}else if (stage == 1){
 
-		// List folders
-		for (int i = 0; i < folders.folders.size(); i++){
-			sShape.Use();
-			shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, backing, true);
+//
+// Display image pack folders
+//
+string DrawFolders(){
+	float y = Height-fontSize*2+importScroll.scroll;
 
-			// Import indicator
-			if (folders.folders[i].expand)
-				shape.Draw(Vector2{fontSize/4, y+fontSize/4}, Vector2{fontSize/2, fontSize/2}, White, true);
+	// List folders
+	for (int i = 0; i < folders.folders.size(); i++){
+		sShape.Use();
+		shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, backing, true);
+
+		// Import indicator
+		if (folders.folders[i].expand)
+			shape.Draw(Vector2{fontSize/4, y+fontSize/4}, Vector2{fontSize/2, fontSize/2}, White, true);
 			
-			if (y > fontSize && mouse.position.Within(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize})){
-				shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, highlight, true);
+		if (y > fontSize && mouse.position.Within(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize})){
+			shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, highlight, true);
 
-				// On click
-				if (mouse.Click(LM_DOWN))
-					folders.folders[i].expand = !folders.folders[i].expand;
+			// On click
+			if (mouse.Click(LM_DOWN) && y <= (float)Height-fontSize*2 && y >= (float)fontSize*2)
+				folders.folders[i].expand = !folders.folders[i].expand;
+		}
+		sImage.Use();
+		font.Write(folders.folders[i].name + "[" + to_string(folders.folders[i].files.size()) + "]", 
+		Vector2{24, y}, fontSize, fontColor, true, (float)Width-scrollbarSize-48);
+
+		y-=fontSize;
+		importScroll.end += fontSize;
+	}
+	importScroll.end += fontSize*2;
+
+	sShape.Use();
+	shape.Draw(Vector2{0, (float)Height-fontSize}, Vector2{(float)Width-scrollbarSize, fontSize}, importButton, true );
+	sImage.Use();
+	font.Write("Folders", Vector2{24, (float)Height-fontSize}, fontSize, fontColor, true, (float)Width-scrollbarSize-24, true);
+
+	importB.position = Vector2{0, 0};
+	importB.size = Vector2{(float)Width-scrollbarSize, fontSize};
+	importB.Draw();
+	if (mouse.Click(LM_DOWN) && importB.Hover()){
+		FilterTags();
+		stage++;
+		createB.text = "Include Subtags";
+		createB.toggle = true;
+		createB.toggled = true;
+		importB.text = "Import Tags";
+	}
+	return "";
+}
+
+//
+// Display tags to import
+//
+string DrawImportTags(){
+	float y = Height-fontSize*2+importScroll.scroll;
+
+	if (!importTags.size()){
+		ImportTags();
+		Import.Hide();
+		importTime = 400;
+		return "Removed imported images";
+	}
+
+	for (auto t : importTags){
+		sShape.Use();
+		shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, t.color, true);
+
+		sImage.Use();
+		font.Write(t.name, Vector2{24, y}, fontSize, fontColor, true, (float)Width-scrollbarSize-48);
+		y-=fontSize;
+		importScroll.end += fontSize;
+
+		// Subtags
+		if (createB.toggled){
+			for (auto s : t.subTags){
+				sShape.Use();
+				shape.Draw(Vector2{8, y}, Vector2{(float)Width-scrollbarSize-8, fontSize}, s.color, true);
+
+				sImage.Use();
+				font.Write(s.name, Vector2{32, y}, fontSize, fontColor, true, (float)Width-scrollbarSize-48);
+
+				y-=fontSize;
+				importScroll.end += fontSize;
 			}
-			sImage.Use();
-			font.Write(folders.folders[i].name, Vector2{24, y}, fontSize, fontColor, true);
-			string imgCount = "[";
-			imgCount += to_string(folders.folders[i].files.size());
-			imgCount += "]";
-			font.Write(imgCount, Vector2{(float)24 + fontSize/2*(folders.folders[i].name.length()+1), y}, fontSize, fontColor, true);
-			y-=fontSize;
-			importScroll.end += fontSize;
-		}
-		importB.position = Vector2{0, 0};
-		importB.size = Vector2{(float)Width-scrollbarSize, fontSize};
-		importB.Draw();
-		if (mouse.Click(LM_DOWN) && importB.Hover()){
-			FilterTags();
-			stage++;
-			createB.text = "Include Subtags";
-			createB.toggle = true;
-			createB.toggled = true;
-			importB.text = "Import Tags";
-		}
+		}			
+	}
+	importScroll.end += fontSize;
+
+	sShape.Use();
+	shape.Draw(Vector2{0, (float)Height-fontSize}, Vector2{(float)Width-scrollbarSize, fontSize}, importButton, true);
+	sImage.Use();
+	font.Write("Tags to Import", Vector2{24, (float)Height-fontSize}, fontSize, fontColor, true, (float)Width-scrollbarSize-24, true);
+
+	importScroll.end += fontSize;
+	importB.position = Vector2{0, 0};
+	importB.size = Vector2{(float)Width/2-scrollbarSize/2, fontSize};
+	createB.position = Vector2{(float)Width/2-scrollbarSize/2, 0};
+	createB.size = Vector2{(float)Width/2-scrollbarSize/2, fontSize};
+		
+	importB.Draw();
+	createB.Draw();
+			
+	// Toggle Subtags
+	if ((mouse.Click(LM_DOWN) && createB.Hover()) || keyboard.newKey == KEY_TAB)
+		createB.toggled = !createB.toggled;
+			
+	// Import Tags
+	else if ((mouse.Click(LM_DOWN) && importB.Hover()) || keyboard.newKey == KEY_ENTER){
+		ImportTags();
+		Import.Hide();
+		importTime = 400;
+		return "Successfully imported tags";
+	}
+	return "";
+}
+
+string DrawImport(){
+	float y = Height-fontSize*2+importScroll.scroll;
+	importScroll.end = 0;
+
+	string output = "";
+
+	// Display image packs
+	if (stage == 0){
+		output = DrawPacks();
+			
+
+	// Display image pack folders
+	}else if (stage == 1){
+		output = DrawFolders();
+		
 
 	//
 	// List tags and subtags
 	//
 	}else if (stage == 2){
-		if (!importTags.size()){
-			ImportTags();
-			Import.Hide();
-			importTime = 600;
-			return "Removed imported images";
-		}
-
-		for (auto t : importTags){
-			sShape.Use();
-			shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, t.color, true);
-
-			sImage.Use();
-			font.Write(t.name, Vector2{24, y}, fontSize, fontColor, true);
-			y-=fontSize;
-			importScroll.end += fontSize;
-
-			// Subtags
-			if (createB.toggled){
-				for (auto s : t.subTags){
-					sShape.Use();
-					shape.Draw(Vector2{8, y}, Vector2{(float)Width-scrollbarSize-8, fontSize}, s.color, true);
-
-					sImage.Use();
-					font.Write(s.name, Vector2{32, y}, fontSize, fontColor, true);
-
-					y-=fontSize;
-					importScroll.end += fontSize;
-				}
-			}			
-		}
-		importScroll.end += fontSize;
-		importB.position = Vector2{0, 0};
-		importB.size = Vector2{(float)Width/2-scrollbarSize/2, fontSize};
-		createB.position = Vector2{(float)Width/2-scrollbarSize/2, 0};
-		createB.size = Vector2{(float)Width/2-scrollbarSize/2, fontSize};
-		
-		importB.Draw();
-		createB.Draw();
-			
-		// Toggle Subtags
-		if ((mouse.Click(LM_DOWN) && createB.Hover()) || keyboard.newKey == KEY_TAB)
-			createB.toggled = !createB.toggled;
-			
-		// Import Tags
-		else if ((mouse.Click(LM_DOWN) && importB.Hover()) || keyboard.newKey == KEY_ENTER){
-			ImportTags();
-			Import.Hide();
-			importTime = 600;
-			return "Successfully imported tags";
-		}
+		output = DrawImportTags();
 	}
 
-	// Scroll bar
-	importScroll.end -= Height;
-	if (importScroll.end < 0){
-		importScroll.end = 0;
-		importScroll.scroll = 0;
+	//
+	// Overwrite check
+	//
+	if (stage == -1){
+		sShape.Use();
+		shape.Draw(Vector2{0, (float)Height-fontSize}, Vector2{(float)Width, fontSize}, importButton, true);
+		sImage.Use();
+		font.Write("Overwrite?", Vector2{24, (float)Height-fontSize}, fontSize, fontColor, true, (float)Width-scrollbarSize-24, true);
+
+		sImage.Use();
+		font.Write("Import.dat already exists.", Vector2{16, y}, fontSize, fontColor, true);
+		font.Write("Do you want to overwrite", Vector2{16, y-fontSize}, fontSize, fontColor, true);
+		font.Write("the existing data?", Vector2{16, y-fontSize*2}, fontSize, fontColor, true);
+		font.Write("(There's no undo)", Vector2{16, y-fontSize*3}, fontSize, fontColor, true);
+
+		createB.position = Vector2{0, 0};
+		importB.position = Vector2{(float)Width/2, 0};
+
+		createB.size = Vector2{(float)Width/2, fontSize};
+		importB.size = Vector2{(float)Width/2, fontSize};
+
+		importB.Draw(false, true);
+		createB.Draw(false, true);
+
+		if (mouse.Click(LM_DOWN)){
+			if (createB.Hover()){
+				folders.GetFiles();
+				CreateImport();
+				importTime = 400;
+				Import.Hide();
+				return "Updated import file";
+			}
+			ResetImport();
+			Import.Hide();
+		}
+
+	}else{
+		// Scroll bar
+		importScroll.end -= Height;
+		if (importScroll.end < 0){
+			importScroll.end = 0;
+			importScroll.scroll = 0;
+		}
+
+		sShape.Use();
+		importScroll.Draw(Vector2{(float)Width-scrollbarSize, 0}, Vector2{(float)scrollbarSize, (float)Height});
 	}
-
-	sShape.Use();
-	importScroll.Draw(Vector2{(float)Width-scrollbarSize, 0}, Vector2{(float)scrollbarSize, (float)Height});
-
-	return "";
+	return output;
 }
 
 void CreateImport(){
@@ -359,12 +469,16 @@ void CreateImport(){
 	w.close();
 }
 
+//
+// Loop through all the available tags and grab only the ones in the selected folders
+//
 void FilterTags(){
-	vector<Tag> tempTags;
+	completeTags.clear();
 	for (int i = 0; i < importTags.size(); i++)
-		tempTags.push_back(importTags[i]);
+		completeTags.push_back(importTags[i]);
 	importTags.clear();
-	for (auto t : tempTags){
+
+	for (auto t : completeTags){
 		Tag tag;
 		tag.name = t.name;
 		tag.color = t.color;
@@ -374,13 +488,13 @@ void FilterTags(){
 			string checkPath = i.path.substr(0, i.path.length() - i.name.length() - 1);
 			for (auto f : folders.folders)
 				if (!strcmp(checkPath.data(), f.path.data())){
-					if (f.expand)
+					if (f.expand){
 						tag.imgs.push_back(i);
+					}
 					break;
 				}
 			
 		}
-
 
 		// Get sub tags
 		if (tag.imgs.size()){
@@ -408,6 +522,20 @@ void FilterTags(){
 	}
 }
 
+
+//
+// Checks if a tag belongs to the image pack
+//
+bool IsImportTag(Tag tag){
+	for (auto t : completeTags)
+		if (!strcmp(tag.name.data(), t.name.data()))
+			return true;
+	return false;
+}
+
+//
+// Imports tags from an image pack
+//
 void ImportTags(){
 	vector<Tag> tempTags;
 
@@ -420,40 +548,49 @@ void ImportTags(){
 		tag.name = t.name;
 		tag.color = t.color;
 
-		// Images
-		for (auto i : t.imgs){
-			bool imported = false;
-			for (auto f : folders.folders){
-				if (!strcmp(i.path.substr(0, i.path.length()-i.name.length()-1).data(), f.path.data())){
-					imported = true;
-					break;
-				}
-			}
-
-			if (!imported)
-				tag.imgs.push_back(i);
-		}
-
-		// Subtags
-		for (auto s : t.subTags){
-			Tag subTag;
-			subTag.name = s.name;
-			subTag.color = s.color;
-
+		// Only remove images from tags that belong to the image pack
+		if (IsImportTag(tag)){
 			// Images
-			for (auto i : s.imgs){
-				for (auto img : tag.imgs){
-					if (!strcmp(i.path.data(), img.path.data())){
-						subTag.imgs.push_back(i);
+			for (auto i : t.imgs){
+				bool imported = false;
+				for (auto f : folders.folders){
+					if (!strcmp(i.path.substr(0, i.path.length()-i.name.length()-1).data(), f.path.data())){
+						imported = true;
 						break;
 					}
 				}
 
+				if (!imported)
+					tag.imgs.push_back(i);
 			}
-			if (subTag.imgs.size())
-				tag.subTags.push_back(subTag);
-		}
 
+			// Subtags
+			for (auto s : t.subTags){
+				Tag subTag;
+				subTag.name = s.name;
+				subTag.color = s.color;
+
+				// Only remove images from subtags that belong to the image pack
+				if (IsImportTag(subTag)){
+
+					// Images
+					for (auto i : s.imgs){
+						for (auto img : tag.imgs){
+							if (!strcmp(i.path.data(), img.path.data())){
+								subTag.imgs.push_back(i);
+								break;
+							}
+						}
+					}
+				}else
+					subTag = s;
+
+				if (subTag.imgs.size())
+						tag.subTags.push_back(subTag);
+			}
+		}else
+			tag = t;
+		
 		if (tag.imgs.size())
 			tempTags.push_back(tag);
 	}
@@ -514,12 +651,15 @@ void ImportTags(){
 	}
 }
 
+//
+// Get saved image pack information
+//
 bool LoadImport(){
 	importTags.clear();
 
 	f.open(importFile, ios::in | ios::binary);
     if (!f.good()){
-		printf("[Import] import.dat not found at: %s\n", importFile.data());
+		printf("[Image Pack] import.dat not found at: %s\n", importFile.data());
 		return false;
 	}
 
@@ -528,7 +668,7 @@ bool LoadImport(){
 	// Read past header
 	f.read(reinterpret_cast<char*>(&ibuffer), 4);
 
-	printf("[Import] Importing Tags\n");
+	printf("[Image Pack] Importing Tags\n");
 	// Tags
 	f.read(reinterpret_cast<char*>(&ibuffer), 4);
 	int tagCount = ibuffer;
@@ -590,4 +730,24 @@ bool LoadImport(){
 	}
 	f.close();
 	return true;
+}
+
+Tag CleanTag(Tag t, bool condition){
+		Tag tag;
+		tag.name = t.name;
+		tag.color = t.color;
+
+		// Get used images
+		for (auto i : t.imgs){
+			for (auto f : folders.folders){
+				if (!strcmp(i.path.substr(0, i.path.length()-i.name.length()-1).data(), f.path.data()) && condition){
+					tag.imgs.push_back(i);
+					break;
+				}else if (strcmp(i.path.substr(0, i.path.length()-i.name.length()-1).data(), f.path.data()) && !condition){
+					tag.imgs.push_back(i);
+					break;
+				}
+			}
+		}
+		return tag;
 }

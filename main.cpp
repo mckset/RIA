@@ -9,7 +9,6 @@ int CreateWindows(){
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, sampleSize);
-	//glfwWindowHint(GLFW_MAXIMIZED , GL_TRUE);
 	mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
 	Width = mode->width;
@@ -39,7 +38,6 @@ int CreateWindows(){
 	TagWin.w = glfwCreateWindow(Width/2, Height/2-42, "Tag", NULL, Main.w);
 	TagWin.Init(Width/2, Height/2);
 	glfwSetWindowCloseCallback(TagWin.w, SubClose);
-	//glfwSetWindowSize(TagWin.w, Width/2, Height/2);
 
 	//
 	// Import Window
@@ -48,7 +46,6 @@ int CreateWindows(){
 	Import.w = glfwCreateWindow(Width/4, Height/2-42, "Import/Create", NULL, Main.w);
 	Import.Init(Width/2, Height/2);
 	glfwSetWindowCloseCallback(Import.w, SubClose);
-	//glfwSetWindowSize(Import.w, Width/4, Height/2);
 	glfwSetScrollCallback(Import.w, GetScrollWheel);
 	return 1;
 }

@@ -3,14 +3,16 @@
 //
 
 void MainInput();
+void ReorderImages();
 void ResetImages();
 Vector2 MouseToScreenSpace(Vector2);
 
 void MainInput(){
 	shift = keyboard.GetKey(KEY_LEFT_SHIFT);
 
-	if (keyboard.newKey == KEY_SPACE)
+	if (keyboard.newKey == KEY_SPACE){
 		drawOrigin = !drawOrigin;
+	}
 	if (keyboard.newKey == KEY_ESCAPE){
 		previewImg.loaded = false;
 		for (auto img : selImgs)
@@ -20,6 +22,7 @@ void MainInput(){
 		TagWin.Hide();
 		rmMenu.Reset();
 		Save();
+		importTime = 0;
 	}
 
 	// Menu toggle
@@ -30,6 +33,7 @@ void MainInput(){
 			menu = false;
 		tagView = false;
 		rmMenu.Reset();
+		mouse.prevState = mouse.state;
 	}
 
 	// Tag toggle
@@ -40,14 +44,23 @@ void MainInput(){
 			menu = false;
 		tagView = !tagView;
 		rmMenu.Reset();
+		mouse.prevState = mouse.state;
 	}
 
 	// Close Menu
 	if (mouse.Click(LM_DOWN) && menu && closeB.Hover()){
 		menu = false;
 		rmMenu.Reset();
+		mouse.prevState = mouse.state;
 	}
 	
+	// Help button
+	if (mouse.Click(LM_DOWN) && !menu && helpB.Hover()){
+		OpenHelp();
+		mouse.prevState = mouse.state;
+	}
+	
+
 	// Movement
 	if (keyboard.GetKey(KEY_W) || keyboard.GetKey(KEY_UP))
 		View.y += viewSpeed;
@@ -58,6 +71,12 @@ void MainInput(){
 	if (keyboard.GetKey(KEY_D) || keyboard.GetKey(KEY_RIGHT))
 		View.x += viewSpeed;
 
+
+	// Scaling
+	if (keyboard.newKey == KEY_KP_ADD || keyboard.newKey == KEY_EQUAL)
+		GetScrollWheel(Main.w, 0, 1);
+	else if (keyboard.newKey == KEY_MINUS || keyboard.newKey == KEY_KP_SUBTRACT)
+		GetScrollWheel(Main.w, 0, -1);
 
 
 	//
@@ -136,16 +155,25 @@ void MainInput(){
 		// Image board mouse events
 		//
 		if (mouse.Click(LM_DOWN)){
+			if (imgScale)
+				imgScale = false;
+
 			if (!previewImg.loaded){
+
+				mouse.drag = true;
+				mouse.dragOff = mouse.position;
 
 				// Selecting an image on the board
 				if (!selImgs.size()){
-					for (int i = 0; i < imgs.size(); i++){
-						if (!selImgs.size() && mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(Scale))){
+					ResetImages();
+
+					for (int i = imgs.size()-1; i >= 0; i--){
+						if (mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(Scale))){
 								selImgs.push_back(i);
 								imgs[i].selected  = true;
-						}else
-							imgs[i].selected = false;
+								ReorderImages();
+								break;
+						}
 					}
 
 					// Selector window
@@ -157,13 +185,14 @@ void MainInput(){
 				// Clicking on a selected image/no image
 				}else if (!shift && !rot){
 					bool reset = true;
-					for (int i = 0; i < imgs.size(); i++)
+					for (int i = imgs.size()-1; i >= 0; i--)
 						if (mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(Scale))){
 							reset = false;
 							if (!imgs[i].selected){
 								ResetImages();
 								imgs[i].selected = true;
 								selImgs.push_back(i);
+								ReorderImages();
 							}
 							break;
 						}
@@ -174,7 +203,7 @@ void MainInput(){
 
 				// Selecting multiple images with shift
 				}else if (!rot){
-					for (int i = 0; i < imgs.size(); i++)
+					for (int i = imgs.size()-1; i >= 0; i--)
 						if (mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(Scale))){\
 						
 							// Check if the image was already selected
@@ -195,6 +224,7 @@ void MainInput(){
 								imgs[i].selected = true;
 								selImgs.push_back(i);
 							}
+							break;
 						}
 				
 				// Ending the rotation command
@@ -215,19 +245,14 @@ void MainInput(){
 				selImgs.push_back(imgs.size()-1);
 			}
 			
-		}else if (mouse.state == LM_DOWN){
+		}else if (mouse.state == LM_DOWN && mouse.drag && !shift & !rot){
 
 			// Moving images
 			if (!selector && selImgs.size()){
-				if (!mouse.drag){
-					mouse.drag = true;
-					mouse.dragOff = mouse.position;				
-				}else{
-					for (auto img : selImgs)
-						imgs[img].position = imgs[img].position.Add((mouse.position.x - mouse.dragOff.x)/Scale, (mouse.position.y - mouse.dragOff.y)/Scale);
+				for (auto img : selImgs)
+					imgs[img].position = imgs[img].position.Add((mouse.position.x - mouse.dragOff.x)/Scale, (mouse.position.y - mouse.dragOff.y)/Scale);
 					
-					mouse.dragOff = mouse.position;
-				}
+				mouse.dragOff = mouse.position;
 			}
 
 		//
@@ -335,4 +360,16 @@ Vector2 MouseToScreenSpace(Vector2 position){
 					.Divide(Scale)
 					.Add(Width/2, Height/2) 
 					.Add(View);
+}
+
+void ReorderImages(){
+	int i = selImgs[selImgs.size()-1];
+	Image temp = imgs[i];
+
+	vector<Image>:: iterator img = imgs.begin();
+	advance(img, i);
+	imgs.erase(img);
+
+	imgs.push_back(temp);
+	selImgs[selImgs.size()-1] = imgs.size()-1;
 }

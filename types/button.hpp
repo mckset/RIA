@@ -25,22 +25,28 @@ class Button{
 			color = c;
 		}
 
-		void Draw(bool selected = false){
+		void Draw(bool selected = false, bool centerText = false){
 			if (Hover() || toggled || selected){
-				Draw(hover);
+				Draw(hover, centerText);
 				return;
 			}
 			sShape.Use();
 			shape.Draw(position, size, color, true);
 			sImage.Use();
-			font.Write(text.data(), position, (int)size.y/4*3, White, true);
+			if (!centerText)
+				font.Write(text.data(), position, (int)size.y/4*3, White, true);
+			else
+				font.Write(text.data(), position, (int)size.y/4*3, White, true, size.x, centerText);
 		}
 
-		void Draw(Color c){
+		void Draw(Color c, bool centerText = false){
 			sShape.Use();
 			shape.Draw(position, size, c, true);
 			sImage.Use();
-			font.Write(text.data(), position, (int)size.y/4*3, White, true);
+			if (!centerText)
+				font.Write(text.data(), position, (int)size.y/4*3, White, true);
+			else
+				font.Write(text.data(), position, (int)size.y/4*3, White, true, size.x, centerText);
 		}
 
 };

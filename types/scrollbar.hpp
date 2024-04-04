@@ -9,8 +9,9 @@ class Scrollbar{
 		int scroll = 0;
 		int notchSize = 4;
 		int end = 24;
+		bool scrollLock = false;
 
-		void Draw(Vector2 position, Vector2 size, bool fixed = true){
+		void Draw(Vector2 position, Vector2 size, bool fixed = true, bool disableScroll = false){
 			if (!horizontal){
 				
 				// Backing
@@ -28,18 +29,25 @@ class Scrollbar{
 			}
 
 			// Generic input functions
-			if (mouse.position.Within(position, size)){
-				if (mouse.state == LM_DOWN){
-					if (!horizontal){
-						scroll = end - end * ((mouse.position.y - position.y)/size.y);
-					}else{
-						scroll = end * ((mouse.position.x - position.x)/size.x);
+			if ((mouse.position.Within(position, size) || scrollLock)){
+				if (!disableScroll){
+					if (mouse.Click(LM_DOWN) || scrollLock){
+						if (!horizontal){
+							scroll = end - end * ((mouse.position.y - position.y)/size.y);
+						}else{
+							scroll = end * ((mouse.position.x - position.x)/size.x);
+						}
+						if (scroll < 0)
+							scroll = 0;
+						if (scroll > end)
+							scroll = end;
+						scrollLock = true;
+						mouse.drag = false;
 					}
-					if (scroll < 0)
-						scroll = 0;
-					if (scroll > end)
-						scroll = end;
 				}
+				if (mouse.state != LM_DOWN)
+					scrollLock = false;
+				
 			}
 		}
 };

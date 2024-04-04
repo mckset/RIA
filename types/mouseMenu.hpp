@@ -240,6 +240,14 @@ void AppendToTag(int tag, int sub){
 			}
 		}
 	}
+	for (int t = 0; t < tags.size(); t++){
+		sort(tags[t].imgs.begin(), tags[t].imgs.end(), SortFile);
+		if (sub != -1){
+			for (int i = 0; i < tags[t].subTags.size(); i++){
+				sort(tags[t].subTags[i].imgs.begin(), tags[t].subTags[i].imgs.end(), SortFile);
+			}
+		}
+	}
 }
 
 int CheckTags(Tag tag){

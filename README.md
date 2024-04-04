@@ -27,7 +27,7 @@ Download the latest verion from release page for your operating system or compil
 
 **Left-Shift + Right mouse drag** - Scale images while maintaining their ratio
 
-**Scroll wheel** - Zoom in/out
+**Scroll wheel/+/-** - Zoom in/out
 
 **DELETE** - Remove all selected images from the board
 
@@ -44,6 +44,8 @@ Download the latest verion from release page for your operating system or compil
 **V** - Flip selected images vertically
 
 **~** - Open the tag view
+
+> **_FOR MORE INFO:_** Open help.html or press the help button in RIA
 
 
 # Folder View (**TAB**)
@@ -74,18 +76,18 @@ Only contains images that have been tagged under said tags.
 
 **The "+" Button** (Tag header) - Add a new sub tag to the tag.
 
-# Import (**Import Button**)
+# Image Packs (**Image Pack Button**)
 Image packs are an experimental idea only found in RIA. An image pack contains pre-tagged files so they can easily be shared between users. Follow the below instructions for how to create an image pack. Image packs use folders a categories instead of tags and relies on the images to be manually tagged by one users before being able to be shared. While importing an image pack, it gives you the option to exclude folders int the image pack from being imported. EX) An image pack has 3 categories: Buildings, Landscapes, and Clothes. A user can choose to only import images from the Buildings and Landscapes folder and all the images in the Clothes folder will remain without being added to RIA. 
 > **_NOTE:_**  When creating an image pack, it only checks the tags that are in your program. If you hit the create button on a previously imported image pack and removed some of the tags prior, it will overwrite the import file and remove the untagged images from the import file.
 
-Importing
+Importing Image Packs
 ---------
 1) Click on an image pack to import and press the import button. The image pack with a square indicates that the image pack is selected.
 2) Select/deselect the folders from the image pack you want to import. Folders with a square next to them are selected. 
 3) Verify you want to import the tags. Pressing the sub tag button will enable/disable importing sub tags.
 > **_NOTE:_**  Imported tags do not overwrite color values of existing tags with the same name
 
-Creating
+Creating Image Packs
 --------
 1) Create a new folder in the shared directory with the name of your image pack.
 2) Create subfolders to categorizes the images you will be using.
@@ -93,7 +95,7 @@ Creating
 4) Open the import menu, select your image pack and press the create button. 
 > **_NOTE:_**  Importing only uses the first level of folders in an image pack. further subdirectories are ignored
 
-Image Pack Layout Example
+Image Pack Layout Example (See the example image pack in the latest release)
 ------------------
 ```
 [Folder] Photographs (Image pack name)

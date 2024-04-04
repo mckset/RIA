@@ -36,6 +36,7 @@ void Load(){
 		return;
 	}
 
+	struct stat st;
 	int ibuffer, cbuffer;
 
 	// Read past header
@@ -81,7 +82,10 @@ void Load(){
 		printf("\tImgs: %d", ibuffer);
 		for (int i = 0; i < ibuffer; i++){
 			string s = GetString();
-			tag.imgs.push_back(File{GetName(s), s});
+			if (stat(s.data(), &st) == 0)
+				tag.imgs.push_back(File{GetName(s), s});
+			else
+				printf("\nUnable to load: %s\n", s.data());
 		}
 
 		sort(tag.imgs.begin(), tag.imgs.end(), SortFile);
@@ -97,7 +101,7 @@ void Load(){
 
 			// Name
 			subTag.name = GetString();
-			printf("\t[SUB TAG] %s", subTag.name.data());
+			printf("\t[SUB TAG] %s ", subTag.name.data());
 
 
 			// Color
@@ -115,7 +119,8 @@ void Load(){
 
 			for (int x = 0; x < ibuffer; x++){
 				string s = GetString();
-				subTag.imgs.push_back(File{GetName(s), s,});
+				if (stat(s.data(), &st) == 0)
+					subTag.imgs.push_back(File{GetName(s), s,});
 			}
 			sort(subTag.imgs.begin(), subTag.imgs.end(), SortFile);
 			subTag.subTag = true;

@@ -2,6 +2,8 @@
 
 char* GetFile();
 char* GetFolder();
+void OpenHelp();
+void OpenShared();
 
 char* GetFile(){
 	PWSTR pszFilePath;
@@ -106,4 +108,12 @@ char* GetFolder(){
 	output[ss.size()] = '\0';
 	WideCharToMultiByte(CP_ACP, 0,ss.c_str(), -1, output, (int)ss.length(), NULL, NULL);
     return output;
+}
+
+void OpenShared(){
+	ShellExecuteA(NULL, "open", "shared", NULL, NULL, SW_SHOWDEFAULT);
+}
+
+void OpenHelp(){
+	popen("help.html", "r");
 }
