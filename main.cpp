@@ -24,6 +24,7 @@ int CreateWindows(){
 	if (!img.loaded)
 		return 0;
 	GLFWimage i[1]; 
+	stbi_set_flip_vertically_on_load(false);
 	i[0].pixels = stbi_load("images/icon.png", &i[0].width, &i[0].height, 0, 4); //rgba channels 
 	glfwSetWindowIcon(Main.w, 1, i); 
 	stbi_image_free(i[0].pixels);

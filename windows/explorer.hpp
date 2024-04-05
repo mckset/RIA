@@ -54,11 +54,13 @@ char* GetFile(){
 	char *output = new char[ss.length() + 1];
 	output[ss.size()] = '\0';
 	WideCharToMultiByte(CP_ACP, 0,ss.c_str(), -1, output, (int)ss.length(), NULL, NULL);
-    return output;
+	return output;
 }
 
 char* GetFolder(){
+	printf("Test 1\n");
 	PWSTR pszFilePath;
+	
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | 
         COINIT_DISABLE_OLE1DDE);
     if (SUCCEEDED(hr))
@@ -78,6 +80,7 @@ char* GetFolder(){
             // Show the Open dialog box.
             hr = pFileOpen->Show(NULL);
 
+			printf("Test 2\n");
             // Get the file name from the dialog box.
             if (SUCCEEDED(hr))
             {
@@ -96,9 +99,13 @@ char* GetFolder(){
                     }
                     pItem->Release();
                 }
-            }
+            }else{
+				return (char*)"";
+			}
+			printf("Test 3\n");
             pFileOpen->Release();
         }
+		printf("Test 4\n");
         CoUninitialize();
     }
 	std::wstring ss;
@@ -107,7 +114,10 @@ char* GetFolder(){
 	char *output = new char[ss.length() + 1];
 	output[ss.size()] = '\0';
 	WideCharToMultiByte(CP_ACP, 0,ss.c_str(), -1, output, (int)ss.length(), NULL, NULL);
-    return output;
+	printf("Test 5\n");
+	if (strlen(output))
+		return output;
+	return (char*)"";
 }
 
 void OpenShared(){

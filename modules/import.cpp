@@ -41,6 +41,83 @@ void ResetImport(){
 }
 
 //
+// Handles drawing the import window
+//
+string DrawImport(){
+	float y = Height-fontSize*2+importScroll.scroll;
+	importScroll.end = 0;
+
+	string output = "";
+
+	// Display image packs
+	if (stage == 0){
+		output = DrawPacks();
+			
+
+	// Display image pack folders
+	}else if (stage == 1){
+		output = DrawFolders();
+		
+
+	//
+	// List tags and subtags
+	//
+	}else if (stage == 2){
+		output = DrawImportTags();
+	}
+
+	//
+	// Overwrite check
+	//
+	else if (stage == -1){
+		sShape.Use();
+		shape.Draw(Vector2{0, (float)Height-fontSize}, Vector2{(float)Width, fontSize}, importButton, true);
+		sImage.Use();
+		font.Write("Overwrite?", Vector2{24, (float)Height-fontSize}, fontSize, fontColor, true, (float)Width-scrollbarSize-24, true);
+
+		sImage.Use();
+		font.Write("Import.dat already exists.", Vector2{16, y}, fontSize, fontColor, true);
+		font.Write("Do you want to overwrite", Vector2{16, y-fontSize}, fontSize, fontColor, true);
+		font.Write("the existing data?", Vector2{16, y-fontSize*2}, fontSize, fontColor, true);
+		font.Write("(There's no undo)", Vector2{16, y-fontSize*3}, fontSize, fontColor, true);
+
+		createB.position = Vector2{0, 0};
+		importB.position = Vector2{(float)Width/2, 0};
+
+		createB.size = Vector2{(float)Width/2, fontSize};
+		importB.size = Vector2{(float)Width/2, fontSize};
+
+		importB.Draw(false, true);
+		createB.Draw(false, true);
+
+		if (mouse.Click(LM_DOWN)){
+			if (createB.Hover()){
+				folders.GetFiles();
+				CreateImport();
+				importTime = 400;
+				Import.Hide();
+				return "Updated import file";
+			}
+			ResetImport();
+			Import.Hide();
+		}
+
+	}
+	if (stage > -1){
+		// Scroll bar
+		importScroll.end -= Height;
+		if (importScroll.end < 0){
+			importScroll.end = 0;
+			importScroll.scroll = 0;
+		}
+
+		sShape.Use();
+		importScroll.Draw(Vector2{(float)Width-scrollbarSize, 0}, Vector2{(float)scrollbarSize, (float)Height});
+	}
+	return output;
+}
+
+//
 // Display image packs and return any errors
 //
 string DrawPacks(){
@@ -107,7 +184,7 @@ string DrawPacks(){
 					importFile = importPath + slash + "import.dat";
 					folders.path = folders.folders[i].path;
 
-					if (stat(importFile.data(), &st) == 0){
+					if (stat(importFile.c_str(), &st) == 0){
 						stage = -1;
 						importB.text = "Cancel";
 						createB.text = "Overwrite";
@@ -269,79 +346,6 @@ string DrawImportTags(){
 		return "Successfully imported tags";
 	}
 	return "";
-}
-
-string DrawImport(){
-	float y = Height-fontSize*2+importScroll.scroll;
-	importScroll.end = 0;
-
-	string output = "";
-
-	// Display image packs
-	if (stage == 0){
-		output = DrawPacks();
-			
-
-	// Display image pack folders
-	}else if (stage == 1){
-		output = DrawFolders();
-		
-
-	//
-	// List tags and subtags
-	//
-	}else if (stage == 2){
-		output = DrawImportTags();
-	}
-
-	//
-	// Overwrite check
-	//
-	if (stage == -1){
-		sShape.Use();
-		shape.Draw(Vector2{0, (float)Height-fontSize}, Vector2{(float)Width, fontSize}, importButton, true);
-		sImage.Use();
-		font.Write("Overwrite?", Vector2{24, (float)Height-fontSize}, fontSize, fontColor, true, (float)Width-scrollbarSize-24, true);
-
-		sImage.Use();
-		font.Write("Import.dat already exists.", Vector2{16, y}, fontSize, fontColor, true);
-		font.Write("Do you want to overwrite", Vector2{16, y-fontSize}, fontSize, fontColor, true);
-		font.Write("the existing data?", Vector2{16, y-fontSize*2}, fontSize, fontColor, true);
-		font.Write("(There's no undo)", Vector2{16, y-fontSize*3}, fontSize, fontColor, true);
-
-		createB.position = Vector2{0, 0};
-		importB.position = Vector2{(float)Width/2, 0};
-
-		createB.size = Vector2{(float)Width/2, fontSize};
-		importB.size = Vector2{(float)Width/2, fontSize};
-
-		importB.Draw(false, true);
-		createB.Draw(false, true);
-
-		if (mouse.Click(LM_DOWN)){
-			if (createB.Hover()){
-				folders.GetFiles();
-				CreateImport();
-				importTime = 400;
-				Import.Hide();
-				return "Updated import file";
-			}
-			ResetImport();
-			Import.Hide();
-		}
-
-	}else{
-		// Scroll bar
-		importScroll.end -= Height;
-		if (importScroll.end < 0){
-			importScroll.end = 0;
-			importScroll.scroll = 0;
-		}
-
-		sShape.Use();
-		importScroll.Draw(Vector2{(float)Width-scrollbarSize, 0}, Vector2{(float)scrollbarSize, (float)Height});
-	}
-	return output;
 }
 
 void CreateImport(){
@@ -509,8 +513,29 @@ void FilterTags(){
 						}
 					}
 				}
-				if (subTag.imgs.size())
+				if (subTag.imgs.size()){
+
+					// Prevents overwritting user defined colors
+					for (auto mainTag : tags){
+						if (!strcmp(mainTag.name.data(), tag.name.data())){
+							for (auto mainSub : mainTag.subTags){
+								if (!strcmp(mainSub.name.data(), subTag.name.data())){
+									subTag.color = mainSub.color;
+									break;
+								}
+							}
+							break;
+						}
+					}
 					tag.subTags.push_back(subTag);
+				}
+			}
+			// Prevents overwritting user defined colors
+			for (auto mainTag : tags){
+				if (!strcmp(mainTag.name.data(), tag.name.data())){
+					tag.color = mainTag.color;
+					break;
+				}
 			}
 			importTags.push_back(tag);
 		}

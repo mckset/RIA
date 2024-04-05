@@ -80,7 +80,7 @@ void MainInput(){
 
 
 	//
-	// Side bar stuff (Most input for the side bar is in table.hpp and tag.hpp1)
+	// Side bar stuff (Most input for the side bar is in table.hpp and tag.hpp)
 	//
 	if (menu && mouse.position.x < Width/3){
 		if (keyboard.newKey == KEY_KP_ADD || keyboard.newKey == KEY_EQUAL || add.Hover() * mouse.Click(LM_DOWN)){

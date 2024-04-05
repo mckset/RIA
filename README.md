@@ -1,4 +1,4 @@
-# RIA (Early release)
+# RIA (Early access)
 RIA (Reference Image Application) is a cross platform image organizer for both Windows and Linux designed to help artists organize their reference material through the use of tags and folders. 
 
 # Installation
@@ -51,14 +51,13 @@ Download the latest verion from release page for your operating system or compil
 # Folder View (**TAB**)
 Contains saved paths to folders that contain the images that you want to tag/use.
 
-**DELETE** (While hovered overthe main folder) - Remove the folder from the view.
+**DELETE** (While hovered over a main folder) - Remove the folder from the view.
 
 **LMB Click** (Folder) - Expand a folder and display its contents. If a file is tagged, a white box will be displayed on the left side of the file.
 
 **LMB Click** (File) - Load the image into the preview on the bottom right side of the screen. Files that already have been tagged are indicated with a white bar to the left of the file name.
 
 **The "+" Button**  - Add a new location to the view. 
-
 
 # Tag View (**~**)
 Only contains images that have been tagged under said tags.
@@ -77,7 +76,7 @@ Only contains images that have been tagged under said tags.
 **The "+" Button** (Tag header) - Add a new sub tag to the tag.
 
 # Image Packs (**Image Pack Button**)
-Image packs are an experimental idea only found in RIA. An image pack contains pre-tagged files so they can easily be shared between users. Follow the below instructions for how to create an image pack. Image packs use folders a categories instead of tags and relies on the images to be manually tagged by one users before being able to be shared. While importing an image pack, it gives you the option to exclude folders int the image pack from being imported. EX) An image pack has 3 categories: Buildings, Landscapes, and Clothes. A user can choose to only import images from the Buildings and Landscapes folder and all the images in the Clothes folder will remain without being added to RIA. 
+Image packs are an experimental idea only found in RIA. An image pack contains pre-tagged files so they can easily be shared between users. Follow the below instructions for how to create an image pack or see the help file for more detail. Image packs use folders a categories instead of tags and relies on the images to be manually tagged by one users before being able to be shared. While importing an image pack, it gives you the option to exclude folders int the image pack from being imported. EX) An image pack has 3 categories: Buildings, Landscapes, and Clothes. A user can choose to only import images from the Buildings and Landscapes folder and all the images in the Clothes folder will remain without being added to RIA. 
 > **_NOTE:_**  When creating an image pack, it only checks the tags that are in your program. If you hit the create button on a previously imported image pack and removed some of the tags prior, it will overwrite the import file and remove the untagged images from the import file.
 
 Importing Image Packs

@@ -13,22 +13,20 @@
 	#include <fstream>
 	#include "windows/glfw/include/GLFW/glfw3.h"
 	#include "windows/glad/include/glad/glad.h"
-	#include "windows/explorer.hpp"
 	#define WINDOWS 1
 #else
 	#define WINDOWS 0
 	#include <unistd.h>
 	#include <GLFW/glfw3.h>
 	#include "linux/glad/include/glad/glad.h"
-	#include "linux/explorer.hpp"
 #endif
 
 #include <algorithm>
 #include <iostream>
 #include <string>
 #include <filesystem>
-#include <sys/stat.h>
 #include <vector>
+#include <sys/stat.h>
 
 using namespace std;
 
@@ -38,10 +36,14 @@ string GetName(string);
 	string slash = "\\";
 	string opSlash = "/";
 	typedef unsigned int uint;
+	#include "windows/explorer.hpp"
+
 #else
 	string slash = "/";
 	string opSlash = "\\";
 	#include <unistd.h>
+	#include "linux/explorer.hpp"
+
 #endif
 
 int Width = -1, Height = -1;

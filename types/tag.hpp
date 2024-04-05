@@ -39,14 +39,24 @@ class Tag{
 				add.size = Vector2{fontSize, fontSize};
 				add.Draw();
 			}
-			editB.position = position;
-			editB.size = Vector2{fontSize, fontSize};
-			editB.Draw();
 
-			if (mouse.Click(LM_DOWN) && editB.Hover()){
-				mouse.state = RM_DOWN;
+			// Edit button
+			if (expand){
+				editB.position = position;
+				editB.size = Vector2{fontSize, fontSize};
+				editB.Draw();
+
+				if (mouse.Click(LM_DOWN) && editB.Hover()){
+					editTag = tag;
+					editSub = sub;
+					tagName.text = name;
+					rgb[0].scroll = color.r*255;
+					rgb[1].scroll = color.g*255;
+					rgb[2].scroll = color.b*255;
+					TagWin.Show();
+				}
+				
 			}
-			
 
 			listSize = size.y;
 			int subPos = 1;

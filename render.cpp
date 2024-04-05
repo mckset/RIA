@@ -123,6 +123,7 @@ void DrawApp(){
 	openTags.size = Vector2{fontSize*4, fontSize*1};
 	openLoc.size = Vector2{fontSize*4, fontSize*1};
 	helpB.size = Vector2{fontSize*4, fontSize*1};
+	
 	if (menu){
 		sShape.Use();
 		shape.Draw(Vector2{0}, Vector2{(float)Width/3, (float)Height}, menuBackground, true);

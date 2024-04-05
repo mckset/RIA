@@ -1,21 +1,15 @@
-char* CondensePath(char*, int);
+string CondensePath(char*, int);
+string GetFolder();
 char* GetFile();
 void OpenShared();
 void OpenHelp();
 
-char* CondensePath(char* path, int size){
-	char *output;
-	for (int i = 0; i < size; i++){
-		//printf("%d) %c\n", i, path[i]);
-		if (path[i] == '\0'){
-			output = (char*)malloc(sizeof(char)*i);
-			for (int x = 0; x < i-1; x++)
-				output[x] = path[x];
-			output[i-1] = '\0';
-			return output;
-		}
+string CondensePath(char* path, int size){
+	string output = "";
+	for (int i = 0; i < size && path[i] != '\0' && path[i] != '\n'; i++){
+		output += path[i];
 	}
-	return path;
+	return output;
 }
 
 char* GetFile(){
@@ -23,15 +17,22 @@ char* GetFile(){
 	FILE *f;
 	f = popen("zenity --file-selection --file-filter=\'*.png *.jpg *.jpeg\'", "r");
 	fgets(path, 4097, f);
-	return CondensePath(path, 4097);
+	return (char*)CondensePath(path, 4097).data();
 }
 
-char* GetFolder(){
-	char path[4097];
+string GetFolder(){
+	struct stat st;
+	char p[4097];
 	FILE *f;
+	
 	f = popen("zenity --file-selection --directory", "r");
-	fgets(path, 4097, f);
-	return CondensePath(path, 4097);
+	fgets(p, 4097, f);
+
+	string path = CondensePath(p, 4097);
+
+	if (stat(path.c_str(), &st) == 0)
+		return path;
+	return (char*)"";
 }
 
 void OpenShared(){
