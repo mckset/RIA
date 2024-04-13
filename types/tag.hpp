@@ -34,7 +34,7 @@ class Tag{
 			font.Write(name, position, fontSize*3/4, fontColor, true, size.x-fontSize, 1);
 
 			// Add Button
-			if (!subTag && expand){
+			if (sub == -1 && expand){
 				add.position = position.Add(size.x-fontSize, 0);
 				add.size = Vector2{fontSize, fontSize};
 				add.Draw();

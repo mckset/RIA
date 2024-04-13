@@ -1,10 +1,5 @@
 bool SortTag(Tag, Tag);
 bool SortUint(uint, uint);
-void Reorder();
-
-void Reorder(){
-	
-}
 
 bool SortUint(uint i1, uint i2){return i1 < i2;}
 
@@ -22,7 +17,7 @@ bool SortFile(File f1, File f2){
 			return (c1 < c2);
 		}
 	}
-	return false;
+	return n1.length() < n2.length();
 }
 
 bool SortTag(Tag t1, Tag t2){
@@ -39,5 +34,5 @@ bool SortTag(Tag t1, Tag t2){
 			return (c1 < c2);
 		}
 	}
-	return false;
+	return n1.length() < n2.length();
 }

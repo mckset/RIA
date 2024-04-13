@@ -19,17 +19,24 @@ int CreateWindows(){
 	//
 	Main.w = glfwCreateWindow(Width, Height-42, "RIA", NULL, NULL);
 	Main.Init();
+
+	// Checks if the icon image exists
 	Image img;
 	img.LoadImage((char*)"images/icon.png");
 	if (!img.loaded)
-		return 0;
-	GLFWimage i[1]; 
-	stbi_set_flip_vertically_on_load(false);
-	i[0].pixels = stbi_load("images/icon.png", &i[0].width, &i[0].height, 0, 4); //rgba channels 
-	glfwSetWindowIcon(Main.w, 1, i); 
-	stbi_image_free(i[0].pixels);
+		printf("[Warning] Unable to load icon image\n");
+	else{
+		GLFWimage i[1]; 
+		stbi_set_flip_vertically_on_load(false);
+		i[0].pixels = stbi_load("images/icon.png", &i[0].width, &i[0].height, 0, 4); //rgba channels 
+		stbi_image_free(i[0].pixels);
+		glfwSetWindowIcon(Main.w, 1, i); 
+		stbi_set_flip_vertically_on_load(true);
+	}
+	
 	glfwSetScrollCallback(Main.w, GetScrollWheel);
 	glfwSetWindowMaximizeCallback(Main.w, Maximize);
+	glfwSetDropCallback(Main.w, DragDrop);
 	Main.visible = true;
 
 	//
@@ -52,8 +59,24 @@ int CreateWindows(){
 }
 
 void Init(){
+	char p[4096]; // 4096 is the max size path size for Linux, 256 for windows
 	getcwd(p, sizeof(p));
 	path = p;
+
+	// Check for main folders
+	struct stat st;
+
+	string folder = "shared";
+	if (!stat(folder.c_str(), &st) == 0)
+		if(!fs::create_directory(folder))
+			if (DEBUG) printf("Failded to create shared folder");
+
+	folder = "boards";
+	if (!stat(folder.c_str(), &st) == 0)
+		if(!fs::create_directory(folder))
+			if (DEBUG) printf("Failded to create boards folder");
+	
+
 
 	sImage.Init(imageV, imageF);
 	sShape.Init(shapeV, shapeF);
@@ -70,17 +93,18 @@ void Init(){
 }
 
 int main(){
-	printf("[Initializing]\n");
+	if (DEBUG) printf("[Initializing]\n");
 
 	if (!CreateWindows()){
-		printf("%s\n", path.data());
-		printf("image/icon.png not missing!\n");	
-		return -1;
+		if (DEBUG) printf("%s\n", path.data());
+		if (DEBUG) printf("image/icon.png missing!\n");	
 	}
+
+	stbi_set_flip_vertically_on_load(true);
 	Init();
 	font.Load((char*)"images/font.png");
 	if (!font.fontImg.loaded){
-		printf("image/font.png not missing!\n");
+		if (DEBUG) printf("image/font.png missing!\n");
 		return -1;	
 	}
 	glEnable(GL_MULTISAMPLE);
@@ -94,11 +118,13 @@ int main(){
 		vertexBuffer = Main.vB;
 		elementBuffer = Main.eB;
 
-		if (Main.Focus()){
+		if (Main.Focus() || DnD){
 			Main.Use(backing); // Main window
 			DrawApp(); // Draw
 			glfwSwapBuffers(Main.w);// Swap buffer
 			MainInput();
+			if (DnD)
+				DnD = false;
 		}
 
 		if (TagWin.Focus()){

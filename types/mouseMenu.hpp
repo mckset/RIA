@@ -32,7 +32,7 @@ class Menu{
 				sShape.Use();
 				shape.Draw(Vector2{position.x, y}, Vector2{(float)size*8, (float)size}, item.color, true);
 
-				if (t == 1){
+				if (t == 1 && tagIndex != items.size()-1){
 					int tagged = CheckTags(tags[tagIndex]);
 					if (tagged == 1)
 						shape.DrawBox(Vector2{position.x + size/4, y+size/4}, Vector2{(float)size/2, (float)size/2}, White, 2, true);
@@ -44,13 +44,13 @@ class Menu{
 				font.Write(item.name, Vector2{position.x+24, y}, size*3/4, fontColor, true, size*8-48);
 
 				
-
 				// Draw tags
 				if (!strcmp("Tag", item.name.data()) && expand){
 					sShape.Use();
 					shape.Draw(Vector2{position.x, y}, Vector2{(float)size*8, (float)size}, highlight, true);
 					tagsMenu[t].Draw(size);
 				}
+				
 				
 				//
 				// Sub tags
@@ -60,9 +60,15 @@ class Menu{
 					if (mouse.position.x < position.x+size*8 && mouse.position.x > position.x)
 						if (mouse.position.Within(Vector2{position.x, y}, Vector2{(float)size*8, (float)size}))
 							expand = tagIndex+1;
+
 					
-					if (expand == tagIndex + 1){
+					
+					if (expand == tagIndex+1 && tagIndex != items.size()-1){
 						sShape.Use();
+						
+						// Backing
+						shape.Draw(Vector2{position.x+size*8, y+size}, Vector2{(float)size*8, -1*((float)size * (tags[tagIndex].subTags.size()+1))}, RMMenuBacking, true);
+						// Highlight
 						shape.Draw(Vector2{position.x, y}, Vector2{(float)size*8, (float)size}, highlight, true);
 
 						float y2 = y;
@@ -89,9 +95,27 @@ class Menu{
 									AppendToTag(tagIndex, subIndex);
 								}
 							}
-							
 							y2-=size;
 							subIndex++;
+						}
+
+						// 
+						// Add new sub tag
+						// 
+
+						sImage.Use();
+						font.Write("+ Add Sub Tag", Vector2{position.x+size*8+24, y2}, size*3/4, fontColor, true, size*8-48);
+							
+						// Sub tag clicked
+						if (mouse.position.Within(Vector2{position.x+size*8, y2}, Vector2{(float)size*8, (float)size})){
+							sShape.Use();
+							shape.Draw(Vector2{position.x+size*8, y2}, Vector2{(float)size*8, (float)size}, highlight, true);
+
+							if (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)){
+								editTag = tagIndex;
+								editSub = -2;
+								TagWin.Show();
+							}
 						}
 					}
 				}
@@ -111,6 +135,7 @@ class Menu{
 								for (auto tag : tags){
 									tagsMenu[0].items.push_back(MenuItem{tag.name, 0, tag.color});
 								}
+								tagsMenu[0].items.push_back(MenuItem{"+ Add Tag", 0, Transparent});
 								tagsMenu[0].position = Vector2 {position.x + fontSize*8, y+size};
 							}
 							if (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)){
@@ -147,7 +172,12 @@ class Menu{
 
 						// Tags	
 						}else if (t == 1){
-							AppendToTag(tagIndex, -1);
+							if (tagIndex != items.size()-1)
+								AppendToTag(tagIndex, -1);
+							else{
+								editTag = -1;
+								TagWin.Show();
+							}
 						}
 						
 						Reset();
@@ -278,8 +308,6 @@ int CheckTags(Tag tag){
 
 int ExistsInTag(Tag tag, string s){
 	for (int i = 0; i < tag.imgs.size(); i++){
-		printf("%d %s\n", tag.imgs.size(), tag.imgs[i].path.data());
-		printf("%s\n", s.data());
 		if (!strcmp(tag.imgs[i].path.data(), s.data()))
 			return i+1;
 	}

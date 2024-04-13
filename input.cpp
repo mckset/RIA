@@ -3,6 +3,7 @@
 //
 
 void MainInput();
+void Paste();
 void ReorderImages();
 void ResetImages();
 Vector2 MouseToScreenSpace(Vector2);
@@ -10,10 +11,13 @@ Vector2 MouseToScreenSpace(Vector2);
 void MainInput(){
 	shift = keyboard.GetKey(KEY_LEFT_SHIFT);
 
+	// Toggle origin
 	if (keyboard.newKey == KEY_SPACE){
 		drawOrigin = !drawOrigin;
 	}
-	if (keyboard.newKey == KEY_ESCAPE){
+
+	// Saving
+	if (keyboard.GetKey(KEY_S) && keyboard.GetKey(KEY_LEFT_CONTROL)){
 		previewImg.loaded = false;
 		for (auto img : selImgs)
 			imgs[img].angle = imgs[img].prevAngle;
@@ -22,6 +26,18 @@ void MainInput(){
 		TagWin.Hide();
 		rmMenu.Reset();
 		Save();
+		importTime = 0;
+	}
+
+	// Reset selected list
+	if (keyboard.newKey == KEY_ESCAPE){
+		previewImg.loaded = false;
+		for (auto img : selImgs)
+			imgs[img].angle = imgs[img].prevAngle;
+		rot = false;
+		ResetImages();
+		TagWin.Hide();
+		rmMenu.Reset();
 		importTime = 0;
 	}
 
@@ -64,7 +80,7 @@ void MainInput(){
 	// Movement
 	if (keyboard.GetKey(KEY_W) || keyboard.GetKey(KEY_UP))
 		View.y += viewSpeed;
-	if (keyboard.GetKey(KEY_S) || keyboard.GetKey(KEY_DOWN))
+	if ((keyboard.GetKey(KEY_S) && !keyboard.GetKey(KEY_LEFT_CONTROL)) || keyboard.GetKey(KEY_DOWN))
 		View.y -= viewSpeed;
 	if (keyboard.GetKey(KEY_A) || keyboard.GetKey(KEY_LEFT))
 		View.x -= viewSpeed;
@@ -100,6 +116,14 @@ void MainInput(){
 	// Main input events
 	//
 	}else{
+
+		// Pasting from clipboard
+		if (keyboard.GetKey(KEY_V) && keyboard.GetKey(KEY_LEFT_CONTROL) && !pasted){
+			Paste();
+		}else if (!(keyboard.GetKey(KEY_V) && keyboard.GetKey(KEY_LEFT_CONTROL)) && pasted)
+			pasted = false;
+
+
 		// Import menu
 		if (mouse.Click(LM_DOWN) && import.Hover()){
 			ResetImport();
@@ -107,6 +131,17 @@ void MainInput(){
 			keyboard.newKey = -1;
 			mouse.prevState = mouse.state;
 			return;
+		
+		// Load image board
+		} else if (mouse.Click(LM_DOWN) && loadBoard.Hover()){
+			GetBoard();
+
+		// New image board
+		}else if (mouse.Click(LM_DOWN) && newBoard.Hover()){
+			imgs.clear();
+			board = "";
+			Scale = 1;
+			View = Vector2{0,0};
 		}
 
 		//
@@ -129,7 +164,7 @@ void MainInput(){
 			if (keyboard.newKey == KEY_H)
 				for (auto img : selImgs)
 					imgs[img].hFlip = !imgs[img].hFlip;
-			if (keyboard.newKey == KEY_V)
+			if (keyboard.newKey == KEY_V && !keyboard.GetKey(KEY_LEFT_CONTROL))
 				for (auto img : selImgs)
 					imgs[img].vFlip = !imgs[img].vFlip;
 		}
@@ -157,6 +192,10 @@ void MainInput(){
 		if (mouse.Click(LM_DOWN)){
 			if (imgScale)
 				imgScale = false;
+
+			//
+			// Rotation, Scaling, Selecting, and such
+			//
 
 			if (!previewImg.loaded){
 
@@ -234,7 +273,9 @@ void MainInput(){
 						imgs[img].prevAngle = imgs[img].angle;
 				}
 
+			//
 			// Placing a new image on the board
+			//
 			}else{
 				previewImg.size = Vector2{(float)previewImg.trueWidth, (float)previewImg.trueHeight};
 				previewImg.position = MouseToScreenSpace(mouse.position).Subtract(previewImg.size.Divide(2));
@@ -349,17 +390,41 @@ void MainInput(){
 	mouse.prevState = mouse.state;
 }
 
-void ResetImages(){
-	selImgs.clear();
-	for (int i = 0; i < imgs.size(); i++)
-		imgs[i].selected = false;
-}
-
 Vector2 MouseToScreenSpace(Vector2 position){
 	return position.Subtract(Width/2, Height/2)
 					.Divide(Scale)
 					.Add(Width/2, Height/2) 
 					.Add(View);
+}
+
+void Paste(){
+	pasted = true;
+	const char* cb = glfwGetClipboardString(Main.w);
+	if (cb == NULL){
+		printf("Failed to read clipbord\n");
+		return;
+	}
+	int s = 0;
+	string path = "";
+	for (int i = 0; i < strlen(cb); i++){
+		if (cb[i] == '\n'){
+			if (IsImage(path)){
+				Image img;
+				img.LoadImage(path.data());
+				img.position = MouseToScreenSpace(mouse.position).Subtract(img.size.Divide(2));
+				imgs.push_back(img);
+			}
+			s=i;
+			path = "";
+		}else if (i-s > 6) // Removes "file://" from the beginning of the path
+			path += cb[i];
+	}
+}
+
+void ResetImages(){
+	selImgs.clear();
+	for (int i = 0; i < imgs.size(); i++)
+		imgs[i].selected = false;
 }
 
 void ReorderImages(){

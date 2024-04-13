@@ -31,6 +31,11 @@
 using namespace std;
 
 string GetName(string);
+void LoadImageBoard();
+
+string path = "";
+string board = "default.brd";
+
 
 #ifdef _WIN32
 	string slash = "\\";
@@ -50,16 +55,18 @@ int Width = -1, Height = -1;
 uint vertexArray, vertexBuffer, elementBuffer;
 const GLFWvidmode* mode;
 
-bool shift = false;
-bool menu = false;
-bool tagView = false;
-bool scroll = true;
+bool DnD = false; // If a file was added via Drag and Drop
+bool menu = false; // If the side menu is open
+bool pasted = false; // If files had already been pasted
+bool scroll = true; // ?
+bool shift = false; // The state of the left shift key
+bool tagView = false; // If the side menu is view tags
+
 int save = 0;
 int editTag = -1; // Index of an edited tag
 int editSub = -1; // Index of an edited sub tag
-string previewPath = "";
-string path = "";
-char p[4096]; // 4096 is the max size path size for Linux, 256 for windows
+
+string previewPath = ""; // Obsolete
 
 void Save();
 void Load();

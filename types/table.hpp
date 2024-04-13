@@ -174,7 +174,7 @@ class Table{
 					return (c1 < c2);
 				}
 			}
-			return false;
+			return n1.length() < n2.length();
 		}
 };
 

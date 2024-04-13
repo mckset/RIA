@@ -10,6 +10,8 @@ void DrawTags();
 bool selector = false;
 
 Button import = Button{"Image Packs", menuBackground, highlight};
+Button loadBoard = Button{"Load Board", menuBackground, highlight};
+Button newBoard = Button{"New Board", menuBackground, highlight};
 Button openTags = Button{"Tags", menuBackground, highlight};
 Button openLoc = Button{"Locations", menuBackground, highlight};
 Button closeB = Button{"Close", menuBackground, highlight};
@@ -165,6 +167,16 @@ void DrawApp(){
 	import.position = Vector2{(float)Width - fontSize*5-12, (float)Height - fontSize-8};
 	import.size = Vector2{fontSize*5, fontSize};
 	import.Draw();
+
+	// Open image board
+	loadBoard.position = Vector2{(float)Width - fontSize*5-12, (float)Height - fontSize*2-8};
+	loadBoard.size = Vector2{fontSize*5, fontSize};
+	loadBoard.Draw();
+
+	// New image board
+	newBoard.position = Vector2{(float)Width - fontSize*5-12, (float)Height - fontSize*3-8};
+	newBoard.size = Vector2{fontSize*5, fontSize};
+	newBoard.Draw();
 	
 }
 

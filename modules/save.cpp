@@ -32,7 +32,7 @@ string GetString(){
 void Load(){
 	f.open("save.dat", ios::in | ios::binary);
     if (!f.good()){
-		printf("[Loading] No save data found\n");
+		if (DEBUG) printf("[Loading] No save data found\n");
 		return;
 	}
 
@@ -42,7 +42,7 @@ void Load(){
 	// Read past header
 	f.read(reinterpret_cast<char*>(&ibuffer), 4);
 
-	printf("[Loading] Locations\n");
+	if (DEBUG)	printf("[Loading] Locations\n");
 
 	// Locations
 	f.read(reinterpret_cast<char*>(&ibuffer), 4);
@@ -50,23 +50,23 @@ void Load(){
 	for (int l = 0; l < locationSize; l++){
 		string loc = GetString();
 		locations.push_back(Table{GetName(loc), loc});
-		printf("%d) %s\n", l, loc.data());
+		if (DEBUG) printf("%d) %s\n", l, loc.data());
 	}
 
-	printf("[Loading] Sorting locations\n");
+	if (DEBUG) printf("[Loading] Sorting locations\n");
 	sort(locations.begin(), locations.end(), locations[0].SortTable);
 
 	
 	// Tags
 	f.read(reinterpret_cast<char*>(&ibuffer), 4);
 	int tagSize = ibuffer;
-	printf("[Loading] Tags (%d)\n", tagSize);
+	if (DEBUG) printf("[Loading] Tags (%d)\n", tagSize);
 	for (int t = 0; t < tagSize; t++){
 		Tag tag;
 
 		// Name
 		tag.name = GetString();
-		printf("[TAG] %s", tag.name.data());
+		if (DEBUG) printf("[TAG] %s", tag.name.data());
 
 		// Color
 		f.read(reinterpret_cast<char*>(&ibuffer), 1);
@@ -79,13 +79,13 @@ void Load(){
 
 		// Images
 		f.read(reinterpret_cast<char*>(&ibuffer), 4);
-		printf("\tImgs: %d", ibuffer);
+		if (DEBUG) printf("\tImgs: %d", ibuffer);
 		for (int i = 0; i < ibuffer; i++){
 			string s = GetString();
 			if (stat(s.data(), &st) == 0)
 				tag.imgs.push_back(File{GetName(s), s});
 			else
-				printf("\nUnable to load: %s\n", s.data());
+				if (DEBUG) printf("\nUnable to load: %s\n", s.data());
 		}
 
 		sort(tag.imgs.begin(), tag.imgs.end(), SortFile);
@@ -93,7 +93,7 @@ void Load(){
 		// Sub tags
 		f.read(reinterpret_cast<char*>(&ibuffer), 4);
 		int subSize = ibuffer;
-		printf("\tSub Tags: %d\n", subSize);
+		if (DEBUG) printf("\tSub Tags: %d\n", subSize);
 
 		// Repeat everything
 		for (int i = 0; i < subSize; i++){
@@ -101,7 +101,7 @@ void Load(){
 
 			// Name
 			subTag.name = GetString();
-			printf("\t[SUB TAG] %s ", subTag.name.data());
+			if (DEBUG) printf("\t[SUB TAG] %s ", subTag.name.data());
 
 
 			// Color
@@ -115,7 +115,7 @@ void Load(){
 
 			// Images
 			f.read(reinterpret_cast<char*>(&ibuffer), 4);
-			printf("Imgs: %d\n", ibuffer);
+			if (DEBUG) printf("Imgs: %d\n", ibuffer);
 
 			for (int x = 0; x < ibuffer; x++){
 				string s = GetString();
@@ -129,14 +129,36 @@ void Load(){
 		sort(tag.subTags.begin(), tag.subTags.end(), SortTag);
 		tags.push_back(tag);
 	}
-	printf("[Loading] Sorting tags\n");
+	if (DEBUG) printf("[Loading] Sorting tags\n");
 	sort(tags.begin(), tags.end(), SortTag);
 
+	// Get last used board
+	board = GetString();
+
+	f.close();
+	LoadImageBoard();
+	
+	if (DEBUG) printf("[Loading] Finished\n");
+
+	
+}
+
+void LoadImageBoard(){
+	f.open("boards/"+board, ios::in | ios::binary);
+    if (!f.good()){
+		if (DEBUG) printf("[Loading] Unable to load image board\n");
+		return;
+	}
 	
 	// Image board and configuration
-	printf("[Loading] Image board\n");
+	if (DEBUG) printf("[Loading] Image board\n");
+
+	int ibuffer = 0;
+	imgs.clear();
+	
 	f.read(reinterpret_cast<char*>(&ibuffer), 4);
 	int imgSize = ibuffer;
+
 	for (int i = 0; i < imgSize; i++){
 		Image img;
 		Vector2 size;
@@ -161,7 +183,6 @@ void Load(){
 	f.read(reinterpret_cast<char*>(&Scale), sizeof(float));
 	f.read(reinterpret_cast<char*>(&maximize), sizeof(float));
 
-	printf("[Loading] Finished\n");
 	f.close();
 }
 
@@ -169,7 +190,7 @@ void Save(){
 	ofstream w("save.dat", ios::out | ios::binary);
 	
 	if (!w.good()){
-		printf("[Save] Unable to save file");
+		if (DEBUG) printf("[Save] Unable to save file\n");
 		return;
 	}
 	save = 60;
@@ -177,7 +198,7 @@ void Save(){
 	// Data heading
 	w.write((char*)"dat ", sizeof(char)*4);
 
-	printf("[Saving] Locations\n");
+	if (DEBUG) printf("[Saving] Locations\n");
 
 	int size = locations.size();
 	// Locations
@@ -188,20 +209,20 @@ void Save(){
 		w.write(locations[l].path.c_str(), sizeof(char)*len);
 	}
 
-	printf("[Saving] Tags\n");
+	if (DEBUG) printf("[Saving] Tags\n");
 	size = tags.size();
 
 	// Tags
 	w.write(reinterpret_cast<const char *>(&size), sizeof(int));
 	for (int t = 0; t < tags.size(); t++){
 		// Name
-		printf("[Saving] Name %s\n", tags[t].name.data());
+		if (DEBUG) printf("[Saving] Name %s\n", tags[t].name.data());
 		int len = tags[t].name.length();
 		w.write(reinterpret_cast<const char*>(&len), sizeof(int));
 		w.write(tags[t].name.c_str(), sizeof(char)*len);
 		
 		// Color
-		printf("[Saving] Color\n");
+		if (DEBUG) printf("[Saving] Color\n");
 		int r = tags[t].color.r*255;
 		int g = tags[t].color.g*255;
 		int b = tags[t].color.b*255;
@@ -210,7 +231,7 @@ void Save(){
 		w.write(reinterpret_cast<const char*>(&b), 1);
 		
 		// Images
-		printf("[Saving] Images\n");
+		if (DEBUG)printf("[Saving] Images\n");
 		size = tags[t].imgs.size();
 
 		w.write(reinterpret_cast<const char*>(&size), sizeof(int));
@@ -221,7 +242,7 @@ void Save(){
 		}
 		
 		// Sub tags
-		printf("[Saving] Subtags\n");
+		if (DEBUG) printf("[Saving] Subtags\n");
 		size = tags[t].subTags.size();
 		w.write(reinterpret_cast<const char*>(&size), sizeof(int));
 		for (int s = 0; s < tags[t].subTags.size(); s++){
@@ -248,8 +269,26 @@ void Save(){
 			}
 		}
 	}
+	int len = board.length();
 
-	printf("[Saving] Image board\n");
+	w.write(reinterpret_cast<const char*>(&len), sizeof(int));
+	w.write(board.c_str(), sizeof(char)*len);
+
+	w.close();
+
+	if (!board.length())
+		SaveBoard();
+
+	w.open("boards/"+board, ios::out | ios::binary);
+	
+	if (!w.good()){
+		if (DEBUG) printf("[Saving] Unable to save image board\n");
+		return;
+	}
+
+	if (DEBUG) printf("[Saving] Image board\n");
+	
+
 	// Image board
 	size = imgs.size();
 	w.write(reinterpret_cast<const char*>(&size), sizeof(int));
@@ -275,5 +314,5 @@ void Save(){
 	w.write(reinterpret_cast<const char*>(&maximize), sizeof(bool));
 
 	w.close();
-	printf("\n");
+	if (DEBUG) printf("\n");
 }

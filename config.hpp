@@ -1,4 +1,5 @@
 #define 	UBUNTU		0 // Set to 1 to use older filesystem libraries
+#define		DEBUG		1 // Set to 1 to print debug information to a terminal
 
 Color backing = Color {.2, .2, .2, 1};
 Color locationHeading = {.05f, .05f, .05f, .5};
