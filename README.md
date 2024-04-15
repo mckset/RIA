@@ -13,7 +13,7 @@ Download the latest verion from release page for your operating system or compil
 
 # Image Board
 
-**ESC** - Save the boards current state
+**Left Ctrl + S** - Save the boards current state
 
 **Left mouse click** - Select an image
 
