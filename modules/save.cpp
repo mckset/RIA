@@ -1,9 +1,42 @@
 #include<iostream>
 #include<fstream>
 
-string GetName(string);
-
 ifstream f;
+
+Color GetColor(string s){
+	Color out = Color{0,0,0,1};
+	int start = 1;
+	int end = 1;
+	for (int c = 0; c < 4; c++){
+		while (s.substr(end, 1) != "," && s.substr(end, 1) != "}")
+			end++;
+		if (c == 0)
+			out.r = (float)stoi(s.substr(start, end))/255;
+		else if (c == 1)
+			out.g = (float)stoi(s.substr(start, end))/255;
+		else if (c == 2)
+			out.b = (float)stoi(s.substr(start, end))/255;
+		else
+			out.a = (float)stoi(s.substr(start, end))/255;
+		end++;
+		while (s.substr(end, 1) == " ")
+			end++;
+		start = end;
+	}
+	return out;
+}
+
+string GetLine(){
+	int size = 0;
+	string temp;
+	char c;
+	f.read(reinterpret_cast<char*>(&c), 1);
+	while (c != '\n'){
+		temp += c;
+		f.read(reinterpret_cast<char*>(&c), 1);
+	}
+	return temp;
+}
 
 string GetName(string path){
 	for (int i = path.length()-1; i > 0; i--)
@@ -23,10 +56,16 @@ string GetString(){
 	
 	// Alter backslashes to match the OS
 	for (int c = 0; c < temp.length(); c++)
-		if (temp[c] == opSlash[0])
+		if (temp[c] == (slash[0] == '/' ? '\\' : '/'))
 			temp[c] = slash[0];
 	
 	return temp;
+}
+
+bool Duplicate(string img, vector<File>* list){
+	for (auto file : *list)
+		if (file.path == img) return true;
+	return false;
 }
 
 void Load(){
@@ -82,7 +121,7 @@ void Load(){
 		if (DEBUG) printf("\tImgs: %d", ibuffer);
 		for (int i = 0; i < ibuffer; i++){
 			string s = GetString();
-			if (stat(s.data(), &st) == 0)
+			if (!Duplicate(s, &tag.imgs) && stat(s.c_str(), &st) == 0)
 				tag.imgs.push_back(File{GetName(s), s});
 			else
 				if (DEBUG) printf("\nUnable to load: %s\n", s.data());
@@ -119,8 +158,8 @@ void Load(){
 
 			for (int x = 0; x < ibuffer; x++){
 				string s = GetString();
-				if (stat(s.data(), &st) == 0)
-					subTag.imgs.push_back(File{GetName(s), s,});
+				if (!Duplicate(s, &subTag.imgs) && stat(s.c_str(), &st) == 0)
+					subTag.imgs.push_back(File{GetName(s), s});
 			}
 			sort(subTag.imgs.begin(), subTag.imgs.end(), SortFile);
 			subTag.subTag = true;
@@ -144,6 +183,8 @@ void Load(){
 }
 
 void LoadImageBoard(){
+	printf("%s\n", board.data());
+
 	f.open("boards/"+board, ios::in | ios::binary);
     if (!f.good()){
 		if (DEBUG) printf("[Loading] Unable to load image board\n");
@@ -175,15 +216,69 @@ void LoadImageBoard(){
 		if (img.loaded)
 			imgs.push_back(img);
 	}
+	
+	float vX, vY, s;
+
 	// Configuration
 	f.read(reinterpret_cast<char*>(&Width), sizeof(int));
 	f.read(reinterpret_cast<char*>(&Height), sizeof(int));
-	f.read(reinterpret_cast<char*>(&View.x), sizeof(float));
-	f.read(reinterpret_cast<char*>(&View.y), sizeof(float));
-	f.read(reinterpret_cast<char*>(&Scale), sizeof(float));
+	f.read(reinterpret_cast<char*>(&vX), sizeof(float));
+	f.read(reinterpret_cast<char*>(&vY), sizeof(float));
+	f.read(reinterpret_cast<char*>(&s), sizeof(float));
 	f.read(reinterpret_cast<char*>(&maximize), sizeof(float));
 
+	Main.view = Vector2{vX, vY};
+	Main.scale = s;
+
 	f.close();
+}
+
+Image LoadWebp(string path){
+	Image i;
+	ifstream f(path.c_str(), ios::in | ios::binary);
+
+	if (!f.good()){
+		if (DEBUG) printf("[Image] Invalid path: %s\n", path.data());
+		return i;
+	}
+	string file = "";
+	char c = 0;
+	while (!f.eof()){
+		f.read(&c, sizeof(char));
+		file += c;
+		//printf("%d : %c\n", c, c);
+	}
+
+	uint8_t* data = (uint8_t*)malloc(sizeof(uint8_t) * file.length());
+
+	for (int x = 0; x < file.length(); x++){
+		data[x] = int(file[x]);
+		//printf("%d : %c\n", data[x], file[x]);
+	}
+
+
+	WebPBitstreamFeatures wf;
+	WebPGetFeatures(data, file.length(), &wf);
+
+	i.width = wf.width;
+	i.height = wf.height;
+
+	// Invert data
+	unsigned char* temp = WebPDecodeRGBA(data, file.length(), NULL, NULL);
+	unsigned char* img = (unsigned char*)malloc(sizeof(unsigned char)*i.width*i.height*4);
+	int imgO = 0;
+	for (int y = i.height-1; y >= 0; y--)
+		for (int x = 0; x < i.width*4; x++){
+			img[imgO] = temp[y*i.width*4+x];
+			imgO++;
+		}
+
+	i.GenTexture(img);
+	i.size = Vector2{(float)i.width, (float)i.height};
+	if (DEBUG) printf("[Image] Loaded: %s\n", path.data());
+
+	f.close();
+	return i;
 }
 
 void Save(){
@@ -269,15 +364,15 @@ void Save(){
 			}
 		}
 	}
+	
+	if (!board.length())
+		SaveBoard();
+
 	int len = board.length();
 
 	w.write(reinterpret_cast<const char*>(&len), sizeof(int));
 	w.write(board.c_str(), sizeof(char)*len);
-
 	w.close();
-
-	if (!board.length())
-		SaveBoard();
 
 	w.open("boards/"+board, ios::out | ios::binary);
 	
@@ -306,11 +401,12 @@ void Save(){
 	}
 
 	// Configuration
+	float vX = View->x, vY = View->y, s = *Scale;
 	w.write(reinterpret_cast<const char*>(&Width), sizeof(int));
 	w.write(reinterpret_cast<const char*>(&Height), sizeof(int));
-	w.write(reinterpret_cast<const char*>(&View.x), sizeof(float));
-	w.write(reinterpret_cast<const char*>(&View.y), sizeof(float));
-	w.write(reinterpret_cast<const char*>(&Scale), sizeof(float));
+	w.write(reinterpret_cast<const char*>(&vX), sizeof(float));
+	w.write(reinterpret_cast<const char*>(&vY), sizeof(float));
+	w.write(reinterpret_cast<const char*>(&s), sizeof(float));
 	w.write(reinterpret_cast<const char*>(&maximize), sizeof(bool));
 
 	w.close();

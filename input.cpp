@@ -12,9 +12,9 @@ void MainInput(){
 	shift = keyboard.GetKey(KEY_LEFT_SHIFT);
 
 	// Toggle origin
-	if (keyboard.newKey == KEY_SPACE){
+	if (keyboard.newKey == KEY_SPACE)
 		drawOrigin = !drawOrigin;
-	}
+	
 
 	// Saving
 	if (keyboard.GetKey(KEY_S) && keyboard.GetKey(KEY_LEFT_CONTROL)){
@@ -79,13 +79,13 @@ void MainInput(){
 
 	// Movement
 	if (keyboard.GetKey(KEY_W) || keyboard.GetKey(KEY_UP))
-		View.y += viewSpeed;
+		View->y += viewSpeed;
 	if ((keyboard.GetKey(KEY_S) && !keyboard.GetKey(KEY_LEFT_CONTROL)) || keyboard.GetKey(KEY_DOWN))
-		View.y -= viewSpeed;
+		View->y -= viewSpeed;
 	if (keyboard.GetKey(KEY_A) || keyboard.GetKey(KEY_LEFT))
-		View.x -= viewSpeed;
+		View->x -= viewSpeed;
 	if (keyboard.GetKey(KEY_D) || keyboard.GetKey(KEY_RIGHT))
-		View.x += viewSpeed;
+		View->x += viewSpeed;
 
 
 	// Scaling
@@ -105,7 +105,7 @@ void MainInput(){
 				TagWin.Show();
 			}else{
 				string folder = GetFolder();
-				if (folder.length()){
+				if (folder.length() && !((stat(folder.c_str(), &s) == 0) == 0)){
 					locations.push_back(Table{GetName(folder), folder});
 					sort(locations.begin(), locations.end(), locations[0].SortTable);
 				}
@@ -140,8 +140,8 @@ void MainInput(){
 		}else if (mouse.Click(LM_DOWN) && newBoard.Hover()){
 			imgs.clear();
 			board = "";
-			Scale = 1;
-			View = Vector2{0,0};
+			*Scale = 1;
+			*View = Vector2{0,0};
 		}
 
 		//
@@ -149,10 +149,10 @@ void MainInput(){
 		//
 		if (keyboard.newKey == KEY_DELETE && selImgs.size()){
 			sort(selImgs.begin(), selImgs.end(), SortUint);
+			int off = 0;
 			for (int i = 0; i < selImgs.size(); i++){
-				vector<Image>:: iterator img = imgs.begin();
-				advance(img, selImgs[i]);
-				imgs.erase(img);
+				imgs.erase(imgs.begin() + selImgs[i]-off);
+				off++;
 			}
 			ResetImages();
 		}
@@ -172,13 +172,18 @@ void MainInput(){
 		//
 		// Image rotation
 		//
-		if (rot)
+		if (rot){
+			// Get center of selection
+			Vector2 avg = imgs[selImgs[0]].position + Vector2{0, imgs[selImgs[0]].size.y/2};
+			for (int i = 1; i < selImgs.size(); i++)
+				avg += imgs[selImgs[i]].position + Vector2{0, imgs[selImgs[i]].size.y/2};
+			avg /= (int)selImgs.size();
+
+			// Rotate
 			for (auto img : selImgs){
-				imgs[img].angle = ((mouse.dragOff.x-mouse.position.x) + (mouse.dragOff.y-mouse.position.y))*(float)RADIANS;
-				if (shift)
-					imgs[img].angle = (int)((imgs[img].angle*(float)DEGREES)/15)*15*(float)RADIANS;
+				imgs[img].angle = (mouse.position.y >= avg.y ? 1 : -1) * (avg + Vector2{128, 0}).Angle(avg, mouse.position)*RADIANS;
 			}
-		
+		}
 		if (selImgs.size())
 			if (keyboard.newKey == KEY_R){
 				rot = true;
@@ -207,7 +212,7 @@ void MainInput(){
 					ResetImages();
 
 					for (int i = imgs.size()-1; i >= 0; i--){
-						if (mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(Scale))){
+						if (mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(*Scale))){
 								selImgs.push_back(i);
 								imgs[i].selected  = true;
 								ReorderImages();
@@ -225,7 +230,7 @@ void MainInput(){
 				}else if (!shift && !rot){
 					bool reset = true;
 					for (int i = imgs.size()-1; i >= 0; i--)
-						if (mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(Scale))){
+						if (mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(*Scale))){
 							reset = false;
 							if (!imgs[i].selected){
 								ResetImages();
@@ -243,7 +248,7 @@ void MainInput(){
 				// Selecting multiple images with shift
 				}else if (!rot){
 					for (int i = imgs.size()-1; i >= 0; i--)
-						if (mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(Scale))){\
+						if (mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(*Scale))){\
 						
 							// Check if the image was already selected
 							bool selected = false;
@@ -277,7 +282,7 @@ void MainInput(){
 			// Placing a new image on the board
 			//
 			}else{
-				previewImg.size = Vector2{(float)previewImg.trueWidth, (float)previewImg.trueHeight};
+				previewImg.size = Vector2{(float)previewImg.width, (float)previewImg.height};
 				previewImg.position = MouseToScreenSpace(mouse.position).Subtract(previewImg.size.Divide(2));
 				previewImg.selected = true;
 				ResetImages();
@@ -291,7 +296,7 @@ void MainInput(){
 			// Moving images
 			if (!selector && selImgs.size()){
 				for (auto img : selImgs)
-					imgs[img].position = imgs[img].position.Add((mouse.position.x - mouse.dragOff.x)/Scale, (mouse.position.y - mouse.dragOff.y)/Scale);
+					imgs[img].position = imgs[img].position.Add((mouse.position.x - mouse.dragOff.x) / *Scale, (mouse.position.y - mouse.dragOff.y) / *Scale);
 					
 				mouse.dragOff = mouse.position;
 			}
@@ -329,10 +334,10 @@ void MainInput(){
 			}
 			for (auto img : selImgs){
 				if (!shift){
-					imgs[img].size.x += (mouse.position.x-mouse.dragOff.x)/Scale;
-					imgs[img].size.y += (mouse.position.y-mouse.dragOff.y)/Scale;
+					imgs[img].size.x += (mouse.position.x-mouse.dragOff.x) / *Scale;
+					imgs[img].size.y += (mouse.position.y-mouse.dragOff.y) / *Scale;
 				}else{
-					imgs[img].size.x += (mouse.position.x-mouse.dragOff.x)/Scale;
+					imgs[img].size.x += (mouse.position.x-mouse.dragOff.x) / *Scale;
 					imgs[img].size.y = imgs[img].height * imgs[img].size.x/imgs[img].width;
 				}
 				if (imgs[img].size.x <= minSize)
@@ -348,7 +353,7 @@ void MainInput(){
 		}else if (mouse.Click(MM_DOWN)){
 			mouse.dragOff = mouse.position;
 		}else if (mouse.state == MM_DOWN){
-			View = View.Add((mouse.dragOff.x - mouse.position.x)/Scale, + (mouse.dragOff.y - mouse.position.y)/Scale);
+			*View = View->Add((mouse.dragOff.x - mouse.position.x) / *Scale, + (mouse.dragOff.y - mouse.position.y) / *Scale);
 			mouse.dragOff = mouse.position;
 		}
 	}
@@ -392,9 +397,9 @@ void MainInput(){
 
 Vector2 MouseToScreenSpace(Vector2 position){
 	return position.Subtract(Width/2, Height/2)
-					.Divide(Scale)
+					.Divide(*Scale)
 					.Add(Width/2, Height/2) 
-					.Add(View);
+					.Add(*View);
 }
 
 void Paste(){

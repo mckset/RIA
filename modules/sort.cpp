@@ -3,6 +3,17 @@ bool SortUint(uint, uint);
 
 bool SortUint(uint i1, uint i2){return i1 < i2;}
 
+string SortFormat(string s){
+	string out = s;
+	if (!strcmp(Lower(s.substr(0,4)).data(), "the ")){
+		out = s.substr(4, s.length()-4);
+		out += " ";
+		out += s.substr(0,3);
+	}
+	
+	return out;
+}
+
 bool SortFile(File f1, File f2){
 	int max = f1.name.length() <= f2.name.length() ? f1.name.length() : f2.name.length();
 		
