@@ -1,9 +1,9 @@
 # RIA (Early access)
-RIA (Reference Image Application) is a cross platform image organizer for both Windows and Linux designed to help artists organize their reference material through the use of tags and folders. 
+RIA (Reference Image Application) is a cross platform image organizer for both Windows and Linux designed to help artists organize their reference material through the use of tags and folders. RIA supports PNG, JPEG, and WebP images.
 
 # Installation
-Download the latest verion from release page for your operating system or compile it from source and run RIA. Note that RIA expects the font and icon images to be in the image folder in the directory you run it from.
-> **_NOTE:_** Currently, the Windows command prompt will open as a display debug information
+Download the latest verion from release page for your operating system or compile it from source and run RIA. Note that RIA expects the icon image to be in the image folder in the directory you run it from.
+> **_NOTE:_** Currently, the Windows command prompt will open as a display for debug information
 
 ### Tested Distros:
 - Arch
@@ -123,27 +123,25 @@ Image Pack Layout Example (See the example image pack in the latest release)
 
 **glfw3-x11 or glfw-dev**
 
-**xorg-dev**
+**xorg-dev** (Linux)
 
 **g++**
 
+**libwebp**
+
+**freetype font**
 
 
-Linux:
-Arch Linux/Manjaro:
-```
-g++ main.cpp linux/glad/glad.c -o RIA -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl
-```
 Ubuntu:
 ```
-g++ main.cpp linux/glad/glad.c -o RIA -lstdc++fs -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -static-libgcc -static-libstdc++
+g++ -std=c++17 main.cpp outsourced/linux/glad/glad.c -o main -lstdc++fs -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lfreetype -I/usr/include/freetype2 -lwebp -static-libgcc -static-libstdc++
 ```
-> **_NOTE:_**  Be sure to set UBUNTU to 1 in "config.hpp" before compiling.
+> **_NOTE:_**  Be sure to set UBUNTU to 1 in "config.hpp" before compiling. Ubuntu also requires the libwebp package to compile.
 
 Windows:
 ```
-g++ main.cpp windows/glad/glad.c -o RIA windows/glfw/libglfw3.a -lopengl32 -lgdi32 -lole32 -loleaut32 -luuid -static -static-libgcc -static-libstdc++
+g++ main.cpp outsourced\windows\glad\glad.c -o RIA  "outsourced\windows\glfw\libglfw3.a" -lopengl32 -lgdi32 -lole32 -loleaut32 -luuid -Lwebp freetype.dll libwebp.dll -static -static-libgcc -static-libstdc++
 ```
 
-> **_NOTE:_**  The command may vary between distros/OS. 
+> **_NOTE:_** The above may vary depending on your Windows workspace and installed libraries.
 
