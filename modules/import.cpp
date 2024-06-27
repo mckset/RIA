@@ -1,7 +1,7 @@
 void CreateImport();
 Tag CleanTag(Tag, bool);
 
-string DrawImport();
+void DrawImport();
 string DrawPacks();
 string DrawFolders();
 string DrawImportTags();
@@ -13,9 +13,9 @@ bool LoadImport();
 
 int stage = 0; // Stage of importing files
 
-Button createB = Button{"Create", importButton, highlight};
-Button openB = Button{"Open", importButton, highlight};
-Button importB = Button{"Import", importButton, highlight};
+Button createB = Button{"Create", importButton, highlight, White, fontSize/2};
+Button openB = Button{"Open", importButton, highlight, White, fontSize/2};
+Button importB = Button{"Import", importButton, highlight, White, fontSize/2};
 
 Table folders;
 
@@ -31,9 +31,9 @@ void ResetImport(){
 	importScroll.scroll = 0;
 	importScroll.end = 0;
 
-	createB = Button{"Create", importButton, highlight, false};
+	createB = Button{"Create", importButton, highlight, White, fontSize/2};
 	createB.toggled = false;
-	importB = Button{"Import", importButton, highlight, false};
+	importB = Button{"Import", importButton, highlight, White, fontSize/2};
 
 	folders.path = path + slash + "shared";
 	folders.GetFiles();
@@ -43,7 +43,7 @@ void ResetImport(){
 //
 // Handles drawing the import window
 //
-string DrawImport(){
+void DrawImport(){
 	float y = Height-fontSize*2+importScroll.scroll;
 	importScroll.end = 0;
 
@@ -70,16 +70,13 @@ string DrawImport(){
 	// Overwrite check
 	//
 	else if (stage == -1){
-		sShape.Use();
 		shape.Draw(Vector2{0, (float)Height-fontSize}, Vector2{(float)Width, fontSize}, importButton, true);
-		sImage.Use();
-		font.Write("Overwrite?", Vector2{24, (float)Height-fontSize}, fontSize, fontColor, true, (float)Width-scrollbarSize-24, true);
+		font.Write("Overwrite?", Vector2{24, (float)Height-fontSize}, fontSize/2, fontColor, true, (float)Width-scrollbarSize-24, true);
 
-		sImage.Use();
-		font.Write("Import.dat already exists.", Vector2{16, y}, fontSize, fontColor, true);
-		font.Write("Do you want to overwrite", Vector2{16, y-fontSize}, fontSize, fontColor, true);
-		font.Write("the existing data?", Vector2{16, y-fontSize*2}, fontSize, fontColor, true);
-		font.Write("(There's no undo)", Vector2{16, y-fontSize*3}, fontSize, fontColor, true);
+		font.Write("Import.dat already exists.", Vector2{16, y}, fontSize/2, fontColor, true);
+		font.Write("Do you want to overwrite", Vector2{16, y-fontSize}, fontSize/2, fontColor, true);
+		font.Write("the existing data?", Vector2{16, y-fontSize*2}, fontSize/2, fontColor, true);
+		font.Write("(There's no undo)", Vector2{16, y-fontSize*3}, fontSize/2, fontColor, true);
 
 		createB.position = Vector2{0, 0};
 		importB.position = Vector2{(float)Width/2, 0};
@@ -96,7 +93,7 @@ string DrawImport(){
 				CreateImport();
 				importTime = 400;
 				Import.Hide();
-				return "Updated import file";
+				importText = "Updated import file";
 			}
 			ResetImport();
 			Import.Hide();
@@ -111,10 +108,9 @@ string DrawImport(){
 			importScroll.scroll = 0;
 		}
 
-		sShape.Use();
 		importScroll.Draw(Vector2{(float)Width-scrollbarSize, 0}, Vector2{(float)scrollbarSize, (float)Height});
 	}
-	return output;
+	importText = output;
 }
 
 //
@@ -124,17 +120,15 @@ string DrawPacks(){
 	float y = Height-fontSize*2+importScroll.scroll;
 
 	for (int i = 0; i < folders.folders.size(); i++){
-		sShape.Use();
 		shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, backing, true);
+		
 		// Active indicator
 		if (folders.folders[i].expand)
-			shape.Draw(Vector2{fontSize/4, y+fontSize/4}, Vector2{fontSize/2, fontSize/2}, White, true);
-			
-		sImage.Use();
-		font.Write(folders.folders[i].name, Vector2{24, y}, fontSize, fontColor, true, (float)Width-scrollbarSize-48);
+			shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, highlight, true);
+		
+		font.Write(folders.folders[i].name, Vector2{24, y}, fontSize/2, fontColor, true, (float)Width-scrollbarSize-48);
 
-		if (y > fontSize && mouse.position.Within(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize})){
-			sShape.Use();
+		if (y > fontSize && mouse.position.Within(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}) && Import.Focus()){
 			shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, highlight, true);
 
 			// On click
@@ -150,16 +144,14 @@ string DrawPacks(){
 	}
 	importScroll.end += fontSize;
 	if (!folders.folders.size()){
-		sImage.Use();
-		font.Write("No image packs found.", Vector2{16, y}, fontSize, fontColor, true);
-		font.Write("Ensure that your image", Vector2{16, y-fontSize}, fontSize, fontColor, true);
-		font.Write("packs are saved to the", Vector2{16, y-fontSize*2}, fontSize, fontColor, true);
-		font.Write("shared folder.", Vector2{16, y-fontSize*3}, fontSize, fontColor, true);
+		sFont.Use(true);
+		font.Write("No image packs found.", Vector2{16, y}, fontSize/2, fontColor);
+		font.Write("Ensure that your image", Vector2{16, y-fontSize}, fontSize/2, fontColor);
+		font.Write("packs are saved to the", Vector2{16, y-fontSize*2}, fontSize/2, fontColor);
+		font.Write("shared folder.", Vector2{16, y-fontSize*3}, fontSize/2, fontColor);
 	}else{
-		sShape.Use();
 		shape.Draw(Vector2{0, (float)Height-fontSize}, Vector2{(float)Width-scrollbarSize, fontSize}, importButton, true );
-		sImage.Use();
-		font.Write("Image Packs", Vector2{24, (float)Height-fontSize}, fontSize, fontColor, true, (float)Width-scrollbarSize-24, true);
+		font.Write("Image Packs", Vector2{24, (float)Height-fontSize}, fontSize/2, fontColor, true, (float)Width-scrollbarSize-24, true);
 	}
 	importB.position = Vector2{0, 0};
 	importB.size = Vector2{(float)Width/3-scrollbarSize/3, fontSize};
@@ -188,13 +180,13 @@ string DrawPacks(){
 						stage = -1;
 						importB.text = "Cancel";
 						createB.text = "Overwrite";
-						return "";
+						importText = "";
 					}else{
 						folders.GetFiles();
 						CreateImport();
 						importTime = 400;
 						Import.Hide();
-						return "Created import file";
+						importText = "Created import file";
 					}
 				}
 			}
@@ -208,7 +200,7 @@ string DrawPacks(){
 					if (!LoadImport()){
 						Import.Hide();
 						importTime = 400;
-						return "Missing/corrupt import data";
+						importText = "Missing/corrupt import data";
 					}
 					folders.path = folders.folders[i].path;
 					folders.GetFiles();
@@ -240,33 +232,29 @@ string DrawFolders(){
 
 	// List folders
 	for (int i = 0; i < folders.folders.size(); i++){
-		sShape.Use();
 		shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, backing, true);
 
 		// Import indicator
 		if (folders.folders[i].expand)
 			shape.Draw(Vector2{fontSize/4, y+fontSize/4}, Vector2{fontSize/2, fontSize/2}, White, true);
 			
-		if (y > fontSize && mouse.position.Within(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize})){
+		if (y > fontSize && mouse.position.Within(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}) && Import.Focus()){
 			shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, highlight, true);
 
 			// On click
 			if (mouse.Click(LM_DOWN) && y <= (float)Height-fontSize*2 && y >= (float)fontSize*2)
 				folders.folders[i].expand = !folders.folders[i].expand;
 		}
-		sImage.Use();
 		font.Write(folders.folders[i].name + "[" + to_string(folders.folders[i].files.size()) + "]", 
-		Vector2{24, y}, fontSize, fontColor, true, (float)Width-scrollbarSize-48);
+			Vector2{24, y}, fontSize/2, fontColor, true, (float)Width-scrollbarSize-48);
 
 		y-=fontSize;
 		importScroll.end += fontSize;
 	}
 	importScroll.end += fontSize*2;
 
-	sShape.Use();
 	shape.Draw(Vector2{0, (float)Height-fontSize}, Vector2{(float)Width-scrollbarSize, fontSize}, importButton, true );
-	sImage.Use();
-	font.Write("Folders", Vector2{24, (float)Height-fontSize}, fontSize, fontColor, true, (float)Width-scrollbarSize-24, true);
+	font.Write("Folders", Vector2{24, (float)Height-fontSize}, fontSize/2, fontColor, true, (float)Width-scrollbarSize-24, true);
 
 	importB.position = Vector2{0, 0};
 	importB.size = Vector2{(float)Width-scrollbarSize, fontSize};
@@ -275,7 +263,6 @@ string DrawFolders(){
 		FilterTags();
 		stage++;
 		createB.text = "Include Subtags";
-		createB.toggle = true;
 		createB.toggled = true;
 		importB.text = "Import Tags";
 	}
@@ -296,22 +283,17 @@ string DrawImportTags(){
 	}
 
 	for (auto t : importTags){
-		sShape.Use();
 		shape.Draw(Vector2{0, y}, Vector2{(float)Width-scrollbarSize, fontSize}, t.color, true);
 
-		sImage.Use();
-		font.Write(t.name, Vector2{24, y}, fontSize, fontColor, true, (float)Width-scrollbarSize-48);
+		font.Write(t.name, Vector2{8, y}, fontSize/2, fontColor, true, (float)Width-scrollbarSize-48);
 		y-=fontSize;
 		importScroll.end += fontSize;
 
 		// Subtags
 		if (createB.toggled){
 			for (auto s : t.subTags){
-				sShape.Use();
-				shape.Draw(Vector2{8, y}, Vector2{(float)Width-scrollbarSize-8, fontSize}, s.color, true);
-
-				sImage.Use();
-				font.Write(s.name, Vector2{32, y}, fontSize, fontColor, true, (float)Width-scrollbarSize-48);
+				shape.Draw(Vector2{16, y}, Vector2{(float)Width-scrollbarSize-16, fontSize}, s.color, true);
+				font.Write(s.name, Vector2{24, y}, fontSize/2, fontColor, true, (float)Width-scrollbarSize-48);
 
 				y-=fontSize;
 				importScroll.end += fontSize;
@@ -320,10 +302,8 @@ string DrawImportTags(){
 	}
 	importScroll.end += fontSize;
 
-	sShape.Use();
 	shape.Draw(Vector2{0, (float)Height-fontSize}, Vector2{(float)Width-scrollbarSize, fontSize}, importButton, true);
-	sImage.Use();
-	font.Write("Tags to Import", Vector2{24, (float)Height-fontSize}, fontSize, fontColor, true, (float)Width-scrollbarSize-24, true);
+	font.Write("Tags to Import", Vector2{24, (float)Height-fontSize}, fontSize/2, fontColor, true, (float)Width-scrollbarSize-24, true);
 
 	importScroll.end += fontSize;
 	importB.position = Vector2{0, 0};

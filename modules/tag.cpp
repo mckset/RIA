@@ -2,47 +2,81 @@ void DrawTag();
 void TagInput();
 void ResetTagEdit();
 
-Button addTag = Button{"Confirm", menuBackground, highlight, false, true};
-Button delTag = Button{"Delete", menuBackground, highlight, false, true};
+Button addTag = Button{"Confirm", menuBackground, highlight, White, fontSize/2};
+Button delTag = Button{"Delete", menuBackground, highlight, White, fontSize/2};
+
+Color newColor;
+Color newColorHue;
+Vector2 csPicker = Vector2{256,256};
+Vector2 csSize = Vector2{256, 256};
+Vector2 csPos = Vector2{8,8};
+bool csLock = false;
+
+float csSaturation = 0;
+float csDarkness = 0;
 
 void DrawTag(){
-	sShape.Use();
-	rgb[0].Draw(Vector2{32, (float)Height/4 - (float)Height/6}, Vector2{(float)Width-64, (float)scrollbarSize}, true, rgb[1].scrollLock || rgb[2].scrollLock);
-	rgb[1].Draw(Vector2{32, (float)Height/4*2 - (float)Height/6}, Vector2{(float)Width-64, (float)scrollbarSize}, true, rgb[0].scrollLock || rgb[2].scrollLock);
-	rgb[2].Draw(Vector2{32, (float)Height/4*3 - (float)Height/6}, Vector2{(float)Width-64, (float)scrollbarSize}, true, rgb[0].scrollLock || rgb[1].scrollLock);
-	tagName.position = Vector2{0, (float)Height/5*4};
-	tagName.size = Vector2{(float)Width, (float)Height/5};
-	tagName.background = Color{(float)rgb[0].scroll/255, (float)rgb[1].scroll/255, (float)rgb[2].scroll/255, 1};
-	tagName.Draw(true, true);
-	addTag.position = Vector2{0, (float)Height/5*4-fontSize};
-	addTag.size = Vector2{(float)Width/2, fontSize};
-	delTag.position = Vector2{(float)Width/2, (float)Height/5*4-fontSize};
-	delTag.size = Vector2{(float)Width/2, fontSize};
-	addTag.Draw(false, true);
-	delTag.Draw(false, true);
+	newColorHue = Color{(float)rgb[0].scroll/255, (float)rgb[1].scroll/255, (float)rgb[2].scroll/255, 1};
+	newColor = newColorHue.Brighten(csSaturation).Darken(csDarkness);
+
+	tagName.color = newColor;
+	tagName.Draw(Vector2{0, fHeight - fontSize*2}, Vector2{fWidth, fontSize*2}, true, true);
+	addTag.Draw(Vector2{0, fHeight-fontSize*3}, Vector2{fWidth/2, fontSize}, false, true);
+	delTag.Draw(Vector2{fWidth/2, fHeight-fontSize*3}, Vector2{fWidth/2, fontSize}, false, true);
+	
+	// Color selector
+	rgb[0].Draw(Vector2{csPos.x + csSize.x + 8, 80}, Vector2{fWidth-(csPos.x + csSize.x + 8)-8, 16}, true, rgb[1].scrollLock || rgb[2].scrollLock);
+	rgb[1].Draw(Vector2{csPos.x + csSize.x + 8, 128}, Vector2{fWidth-(csPos.x + csSize.x + 8)-8, 16}, true, rgb[0].scrollLock || rgb[2].scrollLock);
+	rgb[2].Draw(Vector2{csPos.x + csSize.x + 8, 176}, Vector2{fWidth-(csPos.x + csSize.x + 8)-8, 16}, true, rgb[0].scrollLock || rgb[1].scrollLock);
+	
+
+	shape.DrawColorSelector(csPos, csSize, newColorHue);
+	shape.DrawCircle(csPicker + csPos, 24, 24, newColor);
+	shape.DrawCircle(csPicker + csPos, 24, 4, Black);
 }
 
 void TagInput(){
+	if (mouse.position.Within(csPos, csSize) && mouse.state == LM_DOWN && !rgb[0].scrollLock && !rgb[1].scrollLock && !rgb[2].scrollLock || csLock){
+		csPicker = mouse.position - csPos;
+
+		if (csPicker.x < 0)
+			csPicker.x = 0;
+		else if (csPicker.x > csSize.x)
+			csPicker.x = csSize.x;
+
+		if (csPicker.y < 0)
+			csPicker.y = 0;
+		else if (csPicker.y > csSize.y)
+			csPicker.y = csSize.y;
+
+		csSaturation = 1 - csPicker.x/csSize.x;
+		csDarkness = 1 - csPicker.y/csSize.y;
+		csLock = true;
+
+		if (mouse.state != LM_DOWN)
+			csLock = false;
+	}
+
 	if (mouse.Click(LM_DOWN)){
 		tagName.CheckClick();
 		if (addTag.Hover()){
 			// New Tag
 			if (editTag == -1)
-				tags.push_back(Tag{tagName.text, tagName.background});
+				tags.push_back(Tag{tagName.text, tagName.color});
 			
 			// Edit Tag
 			else if (editSub == -1){
 				tags[editTag].name = tagName.text;
-				tags[editTag].color = tagName.background;
+				tags[editTag].color = tagName.color;
 
 			// New Sub Tag
 			}else if (editSub == -2)
-				tags[editTag].subTags.push_back(Tag{tagName.text, tagName.background});
+				tags[editTag].subTags.push_back(Tag{tagName.text, tagName.color});
 			
 			// Edit Sub Tag
 			else{
 				tags[editTag].subTags[editSub].name = tagName.text;
-				tags[editTag].subTags[editSub].color = tagName.background;
+				tags[editTag].subTags[editSub].color = tagName.color;
 			}
 			TagWin.Hide();
 			if (editSub == -2 || editSub >= 0)
@@ -91,12 +125,7 @@ void TagInput(){
 	
 	// Editing the text field
 	if (tagName.active)
-		if (keyboard.newKey > 31 && keyboard.newKey < 127 && keyboard.newKey != KEY_BACKSPACE)
-			tagName.text += KeyToChar(keyboard.newKey);
-		else if (keyboard.newKey == KEY_BACKSPACE && tagName.text.length())
-			tagName.text = tagName.text.substr(0, tagName.text.length()-1);
-		else if (keyboard.newKey == KEY_ENTER)
-			tagName.active = false;
+		keyboard.Type(&tagName.text);
 	
 	keyboard.newKey = -1;
 	mouse.prevState = mouse.state;
@@ -106,7 +135,7 @@ void ResetTagEdit(){
 	editTag = -1;
 	editSub = -1;
 	tagName.text = "";
-	tagName.background = Black;
+	tagName.color = Black;
 	rgb[0].scroll = 0;
 	rgb[1].scroll = 0;
 	rgb[2].scroll = 0;

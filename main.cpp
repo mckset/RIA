@@ -22,15 +22,15 @@ int CreateWindows(){
 
 	// Checks if the icon image exists
 	Image img;
-	img.LoadImage((char*)"images/icon.png");
+	img.LoadImage("images/icon.png");
 	if (!img.loaded)
 		printf("[Warning] Unable to load icon image\n");
 	else{
 		GLFWimage i[1]; 
 		stbi_set_flip_vertically_on_load(false);
 		i[0].pixels = stbi_load("images/icon.png", &i[0].width, &i[0].height, 0, 4); //rgba channels 
-		stbi_image_free(i[0].pixels);
 		glfwSetWindowIcon(Main.w, 1, i); 
+		stbi_image_free(i[0].pixels);
 		stbi_set_flip_vertically_on_load(true);
 	}
 	
@@ -38,23 +38,35 @@ int CreateWindows(){
 	glfwSetWindowMaximizeCallback(Main.w, Maximize);
 	glfwSetDropCallback(Main.w, DragDrop);
 	Main.visible = true;
+	Main.Render = &DrawApp;
+	Main.Input = &MainInput;
 
 	//
 	// Tag Window
 	//
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-	TagWin.w = glfwCreateWindow(Width/2, Height/2-42, "Tag", NULL, Main.w);
-	TagWin.Init(Width/2, Height/2);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	TagWin.w = glfwCreateWindow(720, 256+fontSize*4, "Tag", NULL, Main.w);
+	TagWin.Init(720, 256+fontSize*4);
 	glfwSetWindowCloseCallback(TagWin.w, SubClose);
+
+	TagWin.Render = &DrawTag;
+	TagWin.Input = &TagInput;
+	TagWin.Hide();
 
 	//
 	// Import Window
 	//
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-	Import.w = glfwCreateWindow(Width/4, Height/2-42, "Import/Create", NULL, Main.w);
-	Import.Init(Width/2, Height/2);
+	Import.w = glfwCreateWindow(400, 512, "Import/Create", NULL, Main.w);
+	Import.Init(400, 512);
 	glfwSetWindowCloseCallback(Import.w, SubClose);
 	glfwSetScrollCallback(Import.w, GetScrollWheel);
+	Import.Render = &DrawImport;
+	Import.Input = nullptr;
+	Import.Hide();
+
 	return 1;
 }
 
@@ -76,20 +88,29 @@ void Init(){
 		if(!fs::create_directory(folder))
 			if (DEBUG) printf("Failded to create boards folder");
 	
-
+	LoadConfig();
 
 	sImage.Init(imageV, imageF);
 	sShape.Init(shapeV, shapeF);
+
+	sFont.Init(fontV, fontF);
+	sColorSelector.Init(shapeV, colorSelectorF);
+	sCircle.Init(shapeV, circleF);
+
+	if (FT_Init_FreeType(&ft))
+		printf("Error: Unable to load font library");
+	if (FT_New_Face(ft, fontPath.data(), 0, &face))
+		printf("Error: Unable to load font %s\n", fontPath.data());
+	InitFont();
 	Load();
 	InitMenu();
+	
 	Main.width = Width;
 	Main.height = Height;
 	if (maximize)
 		glfwMaximizeWindow(Main.w);
 	else
 		Main.Resize(Width, Height);
-
-		
 }
 
 int main(){
@@ -102,11 +123,6 @@ int main(){
 
 	stbi_set_flip_vertically_on_load(true);
 	Init();
-	font.Load((char*)"images/font.png");
-	if (!font.fontImg.loaded){
-		if (DEBUG) printf("image/font.png missing!\n");
-		return -1;	
-	}
 	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -118,28 +134,9 @@ int main(){
 		vertexBuffer = Main.vB;
 		elementBuffer = Main.eB;
 
-		if (Main.Focus() || DnD){
-			Main.Use(backing); // Main window
-			DrawApp(); // Draw
-			glfwSwapBuffers(Main.w);// Swap buffer
-			MainInput();
-			if (DnD)
-				DnD = false;
-		}
-
-		if (TagWin.Focus()){
-			TagWin.Use(backing);
-			DrawTag();
-			glfwSwapBuffers(TagWin.w);
-			TagInput();
-		}
-		if (Import.Focus()){
-			Import.Use(importBacking);
-			importText = DrawImport();
-			glfwSwapBuffers(Import.w);
-			keyboard.newKey = -1;
-			mouse.prevState = mouse.state;
-		}
+		Main.Draw(backing);
+		TagWin.Draw(backing);
+		Import.Draw(importBacking);
 	}
 
 	return 0;

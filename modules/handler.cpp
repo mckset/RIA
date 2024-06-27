@@ -33,9 +33,9 @@ void DragDrop(GLFWwindow* w, int c, const char** paths){
 
 				// Magic math that puts the mouse into screen space
 				img.position = mouse.position.Subtract(Width/2, Height/2)
-					.Divide(Scale)
+					.Divide(*Scale)
 					.Add(Width/2, Height/2) 
-					.Add(View)
+					.Add(*View)
 					.Subtract(img.size.Divide(2));
 
 				
@@ -65,6 +65,7 @@ void On_Resize(GLFWwindow* w, int width, int height){
 		Main.Use();
 		Main.width = width;
 		Main.height = height;
+		menuWidth = width/3;
 	}else if (w == TagWin.w){
 		TagWin.Use();
 		TagWin.width = width;
@@ -94,11 +95,11 @@ void GetScrollWheel(GLFWwindow* w, double x, double y){
 	if (w != Import.w){
 		if (!menu || mouse.position.x > Width/3){
 			if (y < 0){ // Zoom out
-				if (Scale > .1f)
-					Scale -= .1f;
+				if (*Scale > .1f)
+					*Scale -= .1f;
 			}else{ // Zoom in
-				if (Scale < 1.5f)
-					Scale+=.1f;
+				if (*Scale < 1.5f)
+					*Scale+=.1f;
 			}
 		}else{
 			if (y < 0){
@@ -161,9 +162,9 @@ void SetMouseState(GLFWwindow* w, int button, int action, int mod){
 char KeyToChar(int key){
 	int c = key-32;
 	if (keyboard.GetKey(KEY_LEFT_SHIFT))
-		return upperKeyToChar[c];
+		return UpperMap[c];
 	else
-		return lowerKeyToChar[c];
+		return LowerMap[c];
 }
 
 
