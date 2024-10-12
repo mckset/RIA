@@ -145,6 +145,21 @@ class Table{
 			inited = true;
 		}
 
+		vector<File> GetHidden(){
+			vector<File> output;
+
+			if (!expand)
+				output = files;
+			
+			for (int i = 0; i < folders.size(); i++){
+				vector<File> temp = folders[i].GetHidden();
+				for (auto file : temp)
+					output.push_back(file);
+			}
+			
+			return output;
+		}
+
 		vector<File> GetAll(){
 			vector<File> output;
 			GetFiles();

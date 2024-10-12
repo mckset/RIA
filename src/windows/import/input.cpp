@@ -118,35 +118,52 @@ void TagsImportInput(){
 						newTag = false;
 						ImportTag(tag, &tags[t]);
 
-						for (auto subTag : tag.subTags){
-							bool newSub = true;
-							for (int s = 0; s < tags[t].subTags.size(); s++){
-								if (subTag.name == tags[t].subTags[s].name){
-									newSub = false;
-									ImportTag(subTag, &tags[t].subTags[s]);
-									break;
+						if (createB.toggled){
+							for (auto subTag : tag.subTags){
+								bool newSub = true;
+								for (int s = 0; s < tags[t].subTags.size(); s++){
+									if (subTag.name == tags[t].subTags[s].name){
+										newSub = false;
+										ImportTag(subTag, &tags[t].subTags[s]);
+										break;
+									}
 								}
+								if (newSub)
+									tags[t].subTags.push_back(subTag);
 							}
-							if (newSub)
-								tags[t].subTags.push_back(subTag);
 						}
 						break;
 					}
 
 				}
-				if (newTag)
-					tags.push_back(tag);
+				if (newTag){
+					if (createB.toggled)
+						tags.push_back(tag);
+					else{
+						Tag t = Tag{tag.name, tag.color};
+						t.imgs = tag.imgs;
+						tags.push_back(t);
+					}
+				}
 			}
+			sort(tags.begin(), tags.end(), SortTag);
+			for (int i = 0; i < tags.size(); i++){
+				sort(tags[i].imgs.begin(), tags[i].imgs.end(), SortFile);
+				sort(tags[i].subTags.begin(), tags[i].subTags.end(), SortTag);
+				for (int s = 0; s < tags[i].subTags.size(); s++)
+					sort(tags[i].subTags[s].imgs.begin(), tags[i].subTags[s].imgs.end(), SortFile);
+			}
+			Import.Hide();
 		}
 	}
-	sort(tags.begin(), tags.end(), SortTag);
-	for (int i = 0; i < tags.size(); i++)
-		sort(tags[i].subTags.begin(), tags[i].subTags.end(), SortTag);
 }
 
 // Get tags to import
 void FoldersImportInput(){
 	if (mouse.Click(LM_DOWN) && importB.Hover()){
+		importFiles = folders.GetHidden();
+
+
 		for (auto tag : completeTags){
 			bool newTag = true;
 

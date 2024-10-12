@@ -72,8 +72,17 @@ class Tag{
 						subTags.erase(subTags.begin() + i);
 						return 0;
 					}else if (del == 2){
-						imgs.push_back(File{GetName(previewImg.path), previewImg.path});
-						sort(imgs.begin(), imgs.end(), SortFile);
+						bool exists = false;
+						for (auto img : imgs){
+							if (img.path == previewImg.path){
+								exists = true;
+								break;
+							}
+						}
+						if (!exists){
+							imgs.push_back(File{GetName(previewImg.path), previewImg.path});
+							sort(imgs.begin(), imgs.end(), SortFile);
+						}
 					}
 
 					// Expanded
@@ -131,7 +140,7 @@ class Tag{
 
 			if (mouse.position.Within(position, size)){
 				if (mouse.Click(LM_DOWN)){
-					if (!addButton.Hover() || subTag)
+					if (!addButton.Hover() || sub > -1)
 						expand = !expand;
 					else{
 						editTag = tag;
@@ -161,13 +170,13 @@ class Tag{
 						for (int i = 0; i < imgs.size() && !exists; i++){
 							if (imgs[i].path == previewImg.path){
 								exists = true;
-								vector<File>:: iterator f = imgs.begin();
-								advance(f, i);
-								imgs.erase(f);
+								imgs.erase(imgs.begin() + i);
 
 								// Sub tag check
-								if (subTag < 0)
+								if (sub < 0){
+									printf("1\n");
 									CheckSubTags();
+								}
 								
 							}
 						}
@@ -178,7 +187,7 @@ class Tag{
 							sort(imgs.begin(), imgs.end(), SortFile);
 
 							// Append to main tag also
-							if (subTag > -1)
+							if (sub > -1)
 								return 2;
 						}
 					}
@@ -194,10 +203,8 @@ class Tag{
 		void CheckSubTags(){
 			for (int s = 0; s < subTags.size(); s++){
 				for (int i = 0; i < subTags[s].imgs.size(); i++){
-					if (subTags[s].imgs[i].path.data() == previewImg.path){
-						vector<File>:: iterator f = subTags[s].imgs.begin();
-						advance(f, i);
-						subTags[s].imgs.erase(f);
+					if (subTags[s].imgs[i].path == previewImg.path){
+						subTags[s].imgs.erase(subTags[s].imgs.begin() + i);
 						break;
 					}
 				}
