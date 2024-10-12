@@ -15,13 +15,13 @@ Download the latest verion from release page for your operating system or compil
 
 # Image Board
 
-**Left Ctrl + S** - Save the boards current state
+**Ctrl + S** - Save the boards current state
 
-**Left Ctrl + R** - Refresh locations
+**Ctrl + R** - Refresh locations
 
 **Left mouse click** - Select an image
 
-**Left shift + left mouse click** - Select multiple images
+**Shift + left mouse click** - Select multiple images
 
 **Left mouse drag** - Select images in a window
 
@@ -29,7 +29,7 @@ Download the latest verion from release page for your operating system or compil
 
 **Right mouse drag** - Scale images
 
-**Left-Shift + Right mouse drag** - Scale images while maintaining their ratio
+**Shift + Right mouse drag** - Scale images while maintaining their ratio
 
 **Scroll wheel/+/-** - Zoom in/out
 
