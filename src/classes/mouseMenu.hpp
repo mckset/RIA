@@ -38,12 +38,12 @@ class Menu{
 				if (t == 1 && tagIndex != items.size()-1){
 					int tagged = CheckTags(tags[tagIndex]);
 					if (tagged == 1)
-						shape.DrawBox(Vector2{position.x + fontSize/4, y+fontSize/4}, Vector2{fontSize/2, fontSize/2}, White, 2, true);
+						shape.DrawCircle(Vector2{position.x + fontSize/2, y+fontSize/2}, fontSize, fontSize/4, White, true);
 					else if (tagged == 2)
-						shape.Draw(Vector2{position.x + fontSize/4, y+fontSize/4}, Vector2{fontSize/2, fontSize/2}, White, true);
+						shape.DrawCircle(Vector2{position.x + fontSize/2, y+fontSize/2}, fontSize, 0, White, true);
 				}
 
-				font.Write(item.name, Vector2{position.x+4, y}, fontSize/2, fontColor, true, menuSize-4);
+				font.Write(item.name, Vector2{position.x+fontSize, y}, fontSize/2, fontColor, true, menuSize-fontSize);
 				
 				// Draw tags
 				if (!strcmp("Tag", item.name.data()) && expand){
