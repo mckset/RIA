@@ -4,6 +4,8 @@ void SaveTags(ofstream*, vector<Tag>, bool);
 vector<Tag> LoadTags(ifstream*, bool, bool);
 
 ifstream f;
+bool saving = false;
+string saveText = "";
 
 Color GetColor(string s){
 	Color out = Color{0,0,0,1};
@@ -267,6 +269,11 @@ Image LoadWebp(string path){
 }
 
 void Save(){
+	saving  = true;
+	if (!board.length())
+		SaveBoard();
+
+	saveText = "Opening save.dat";
 	ofstream w("save.dat", ios::out | ios::binary);
 	
 	if (!w.good()){
@@ -284,6 +291,7 @@ void Save(){
 	// Locations
 	w.write(reinterpret_cast<const char*>(&size), sizeof(int)); // 4 bytes
 	for (int l = 0; l < locations.size(); l++){
+		saveText = "Saving locations (" + to_string(l+1) + "/" + to_string(locations.size()) + ")";
 		int len = locations[l].path.length();
 		w.write(reinterpret_cast<const char*>(&len), sizeof(int));
 		w.write(locations[l].path.c_str(), sizeof(char)*len);
@@ -293,9 +301,6 @@ void Save(){
 	size = tags.size();
 
 	SaveTags(&w, tags, false);
-	
-	if (!board.length())
-		SaveBoard();
 
 	int len = board.length();
 
@@ -306,6 +311,7 @@ void Save(){
 	printf("%s\n", board.data());
 	w.open("boards/"+board, ios::out | ios::binary);
 	
+	saveText = "Saving image board";
 	if (!w.good()){
 		if (DEBUG) printf("[Saving] Unable to save image board\n");
 		return;
@@ -341,12 +347,16 @@ void Save(){
 	w.write(reinterpret_cast<const char*>(&maximize), sizeof(bool));
 
 	w.close();
+	saving = false;
+	saveText = "Saved";
 	if (DEBUG) printf("\n");
 }
 
 void SaveTags(ofstream *w, vector<Tag> tags, bool subtag = false){
 	int buf = tags.size();
 	w->write(reinterpret_cast<const char*>(&buf), 4);
+	string count = to_string(buf);
+	int i = 0;
 
 	for (auto tag : tags){
 		// Name
@@ -354,6 +364,11 @@ void SaveTags(ofstream *w, vector<Tag> tags, bool subtag = false){
 		buf = tag.name.length();
 		w->write(reinterpret_cast<const char*>(&buf), 4);
 		w->write(tag.name.c_str(), buf);
+
+		if (!subtag){
+			i++;
+			saveText = "Saving tag " + tag.name + " (" + to_string(i) + "/" + count + ")";
+		}
 
 		// Color
 		if (DEBUG) printf("[Saving] Color\n");
