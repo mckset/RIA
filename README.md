@@ -1,6 +1,8 @@
 # RIA (Early access)
 RIA (Reference Image Application) is a cross platform image organizer for both Windows and Linux designed to help artists organize their reference material through the use of tags and folders. RIA supports PNG, JPEG, and WebP images.
 
+> **_NOTICE:_**  When upgrading from v0.5 to v0.6, make sure you recreate any previously saved image packs. The app will crash if you try to load an old image pack.
+
 # Installation
 Download the latest verion from release page for your operating system or compile it from source and run RIA. Note that RIA expects the icon image to be in the image folder in the directory you run it from.
 > **_NOTE:_** Currently, the Windows command prompt will open as a display for debug information
@@ -14,6 +16,8 @@ Download the latest verion from release page for your operating system or compil
 # Image Board
 
 **Left Ctrl + S** - Save the boards current state
+
+**Left Ctrl + R** - Refresh locations
 
 **Left mouse click** - Select an image
 
@@ -92,7 +96,7 @@ Creating Image Packs
 2) Create subfolders to categorizes the images you will be using.
 3) Tag the images in RIA.
 4) Open the import menu, select your image pack and press the create button. 
-> **_NOTE:_**  Importing only uses the first level of folders in an image pack. further subdirectories are ignored
+> **_NOTE:_**  Importing can read multiple levels of sub directories but the example pack keeps things simple.
 
 Image Pack Layout Example (See the example image pack in the latest release)
 ------------------
