@@ -63,8 +63,8 @@ int CreateWindows(){
 	Import.Init(400, 512);
 	glfwSetWindowCloseCallback(Import.w, SubClose);
 	glfwSetScrollCallback(Import.w, GetScrollWheel);
-	Import.Render = &DrawImport;
-	Import.Input = nullptr;
+	Import.Render = &DrawImportMain;
+	Import.Input = &MainImportInput;
 	Import.Hide();
 
 	return 1;
