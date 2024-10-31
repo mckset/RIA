@@ -122,7 +122,7 @@ void DrawImportTags(){
 		
 		if (createB.toggled){
 			for (auto subTag : tag.subTags){
-				shape.Draw(Vector2{16, y}, Vector2{fWidth-scrollbarSize, fontSize}, subTag.color, true);
+				shape.Draw(Vector2{16, y}, Vector2{fWidth-scrollbarSize-16, fontSize}, subTag.color, true);
 				font.Write(subTag.name, Vector2{40, y}, fontSize/2, fontColor, true, fWidth-scrollbarSize-48);
 				y-=fontSize;
 				importScroll.end += fontSize;

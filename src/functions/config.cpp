@@ -43,6 +43,7 @@ void LoadConfig(){
 					break;
 				}
 			if (valid){
+				
 				if (var == settings[0] && stat(newLine.c_str(), &s) == 0)	fontPath = newLine;
 				else if (var == settings[0])	continue;
 				else if (var == settings[1]) 	fontColor = GetColor(newLine);
