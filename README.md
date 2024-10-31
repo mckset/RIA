@@ -130,7 +130,7 @@ Image Pack Layout Example (See the example image pack in the latest release)
 
 **STB_Image**: https://github.com/nothings/stb
 
-**glfw3-x11 or glfw-dev**
+**glfw3-x11 or glfw-dev** (Sometimes called **libglfw-dev** or **libglfw3-dev**)
 
 **xorg-dev** (Linux)
 
