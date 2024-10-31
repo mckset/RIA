@@ -1,5 +1,6 @@
 #include<iostream>
 #include<fstream>
+
 void SaveTags(ofstream*, vector<Tag>, bool);
 vector<Tag> LoadTags(ifstream*, bool, bool);
 
@@ -35,7 +36,7 @@ string GetLine(){
 	string temp;
 	char c;
 	f.read(reinterpret_cast<char*>(&c), 1);
-	while (c != '\n'){
+	while (c != '\n' && !f.eof()){
 		temp += c;
 		f.read(reinterpret_cast<char*>(&c), 1);
 	}
@@ -116,7 +117,7 @@ void Load(){
 }
 
 void LoadImageBoard(){
-	printf("%s\n", board.data());
+	if (DEBUG) printf("%s\n", board.data());
 
 	f.open("boards/"+board, ios::in | ios::binary);
     if (!f.good()){
@@ -186,6 +187,8 @@ vector<Tag> LoadTags(ifstream *f, bool subtag, bool checkValid){
 
 		// Name
 		tag.name = GetString();
+		CheckString(tag.name);
+
 		if (DEBUG) printf("[TAG] %s\n", tag.name.data());
 
 		// Color
@@ -268,19 +271,23 @@ Image LoadWebp(string path){
 	return i;
 }
 
+bool saveError = false;
 void Save(){
+	saveError = true;
 	saving  = true;
+
 	if (!board.length())
 		SaveBoard();
 
 	saveText = "Opening save.dat";
-	ofstream w("save.dat", ios::out | ios::binary);
+	ofstream w("temp.dat", ios::out | ios::binary);
 	
 	if (!w.good()){
 		if (DEBUG) printf("[Save] Unable to save file\n");
+		saving = false;
 		return;
 	}
-	save = 60;
+	save = 600;
 
 	// Data heading
 	w.write((char*)"dat ", sizeof(char)*4);
@@ -288,42 +295,53 @@ void Save(){
 	if (DEBUG) printf("[Saving] Locations\n");
 
 	int size = locations.size();
+	
 	// Locations
 	w.write(reinterpret_cast<const char*>(&size), sizeof(int)); // 4 bytes
 	for (int l = 0; l < locations.size(); l++){
 		saveText = "Saving locations (" + to_string(l+1) + "/" + to_string(locations.size()) + ")";
+		save = 600;
 		int len = locations[l].path.length();
 		w.write(reinterpret_cast<const char*>(&len), sizeof(int));
 		w.write(locations[l].path.c_str(), sizeof(char)*len);
 	}
 
+	// Tags
 	if (DEBUG) printf("[Saving] Tags\n");
 	size = tags.size();
 
 	SaveTags(&w, tags, false);
 
+	// Current board name
 	int len = board.length();
 
 	w.write(reinterpret_cast<const char*>(&len), sizeof(int));
 	w.write(board.c_str(), sizeof(char)*len);
 	w.close();
 
+	// Overwrite save file
+	filesystem::rename("temp.dat", "save.dat");
+
+	// Board
 	printf("%s\n", board.data());
-	w.open("boards/"+board, ios::out | ios::binary);
-	
+	w.open("temp.brd", ios::out | ios::binary);
+
+	save = 600;
 	saveText = "Saving image board";
+	
 	if (!w.good()){
 		if (DEBUG) printf("[Saving] Unable to save image board\n");
+		saving = false;
 		return;
 	}
 
 	if (DEBUG) printf("[Saving] Image board\n");
 	
-
 	// Image board
 	size = imgs.size();
 	w.write(reinterpret_cast<const char*>(&size), 4);
 	for (int i = 0; i < imgs.size(); i++){
+		save = 600;
 		w.write(reinterpret_cast<const char*>(&imgs[i].position.x), sizeof(int));
 		w.write(reinterpret_cast<const char*>(&imgs[i].position.y), sizeof(int));
 		w.write(reinterpret_cast<const char*>(&imgs[i].size.x), sizeof(int));
@@ -334,7 +352,7 @@ void Save(){
 		int len = imgs[i].path.length();
 		w.write(reinterpret_cast<const char*>(&len), sizeof(int));
 		w.write(imgs[i].path.c_str(), sizeof(char)*len);
-		printf("%s\n", imgs[i].path.data());
+		if (DEBUG) printf("%s\n", imgs[i].path.data());
 	}
 
 	// Configuration
@@ -345,10 +363,15 @@ void Save(){
 	w.write(reinterpret_cast<const char*>(&vY), sizeof(float));
 	w.write(reinterpret_cast<const char*>(&s), sizeof(float));
 	w.write(reinterpret_cast<const char*>(&maximize), sizeof(bool));
-
 	w.close();
+
+	// Overwrite board
+	filesystem::rename("temp.brd", "boards/"+board);
+	
 	saving = false;
+	saveError = false;
 	saveText = "Saved";
+	save = 60;
 	if (DEBUG) printf("\n");
 }
 
@@ -359,6 +382,7 @@ void SaveTags(ofstream *w, vector<Tag> tags, bool subtag = false){
 	int i = 0;
 
 	for (auto tag : tags){
+		save = 600;
 		// Name
 		if (DEBUG) printf("[Saving] Name %s\n", tag.name.data());\
 		buf = tag.name.length();

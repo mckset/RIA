@@ -124,8 +124,10 @@ void TagInput(){
 	}
 	
 	// Editing the text field
-	if (tagName.active)
+	if (tagName.active){
 		keyboard.Type(&tagName.text);
+		CheckString(tagName.text);
+	}
 	
 	keyboard.newKey = -1;
 	mouse.prevState = mouse.state;

@@ -24,7 +24,7 @@ int CreateWindows(){
 	Image img;
 	img.LoadImage("images/icon.png");
 	if (!img.loaded)
-		printf("[Warning] Unable to load icon image\n");
+		if (DEBUG) printf("[Warning] Unable to load icon image\n");
 	else{
 		GLFWimage i[1]; 
 		stbi_set_flip_vertically_on_load(false);

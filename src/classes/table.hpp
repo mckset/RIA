@@ -130,15 +130,26 @@ class Table{
 				string sPath = ePath.string();
 				const char* p = sPath.c_str();
 
-				if (stat(p, &s) == 0) // Is valid
+				// Windows doesn't know how to handle UTF-16 characters in paths for some reason
+				if (LINUX){
+					if (stat(p, &s) == 0) // Is valid
 
-					if (s.st_mode & S_IFDIR){ // Folders
+						if (s.st_mode & S_IFDIR) // Folders
+							folders.push_back(Table{GetName(p), p});
+
+						else if (s.st_mode & S_IFREG && IsImage(p)){ // Files
+							files.push_back(File{GetName(p), p});
+							CheckString(files[files.size()-1].name);
+						}
+				}else{
+					if (fs::is_directory(p)) // Folder
 						folders.push_back(Table{GetName(p), p});
-					}
 
-					else if (s.st_mode & S_IFREG && IsImage(p)){ // Files
+					else if (IsImage(p)){ // File
 						files.push_back(File{GetName(p), p});
+						CheckString(files[files.size()-1].name);
 					}
+				}	
 			}
 			sort(folders.begin(), folders.end(), SortTable);
 			sort(files.begin(), files.end(), SortFile);

@@ -16,7 +16,7 @@ void CreateImport(){
 			usedTags.push_back(temp);
 	}
 
-	ofstream w(importFile, ios::out | ios::binary);
+	ofstream w(importPath + slash + "temp.dat", ios::out | ios::binary);
 	if (!w.good()){
 		printf("[Import] Unable to make create the import file\n");
 		importText = "Failed to make import file";
@@ -27,6 +27,8 @@ void CreateImport(){
 	w.write((char*)"imp ", 4);
 	SaveTags(&w, usedTags, false);
 	w.close();
+	save = 0;
+	filesystem::rename(importPath + slash + "temp.dat", importFile);
 }
 
 Tag FilterTag(Tag tag, vector<File> files){

@@ -17,7 +17,7 @@ void MainInput(){
 	
 
 	// Saving
-	if (keyboard.GetKey(KEY_S) && keyboard.ctrl){
+	if (keyboard.newKey == KEY_S && keyboard.ctrl){
 		previewImg.img.loaded = false;
 		for (auto img : selImgs)
 			imgs[img].angle = imgs[img].prevAngle;
@@ -25,7 +25,14 @@ void MainInput(){
 		ResetImages();
 		TagWin.Hide();
 		rmMenu.Reset();
-		Save();
+
+		if (saveThread)
+			if (saveThread->joinable() && !saving)
+				saveThread->join();
+			else if (saving)
+				saveThread->detach();
+		saveThread = new thread(Save);
+		//saveThread.detach();
 		importTime = 0;
 	}
 

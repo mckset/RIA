@@ -134,10 +134,10 @@
 			
 				if (data){
 					SetTexture(data, nearest);
-					printf("[Image] Loaded %s: %dx%d\n", p.c_str(), width, height);
+					if (PDC_DEBUG) printf("[Image] Loaded %s: %dx%d\n", p.c_str(), width, height);
 					//path = p;
 				}else{
-					printf("[Image] Failed to load image: %s\n", p.c_str());
+					if (PDC_DEBUG) printf("[Image] Failed to load image: %s\n", p.c_str());
 				}
 				stbi_image_free(data);
 				return loaded;

@@ -79,11 +79,11 @@ class Menu{
 
 							int tagged = CheckTags(tags[tagIndex].subTags[subIndex]);
 							if (tagged == 1)
-								shape.DrawBox(Vector2{position.x+menuSize + fontSize/4, y2+fontSize/4}, Vector2{fontSize/2, fontSize/2}, White, 2, true);
+								shape.DrawCircle(Vector2{position.x+menuSize + fontSize/2, y2+fontSize/2}, fontSize, fontSize/4, White, true);
 							else if (tagged == 2)
-								shape.Draw(Vector2{position.x+menuSize + fontSize/4, y2+fontSize/4}, Vector2{fontSize/2, fontSize/2}, White, true);
+								shape.DrawCircle(Vector2{position.x+menuSize + fontSize/2, y2+fontSize/2}, fontSize, 0, White, true);
 
-							font.Write(tag.name, Vector2{position.x+menuSize+4, y2}, fontSize/2, fontColor, true, menuSize-4);
+							font.Write(tag.name, Vector2{position.x+menuSize+4+fontSize, y2}, fontSize/2, fontColor, true, menuSize-4);
 							
 							// Sub tag clicked
 							if (mouse.position.Within(Vector2{position.x+menuSize, y2}, Vector2{(float)menuSize, fontSize})){

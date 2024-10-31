@@ -21,7 +21,7 @@ class Unichar{
 map<int, Unichar> characters;
 Shader sFont;
 
-int fontResolution = 48;
+int fontResolution = 128;
 float fontSpacing = 1;
 
 class Font{
@@ -38,8 +38,28 @@ class Font{
 
 		float Write(string text, Vector2 position, float size, Color color, bool fixed = false, float limit = Width, int align = 0, bool wrap = false){
 			int length = 0;
-			if (limit != Width && text.length()*size > limit)
-				text = text.substr(0, (int)(limit/size));
+
+			// Crop the text if center aligned in case the text bleeds past the width
+			if (align && text.length()*size > limit && limit != Width){
+				int textSize = (int)(limit/size);
+				string cropped = "";
+				for (int i = 0; i < text.length() && textSize > 0; i++){
+					if (text[i] < 0){
+						cropped += text[i];
+						i++;
+						while (text[i] <= -65){
+							cropped += text[i];
+							i++;
+						}
+						i--;
+					}else
+						cropped += text[i];
+					textSize--;
+				}
+				text = cropped;
+			}
+
+			char data[text.length()];
 			for (int i = 0; i < text.length(); i++){
 				if (text[i] == '\n' || text[i] == '\t')
 					text[i] = ' ';
@@ -48,11 +68,18 @@ class Font{
 			if (align == 1)
 				offset = (float)(limit/2 - text.length()*size/2);
 			
-			for (int i = 0; i < text.length() && i*size + offset < limit; i++){
-				int l = GetUTF16Length(text.substr(i));
-				if (l > 1)
-					length += Draw(UTF16(text.substr(i,l)), position.Add(length + offset, size/2), size, color);
-				else
+			for (int i = 0; i < text.length() && length + offset + size < limit; i++){
+				if (text[i] < 0){
+					string c = "";
+					c+= text[i];
+					i++;
+					while (text[i] <= -65){
+						c += text[i];
+						i++;
+					}
+					i--;
+					length += Draw(UTF16(c), position.Add(length + offset, size/2), size, color);
+				}else
 					length += Draw(text[i], position.Add(length + offset, size/2), size, color);
 			}
 			return length;
@@ -63,7 +90,7 @@ class Font{
 			Unichar c = characters[ch];
 
 			fontSize /= 32;
-
+			fontSize *= 48.0f/(float)fontResolution;
 
 			position.x += c.origin.x * fontSize;
 			position.y -= (c.size.y - c.origin.y)*fontSize;
@@ -148,79 +175,53 @@ void AddChar(int c){
 	ch.size = Vector2{(float)face->glyph->bitmap.width, (float)face->glyph->bitmap.rows};
 	ch.origin = Vector2{(float)face->glyph->bitmap_left, (float)face->glyph->bitmap_top};
 	characters.insert(pair<int, Unichar>(c, ch));
-	//printf("%c) %f\n", c, ch.origin.y);
-}
-
-int GetUTF16Length(string s){
-	char data[s.length()];
-	for (int i = 0; i < s.length(); i++)
-		data[i] = s[i];
-	
-
-	for (int i = 1; i < s.size(); i++)
-		if (s[i] == -29 || (s[i] >= 0 && s[i] <= 127))
-			return i;
-	return s.size();
 }
 
 int UTF16(string s){
-	char temp[s.length()];
-
-	int data[s.length()];
-	for (int c = 0; c < s.length(); c++){
-		data[c] = s[c] << 8*((s.length()-c)-1);
-		temp[c] = s[c];
-	}
-
-	int utf16 = 0;
-	for (int c = 0; c < s.length(); c++)
-		utf16 += data[c];
+	std::wstring_convert<std::codecvt_utf8_utf16<char16_t>,char16_t> convert;
+	std::u16string dest = convert.from_bytes(s);
+ 
+	uint utf16 = 0;
+	utf16 = dest[0];
 
 	return utf16;
 }
+
 
 void CheckString(string s){
 	char data[s.length()];
 	for (int c = 0; c < s.length(); c++)
 		data[c] = s[c];
 
-	for (int i = 0; i < s.length(); i++)
-		// Check that the character is not english
-		if (s[i] < 0 || s[i] > 127){
-			int length = GetUTF16Length(s.substr(i));
-			int ch = UTF16(s.substr(i, length));
+	
+
+	for (int i = 0; i < s.length(); i++){
+		if (s[i] < 0){
+			string char16 = "";
+			char16 += s[i];
+			i++;
+			while (s[i] <= -65){
+				char16 += s[i];
+				i++;
+			}
+			i--;
+			int ch = UTF16(char16);
 			if (characters.find(ch) == characters.end()){
-				printf("Added character: %s : %d\n", s.substr(i, length).data(), ch);
+				if (PDC_DEBUG) printf("Added character: %s : %u\n", char16.data(), ch);
 				AddChar(ch);
 			}
-			i+=length;
+		}else if (s[i] > 127){
+			printf("\n");
 		}
+	}
 }
 
 void InitFont(){
 	FT_Set_Pixel_Sizes(face, 0, fontResolution);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
 		
-	ifstream f;
-	f.open("font.cache", ios::in | ios::binary);
-	if (!f.good()){
-		printf("[Loading] No cache data found\n");
-		// Add english alphabet
-		for (int c = 0; c < 127; c++)
-			AddChar(c);
-	}else{
-		char header[4];
-		f.read(header, 4);
-		if (strcmp(header, "font"))
-			return;
-		
-		int size = 0;
-		int buf = 0;
-		f.read(reinterpret_cast<char*>(&size), 4);
-		for (int i = 0; i < size; i++){
-			f.read(reinterpret_cast<char*>(&buf), 4);
-			AddChar(buf);
-		}
-	}
+	// Add english alphabet
+	for (int c = 0; c < 127; c++)
+		AddChar(c);
 }
 Font font;

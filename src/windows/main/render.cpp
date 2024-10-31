@@ -17,6 +17,9 @@ Button helpB = Button{"Help", menuBackground, highlight, White, fontSize/2};
 
 string importText = "";
 int importTime = 0;
+extern bool saving;
+extern bool saveError;
+extern string saveText;
 
 vector<Field> textBoxes;
 
@@ -72,10 +75,16 @@ void DrawApp(){
 
 	// Saving
 	if (save > 0){
-		save--;;
-		font.Write("Saved", {2,fontSize-2}, fontSize*.75f, Black, true, Width, 1);
-		font.Write("Saved", {0,fontSize}, fontSize*.75f, White, true, Width, 1);
+		save--;
+		font.Write(saveText, {2,fontSize-2}, fontSize*.75f, Black, true, Width, 1);
+		font.Write(saveText, {0,fontSize}, fontSize*.75f, White, true, Width, 1);
 	
+	// Failed saving
+	}else if (saveError && save == 0){
+		saveError = false;
+		saveText = "Saving failed. Please try again.";
+		save = 60;
+
 	// Import Text
 	}else if (importTime > 0){
 		importTime--;
@@ -197,8 +206,8 @@ void DrawTags(){
 
 	for (int i = 0; i < tags.size(); i++){
 		if (y > -fontSize){
-			bool del = tags[i].Draw({0, y}, {menuWidth-scrollbarSize, fontSize}, i);
-			if (del){
+			int del = tags[i].Draw({0, y}, {menuWidth-scrollbarSize, fontSize}, i);
+			if (del == 1){
 				vector<Tag>:: iterator t = tags.begin();
 				advance(t, i);
 				tags.erase(t);

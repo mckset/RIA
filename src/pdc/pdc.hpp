@@ -7,7 +7,7 @@
 
 #define		PDC		1 // Has been imported
 
-#define		PDC_DEBUG	0
+#define		PDC_DEBUG	1
 
 #ifndef FONTTYPE
 	#define		FONTTYPE	0 // Set to 1 to use true type font or set leave at 0 for image based fonts

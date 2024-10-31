@@ -35,9 +35,6 @@ void LoadConfig(){
 				newLine = GetLine();
 			}while (!newLine.length());
 
-			if (newLine == "end")
-				break;
-
 			bool valid = true;
 			for (string s : settings)
 				if (newLine == s){
@@ -46,7 +43,7 @@ void LoadConfig(){
 					break;
 				}
 			if (valid){
-				if (var == settings[0]) 		fontPath = newLine;
+				if (var == settings[0] && stat(newLine.c_str(), &s) == 0)	fontPath = newLine;
 				else if (var == settings[1]) 	fontColor = GetColor(newLine);
 				else if (var == settings[2]) 	fontSize = (float)stoi(newLine);
 				else if (var == settings[3]) 	backing = GetColor(newLine);
@@ -61,11 +58,12 @@ void LoadConfig(){
 				else if (var == settings[12])	locationFile = GetColor(newLine);
 				else if (var == settings[13])	RMMenuBacking = GetColor(newLine);
 				else if (var == settings[14])	importBacking = GetColor(newLine);
+
 				var = "";
 			}
 		}
 	}
 
 	f.close();
-	printf("done\n");
+	if (DEBUG) printf("Loaded config\n");
 }

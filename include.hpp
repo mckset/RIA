@@ -9,6 +9,7 @@ using namespace pdc;
 
 #include <webp/decode.h>
 #include <thread> // Multi threading is used for saving
+#include <chrono>
 
 #include <sys/stat.h>
 struct stat s;
@@ -29,6 +30,8 @@ bool tagView = false; // If the side menu is view tags
 int save = 0;
 int editTag = -1; // Index of an edited tag
 int editSub = -1; // Index of an edited sub tag
+
+thread *saveThread = nullptr;
 
 void Save();
 void Load();
