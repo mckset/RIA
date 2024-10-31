@@ -39,8 +39,9 @@
 		<img src="help/Main.png">
 		
 		<tr>
-			<li><b>Open the <a href="#tag">tag menu</a></b> - Click the tag button, press Tilde, or click tag in the right click menu</li>
+			<li><b>Open the <a href="#tag">tag menu</a></b> - Click the tag button, press tilde (~), or click the tag option in the right click menu</li>
 			<li><b>Open the <a href="#loc">location menu</a></b> - Click the location button or press tab</li>
+			<li><b>Refresh the location menu</b> - press ctrl + r in the main window</li>
 			<li><b>Scale the view</b> - Use the scroll wheel or the +/- buttons on the keyboard</li>
 			<li><b>Move the screen</b> - Use middle mouse and drag or press WASD/the arrow keys</li>
 			<li><b>Toggle the orign</b> - Press space</li>
@@ -52,6 +53,7 @@
 			<li><b>Rotate selected images</b> - Press R or click rotate from the right click menu</li>
 			<li><b>Flip selected images horizontally</b> - Press H or click flip horizontally form the right click menu</li>
 			<li><b>Flip selected images vertically</b> - Press V or click flip vertically from the right click menu</li>
+			<li><b>Save the board</b> - press ctrl + s in the main window</li>
 		</tr>
 
 		<br><br><br><br>
@@ -59,7 +61,7 @@
 		<h2>Image Boards</h2>
 		<p>
 			Image boards save the layout of images in a ".brd" file. 
-			These files are stored in the "boards" folder and can be saved/loaded from the board buttons on the top left or from dragging and dropping a ".brd" file from the boards folder.
+			These files are stored in the "boards" folder and can be saved/loaded from the board buttons in the top right corner or from dragging and dropping a ".brd" file from the boards folder.
 			Image boards only save the images on the board and the view and scale of the main window.
 			Tags and locations are not affected by the image board file. 
 		</p>
@@ -67,113 +69,114 @@
 		<h2 id="loc">Locations</h2>
 		<p>
 			Displays a list of saved locations. 
-			Locations point to folders of images that you want to use as references. 
+			Locations point to folders containing images that you want to use as references. 
 			From this view, you can select images place them on the board.
 			Pressing the "+" button will bring up a file explorer for you to select the folder you want to add.
 		</p>
 		<img src="help/Locview.png">
 		
 		<p>
-			New locations are displayed in a list. 
-			Clicking the head of a location will expand its contents. 
-			If you press the delete key while hovering over a main folder, it will remove it from the list.
+			Locations are displayed as a list.
+			Clicking on a location will expand its contents and display all images (highlighted in white) and subfolders in that location.
+			Likewise, clicking on subfolders will display there's contents. 
 		</p>
 
 		<img src="help/Locview2.png">
 		<p>
-			Note that folders have a black backing and files don't. 
-			Clicking on a file will add it to the image preview where you can place on the board by clicking.
-			You can also add it to a tag by right clicking the heading of the tag you want to add it to.
+			Clicking on an image will add it to the image preview where and display a box around your mouse to show the size of the image.
+			Clicking on the board afterwards will place the image on the board.
+			While the image is in the preview, right clicking on a tag will assign/remove that tag from the image.
+			A white box is displayed next to images that alread have tags assigned to them.
 		</p>
 		<img src="help/Locview3.png">
-		<p>
-			If the image is already tagged, it will display a white indicator by the file name in the file browser.
-		</p>
-		<img src="help/Locview4.png">
 
 		<br><br><br><br>
 		<h2 id="tag">Tags</h2>
 		<p>
-			Tags allow you to organize large groups of images outside of folders. 
-			Clicking the "+" button will add a new tag.
+			Tags allow you to organize large groups of images outside of folders while also being exportable through image packs. 
+			Click the "+" button to add a new tag.
 		</p>
 		<img src="help/Tagview.png">
 		<p>
-			Clicking the on the name will let you edit it. 
-			The three sliders change the tags background color. 
-			The confirm button will submit the tag and the delete button will cancel.
+			Clicking the on the title bar will let you edit the tag name. 
+			The three sliders change the RGB values of the color picker and clicking on the color picker will change the color of the tag. 
+			The confirm button will submit the tag and the delete button delete the tag.
 		</p>
 		<img src="help/Tageditor.png">
 
 		<p>
-			The same principle applies to tags where clicking on them will expand their contents. 
-			Clicking on a image in the tag will add it to the preview where you click it on the board. 
-			Pressing the edit button on a tag will bring up the previous menu but pressing delete will remove the tag from the list. 
-			You can also remove a tag by hovering over it and pressing the delete key. 
-			If you press the "+" button on a tag, it will add a sub tag to the main tag.
-		</p>
-		<p>
-			There are two ways to add an image to a tag. 
-			The first is to load an image into the preview (either by clicking on an image in the locations or tag menus) and right clicking the tag you want to add it to. 
-			The other way is to select the image and right click it and use the tag menu to add it to a tag. 
-			Doing the same to an already tagged image will remove it from the tag. 
-			Note that if an image is tagged, a white square appear by the tag it belongs to.
+			Tags are very similar to locations.
+			Clicking on a tag will expand it's contents and show sub tags and clicking on an image will load it in the preview where you can place it on the board.
+			Unlike locations, tags only support one level of subtags.
+			Clicking the edit button will bring up the previously shown tag window where you can edit or delete the tag.
+			Hovering over a tag and pressing the delete key will also delete the tag.
+			Pressing the plus (+) button on a tag will create a sub tag.
 		</p>
 
 		<img src="help/Tagview2.png">
+
+		<p>
+			There are two ways to tag an image. 
+			The first is to select an image from either the locations or tags menus and then right click the tag or sub tag you want to add it to.
+			If you add an image to a sub tag, the image will automatically be added to the main tag as well.
+		</p>
+		<p>
+			The second way is to select all the images on the board that you want to tag and then right click.
+			Under the tag option, all the tags are displayed in a sub menu and have sub menus for their sub tags.
+			If all the selected images have the same tag, a full circle will be displayed before that tag.
+			If only some of the images have the same tag, a hollow circle will be displayed before the tag.
+			Clicking on a tag will add the selected images to the tag unless there is a full circle by it.
+			If all the selected images have that tag, they will be removed from the tag.
+		</p>
+
+		
 		<br>
 		<img src="help/Tagview3.png">
 
 		<br><br><br><br>
 		<h2>Image Packs</h2>
 		<p>
-			Image packs are an experimental idea only found in RIA. 
-			An image pack contains pre-tagged files so they can easily be shared between users. 
-			Image packs are stored in the "shared" folder.
-			Clicking import while an image pack is selected will display the folders that the image pack uses.
+			Image packs allow users to share tag lists with other users. 
+			Image packs are stored in the "shared" folder and all images that you want to share must be in the "shared" folder.
+			Click on the "Image Packs" button in the top right corner to bring up the menu.
+			All sub folders in the "shared" folder are displayed in this menu.
 		</p>
 		<img src="help/Imgpack2.png">
 		<p>
-			The folders in an image pack are mostly used like categories. 
+			The folders in an image pack can be though of as categories rather than tags. 
 			By selecting a folder, the user can choose what kind of images they want to import. 
-			In this case, the user doesn't want to import cartoon images but wants the photos and ink images.
+			Folders with a circle will mark them to be imported.
+			Only images in those folders will be imported.
 		</p>
-		<img src="help/Imgpack3.png">
+		<img src="help/Imgpack3.png" style="width:20%;">
 		<p>
-			After pressing import folders, the program will display all the tags and subtags that the image pack will create/add to. 
+			After clicking the import folders button, the program will display all the tags and subtags that the image pack will create/add to. 
 			While the "Include Subtags" button is highlighted, the program will include the subtags in the image pack.
 			Otherwise it will ignore subtags.
-			Note, if you have a tag with the same name as one in the image pack, it will not overwrite the color data or tag data of your tag.
 		</p>
-		<img src="help/Imgpack4.png">
+		<img src="help/Imgpack4.png" style="width:20%;">
 
 		<br><br><br><br>
 		<h2>Creating an Image Pack Example</h2>
 		<p>
 			To create an image pack, create a folder in the "shared" folder of RIA and give it the name of your image pack.
-			Add subfolders to the image pack to categorize the images you want to used.
-			Move the images to the subfolders and the open RIA.
+			Add subfolders to the image pack to categorize the images you want to used and move your images into the folders.
+			Multiple levels of subfolders can be used.
 		</p>
-		<img src="help/Create1.png">
 		<p>
-			In this case, the whole "shared" folder was added to RIA so that all image packs can be easily accessed.
-			The image pack we are working with is titled "Example".
-			Go through each image and tag them.
+			Tag all your images.
+			Images that are not tagged will not be saved to the image pack data.
+			Subtags will be saved but can be toggled while importing.
 		</p>
-		<img src="help/Create2.png">
 		<p>
-			The user in this case wants to tag everything by animal. 
-			Once you finish tagging your images, press the "Image Packs" button.
+			Once all your images have been tagged, open the image pack menu, select your image pack and press the create button.
 		</p>
-		<img src="help/Create3.png">
 		<p>
-			Select your image pack, in this case the image pack "Example" is the one we want to use, and press the "Create" button.
+			That's it. There should now be a file called "import.dat" in your image pack. 
 		</p>
-		<img src="help/Create4.png">
 		<p>
-			Just like that, a new image pack was created. 
-			Sharing the folder with any user will allow them to import tags from your image pack without having to go through and tag it themselves.
-			Make sure that the "import.dat" file is in your image pack when sharing.
+			NOTE: When sharing, other users need both the import.dat file and the images.
+			Images are not stored in import.dat.
 		</p>
 	</body>
 </html>

@@ -24,7 +24,7 @@ int CreateWindows(){
 	Image img;
 	img.LoadImage("images/icon.png");
 	if (!img.loaded)
-		printf("[Warning] Unable to load icon image\n");
+		if (DEBUG) printf("[Warning] Unable to load icon image\n");
 	else{
 		GLFWimage i[1]; 
 		stbi_set_flip_vertically_on_load(false);
@@ -63,8 +63,8 @@ int CreateWindows(){
 	Import.Init(400, 512);
 	glfwSetWindowCloseCallback(Import.w, SubClose);
 	glfwSetScrollCallback(Import.w, GetScrollWheel);
-	Import.Render = &DrawImport;
-	Import.Input = nullptr;
+	Import.Render = &DrawImportMain;
+	Import.Input = &MainImportInput;
 	Import.Hide();
 
 	return 1;
