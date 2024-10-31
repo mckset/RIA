@@ -136,20 +136,20 @@ Image Pack Layout Example (See the example image pack in the latest release)
 
 **g++**
 
-**libwebp**
+**libwebp** or **libwebp-dev**
 
-**freetype font**
+**freetype font** or **libfreetype-dev**
 
 
 Ubuntu:
 ```
-g++ -std=c++17 main.cpp outsourced/linux/glad/glad.c -o main -lstdc++fs -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lfreetype -I/usr/include/freetype2 -lwebp -static-libgcc -static-libstdc++
+g++ -std=c++17 main.cpp src/dependencies/linux/glad/glad.c -o main -lstdc++fs -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -lfreetype -I/usr/include/freetype2 -lwebp -static-libgcc -static-libstdc++
 ```
 > **_NOTE:_**  Be sure to set UBUNTU to 1 in "config.hpp" before compiling. Ubuntu also requires the libwebp package to compile.
 
 Windows:
 ```
-g++ main.cpp outsourced\windows\glad\glad.c -o RIA  "outsourced\windows\glfw\libglfw3.a" -lopengl32 -lgdi32 -lole32 -loleaut32 -luuid -Lwebp freetype.dll libwebp.dll -static -static-libgcc -static-libstdc++
+g++ main.cpp src\dependencies\windows\glad\glad.c -o RIA  "src\dependencies\windows\glfw\libglfw3.a" -lopengl32 -lgdi32 -lole32 -loleaut32 -luuid -Lwebp freetype.dll libwebp.dll -static -static-libgcc -static-libstdc++
 ```
 
 > **_NOTE:_** The above may vary depending on your Windows workspace and installed libraries.
