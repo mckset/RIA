@@ -17,8 +17,6 @@ Download the latest verion from release page for your operating system or compil
 
 **Ctrl + S** - Save the boards current state
 
-**Ctrl + R** - Refresh locations
-
 **Left mouse click** - Select an image
 
 **Shift + left mouse click** - Select multiple images
@@ -61,7 +59,10 @@ Contains saved paths to folders that contain the images that you want to tag/use
 
 **LMB Click** (File) - Load the image into the preview on the bottom right side of the screen. Files that already have been tagged are indicated with a white bar to the left of the file name.
 
+**Ctrl + R** - Refresh locations
+
 **The "+" Button**  - Add a new location to the view. 
+
 
 # Tag View (**~**)
 Only contains images that have been tagged under said tags.
@@ -79,21 +80,23 @@ Only contains images that have been tagged under said tags.
 
 **The "+" Button** (Tag header) - Add a new sub tag to the tag.
 
+**The "edit" Button** (Tag header) - Edit an existing tag.
+
 # Image Packs (**Image Pack Button**)
-Image packs are an experimental idea only found in RIA. An image pack contains pre-tagged files so they can easily be shared between users. Follow the below instructions for how to create an image pack or see the help file for more detail. Image packs use folders a categories instead of tags and relies on the images to be manually tagged by one users before being able to be shared. While importing an image pack, it gives you the option to exclude folders int the image pack from being imported. EX) An image pack has 3 categories: Buildings, Landscapes, and Clothes. A user can choose to only import images from the Buildings and Landscapes folder and all the images in the Clothes folder will remain without being added to RIA. 
-> **_NOTE:_**  When creating an image pack, it only checks the tags that are in your program. If you hit the create button on a previously imported image pack and removed some of the tags prior, it will overwrite the import file and remove the untagged images from the import file.
+Image packs are an experimental idea only found in RIA. An image pack contains pre-tagged files so they can easily be shared between users. Follow the below instructions for how to create an image pack or see the help file for more detail. Image packs use folders like categories and relies on the images to be manually tagged by one users before being shared. While importing an image pack, it gives you the option to exclude folders in the image pack from being imported. EX) An image pack has 3 categories: Buildings, Landscapes, and Clothes. A user can choose to only import images from the Buildings and Landscapes folders and all the images in the Clothes folder will remain without being added to RIA. 
+> **_NOTE:_**  When creating an image pack, it only checks the tags that are in your program. Press the create button on a previously imported image pack and removed some of the tags prior, it will overwrite the import file and remove the untagged images from the import file.
 
 Importing Image Packs
 ---------
-1) Click on an image pack to import and press the import button. The image pack with a square indicates that the image pack is selected.
-2) Select/deselect the folders from the image pack you want to import. Folders with a square next to them are selected. 
+1) Select and image pack and press the import button. A dot will appear next to the selected image pack.
+2) Select/deselect the folders from the image pack you want to import. A dot is again used to indicate if the folder is going to be imported. 
 3) Verify you want to import the tags. Pressing the sub tag button will enable/disable importing sub tags.
-> **_NOTE:_**  Imported tags do not overwrite color values of existing tags with the same name
+> **_NOTE:_**  Imported tags do not overwrite existing tags with the same name
 
 Creating Image Packs
 --------
 1) Create a new folder in the shared directory with the name of your image pack.
-2) Create subfolders to categorizes the images you will be using.
+2) Create subfolders to categorizes the images you will be using. Multiple levels of subfolders can be used.
 3) Tag the images in RIA.
 4) Open the import menu, select your image pack and press the create button. 
 > **_NOTE:_**  Importing can read multiple levels of sub directories but the example pack keeps things simple.
@@ -104,8 +107,10 @@ Image Pack Layout Example (See the example image pack in the latest release)
 [Folder] Photographs (Image pack name)
 
 	-> [Folder] Buildings (Category)
+
+		-> [Sub Folder] Cities
  
-		-> [Image] New York.png
+			-> [Image] New York.png
   
 			ect
    
@@ -113,7 +118,7 @@ Image Pack Layout Example (See the example image pack in the latest release)
  
 		-> [Image] Oak.png
   
-			ect
+		ect
 ```
 
 
