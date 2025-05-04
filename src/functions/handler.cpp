@@ -21,7 +21,7 @@ void DragDrop(GLFWwindow* w, int c, const char** paths){
 		if (stat(paths[c-1], &st) == 0){ // Is valid
 
 			// Append folder to location menu
-			if (st.st_mode & S_IFDIR && menu && !tagView)
+			if (st.st_mode & S_IFDIR && lMenu && !tagView)
 				locations.push_back(Table{GetName(p), p});
 
 			// Load image
@@ -30,13 +30,10 @@ void DragDrop(GLFWwindow* w, int c, const char** paths){
 				img.img.LoadImage((char*) paths[c-1]);
 
 				// Magic math that puts the mouse into screen space
-				img.position = mouse.position.Subtract(Width/2, Height/2)
-					.Divide(*Scale)
-					.Add(Width/2, Height/2) 
-					.Add(*View)
-					.Subtract(img.size.Divide(2));
+				img.size = Vector2{(float)img.img.width, (float)img.img.height};
+				img.position = mouse.ToScreenSpace() - img.size/2;
+				img.path = p;
 
-				
 				imgs.push_back(img);
 			
 			// Load image board
@@ -63,7 +60,7 @@ void On_Resize(GLFWwindow* w, int width, int height){
 		Main.Use();
 		Main.width = width;
 		Main.height = height;
-		menuWidth = width/3;
+		menuWidth = width/6;
 	}else if (w == TagWin.w){
 		TagWin.Use();
 		TagWin.width = width;
@@ -90,35 +87,62 @@ void SubClose(GLFWwindow *w){
 //
 
 void GetScrollWheel(GLFWwindow* w, double x, double y){
+	if (showTutorial){
+		*Scale = 1;
+		return;
+	}
 	if (w != Import.w){
-		if (!menu || mouse.position.x > Width/3){
+		if ((!lMenu || mouse.position.x > menuWidth+scrollbarSize) && (!rMenu || mouse.position.x < fWidth-menuWidth-scrollbarSize)){
+			showZoom = 60;
 			if (y < 0){ // Zoom out
-				if (*Scale > .1f)
+				if (*Scale > 1.5f)
+					*Scale -= .3f;
+				else if (*Scale > .11f)
 					*Scale -= .1f;
 			}else{ // Zoom in
 				if (*Scale < 1.5f)
 					*Scale+=.1f;
+				else if (*Scale < 3)
+					*Scale += .3f;
 			}
 		}else{
 			if (y < 0){
-				if (tagView){
-					tagScroll.scroll += 32;
-					if (tagScroll.scroll > tagScroll.end)
-						tagScroll.scroll = tagScroll.end;
-				}else{
-					locScroll.scroll += 32;
-					if (locScroll.scroll > locScroll.end)
-						locScroll.scroll = locScroll.end;
+				// Left menu
+				if (mouse.position.x <= menuWidth+scrollbarSize)
+					if (tagView){
+						tagScroll.scroll += 32;
+						if (tagScroll.scroll > tagScroll.end)
+							tagScroll.scroll = tagScroll.end;
+					}else{
+						locScroll.scroll += 32;
+						if (locScroll.scroll > locScroll.end)
+							locScroll.scroll = locScroll.end;
+					}
+
+				// Right menu
+				else{
+					boardScroll.scroll += 32;
+					if (boardScroll.scroll > boardScroll.end)
+						boardScroll.scroll = boardScroll.end;
 				}
 			}else{
-				if (tagView){
-					tagScroll.scroll -= 32;
-					if (tagScroll.scroll < 0)
-						tagScroll.scroll = 0;
-				}else{
-					locScroll.scroll -= 32;
-					if (locScroll.scroll < 0)
-						locScroll.scroll = 0;
+				// Left menu
+				if (mouse.position.x <= menuWidth+scrollbarSize)
+					if (tagView){
+						tagScroll.scroll -= 32;
+						if (tagScroll.scroll < 0)
+							tagScroll.scroll = 0;
+					}else{
+						locScroll.scroll -= 32;
+						if (locScroll.scroll < 0)
+							locScroll.scroll = 0;
+					}
+				
+				// Right menu
+				else{
+					boardScroll.scroll -= 32;
+					if (boardScroll.scroll < 0)
+						boardScroll.scroll = 0;
 				}
 			}
 		}
@@ -139,8 +163,9 @@ void GetScrollWheel(GLFWwindow* w, double x, double y){
 
 
 void SetCursorPosition(GLFWwindow* w, double x, double y){
-	if (Main.Focus())
-		Main.Use();
+	if (Main.Focus()) Main.Use();
+	else if (TagWin.Focus()) TagWin.Use();
+	else if (Import.Focus()) Import.Use();
 	mouse.position.x = (float)x;
 	mouse.position.y = Height - (float)y;
 

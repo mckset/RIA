@@ -6,37 +6,39 @@ Button addTag = Button{"Confirm", menuBackground, highlight, White, fontSize/2};
 Button delTag = Button{"Delete", menuBackground, highlight, White, fontSize/2};
 
 Color newColor;
-Color newColorHue;
-Vector2 csPicker = Vector2{256,256};
-Vector2 csSize = Vector2{256, 256};
-Vector2 csPos = Vector2{8,8};
+Vector2 csPos = Vector2{8,6};
 bool csLock = false;
 
-float csSaturation = 0;
-float csDarkness = 0;
+float huePosition;
+Color hue;
 
 void DrawTag(){
-	newColorHue = Color{(float)rgb[0].scroll/255, (float)rgb[1].scroll/255, (float)rgb[2].scroll/255, 1};
-	newColor = newColorHue.Brighten(csSaturation).Darken(csDarkness);
+	Color HSV = hue.ToHSV();
+	HSV.g = ((csPicker.x) / csSize.x)*100;
+	HSV.b = ((csPicker.y) / csSize.y)*100;
+	newColor = ToRGB(HSV.r, HSV.g, HSV.b);
 
 	tagName.color = newColor;
-	tagName.Draw(Vector2{0, fHeight - fontSize*2}, Vector2{fWidth, fontSize*2}, true, true);
-	addTag.Draw(Vector2{0, fHeight-fontSize*3}, Vector2{fWidth/2, fontSize}, false, true);
-	delTag.Draw(Vector2{fWidth/2, fHeight-fontSize*3}, Vector2{fWidth/2, fontSize}, false, true);
+	tagName.Draw(Vector2{0, fHeight - fontSize*1.5f}, Vector2{fWidth, fontSize*1.5f}, true, true);
+	addTag.Draw(Vector2{0, fHeight-fontSize*2.5f}, Vector2{fWidth/2, fontSize}, false, true, TagWin.Focus());
+	delTag.Draw(Vector2{fWidth/2, fHeight-fontSize*2.5f}, Vector2{fWidth/2, fontSize}, false, true, TagWin.Focus());
 	
-	// Color selector
-	rgb[0].Draw(Vector2{csPos.x + csSize.x + 8, 80}, Vector2{fWidth-(csPos.x + csSize.x + 8)-8, 16}, true, rgb[1].scrollLock || rgb[2].scrollLock);
-	rgb[1].Draw(Vector2{csPos.x + csSize.x + 8, 128}, Vector2{fWidth-(csPos.x + csSize.x + 8)-8, 16}, true, rgb[0].scrollLock || rgb[2].scrollLock);
-	rgb[2].Draw(Vector2{csPos.x + csSize.x + 8, 176}, Vector2{fWidth-(csPos.x + csSize.x + 8)-8, 16}, true, rgb[0].scrollLock || rgb[1].scrollLock);
-	
+	// Hue selector
+	float c = 1-((float)sHue.scroll/(float)sHue.end);
+	if (c <= .33) hue = Color{1-(c/.33f), c/.33f, 0, 1};
+	else if (c <=.67) hue = Color{0, 1-((c-.33f)/.33f), (c-.33f)/.33f, 1};
+	else hue = Color{((c-.67f)/.33f), 0, 1-(c-.67f)/.33f, 1};
+	shape.DrawHueSelector(csPos+Vector2{csSize.x+16,0}, {64, csSize.y});
+	sHue.Draw(csPos+Vector2{csSize.x+16,0}, {64, csSize.y});
 
-	shape.DrawColorSelector(csPos, csSize, newColorHue);
+	shape.DrawColorSelector(csPos, csSize, hue);
 	shape.DrawCircle(csPicker + csPos, 24, 24, newColor);
 	shape.DrawCircle(csPicker + csPos, 24, 4, Black);
 }
 
 void TagInput(){
-	if (mouse.position.Within(csPos, csSize) && mouse.state == LM_DOWN && !rgb[0].scrollLock && !rgb[1].scrollLock && !rgb[2].scrollLock || csLock){
+	// Color picker
+	if (mouse.position.Within(csPos, csSize) && mouse.state == LM_DOWN && !sHue.scrollLock || csLock){
 		csPicker = mouse.position - csPos;
 
 		if (csPicker.x < 0)
@@ -49,8 +51,6 @@ void TagInput(){
 		else if (csPicker.y > csSize.y)
 			csPicker.y = csSize.y;
 
-		csSaturation = 1 - csPicker.x/csSize.x;
-		csDarkness = 1 - csPicker.y/csSize.y;
 		csLock = true;
 
 		if (mouse.state != LM_DOWN)
@@ -85,8 +85,6 @@ void TagInput(){
 				sort(tags.begin(), tags.end(), SortTag);
 			
 			ResetTagEdit();
-			keyboard.newKey = -1;
-			mouse.prevState = mouse.state;
 			return;
 		}else if (delTag.Hover()){
 			// New Tag
@@ -117,20 +115,16 @@ void TagInput(){
 				sort(tags.begin(), tags.end(), SortTag);
 			
 			ResetTagEdit();
-			keyboard.newKey = -1;
-			mouse.prevState = mouse.state;
 			return;
 		}
 	}
 	
 	// Editing the text field
 	if (tagName.active){
-		keyboard.Type(&tagName.text);
+		//keyboard.Type(&tagName.text);
+		tagName.UpdateText();
 		CheckString(tagName.text);
 	}
-	
-	keyboard.newKey = -1;
-	mouse.prevState = mouse.state;
 }
 
 void ResetTagEdit(){

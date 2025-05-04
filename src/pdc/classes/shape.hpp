@@ -88,7 +88,75 @@ class Shape{
 				
 			glBindBuffer(GL_ARRAY_BUFFER, 0); 
 
-			glBindVertexArray(vertexArray); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+			glBindVertexArray(vertexArray);
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		}
+
+		void DrawHueSelector(Vector2 position, Vector2 size, bool rotate = true, bool fixed = true){
+			sHueSelector.Use();
+			Vector2 shaderSize = size;
+			Vector2 shaderPos = position;
+			size = size * 2;
+			position.x = position.x*2/Width;
+			position.y = position.y*2/Height;
+			// Multiplied by 2 to offset properly otherwise it will only move half
+			if (!fixed){
+				position.x -= View->x*2/Width;
+				position.y -= View->y*2/Height;
+				size.x *= (*Scale);
+				size.y *= (*Scale);
+			}	
+			position.x-=1;
+			position.y-=1;
+
+			if (!fixed)
+				position = position * (*Scale);
+
+			float w = position.x + size.x/Width;
+			float h = position.y + size.y/Height;
+
+			// Location of the object
+			float data[] = {  
+				w,  h,
+				w, position.y,
+				position.x, position.y,	
+				position.x,  h,
+			};
+
+			// Indices used to draw a triangle
+			int box[] = {
+				0, 1, 3,
+				1, 2, 3};
+				
+			// Bind array
+			glBindVertexArray(vertexArray);
+
+			// Bind vertex buffer
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+
+			// Send vertices to buffer
+			glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+
+			// Bind element buffer
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
+
+			// Send vertices to buffer
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(int), box, GL_STATIC_DRAW);
+
+			// Position attribute
+			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+			glEnableVertexAttribArray(0);
+
+			//
+			// Shader options
+			//
+			glUniform1i(glGetUniformLocation(ShaderID, "rotate"), rotate);
+			glUniform2f(glGetUniformLocation(ShaderID, "size"), shaderSize.x, shaderSize.y);
+			glUniform2f(glGetUniformLocation(ShaderID, "pos"), shaderPos.x, shaderPos.y);
+				
+			glBindBuffer(GL_ARRAY_BUFFER, 0); 
+
+			glBindVertexArray(vertexArray);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		}
 
@@ -154,11 +222,11 @@ class Shape{
 			// Color
 			glUniform2f(glGetUniformLocation(ShaderID, "size"), shaderSize.x, shaderSize.y);
 			glUniform2f(glGetUniformLocation(ShaderID, "pos"), shaderPos.x, shaderPos.y);
-			glUniform4f(glGetUniformLocation(ShaderID, "color"), color.r, color.g, color.b, color.a);
+			glUniform4f(glGetUniformLocation(ShaderID, "color"), color.r, color.g, color.b, 1);
 				
 			glBindBuffer(GL_ARRAY_BUFFER, 0); 
 
-			glBindVertexArray(vertexArray); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+			glBindVertexArray(vertexArray);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		}
 
@@ -224,7 +292,7 @@ class Shape{
 
 			glBindBuffer(GL_ARRAY_BUFFER, 0); 
 
-			glBindVertexArray(vertexArray); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+			glBindVertexArray(vertexArray);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		}
 
@@ -291,7 +359,7 @@ class Shape{
 					
 			glBindBuffer(GL_ARRAY_BUFFER, 0); 
 
-			glBindVertexArray(vertexArray); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+			glBindVertexArray(vertexArray);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		}
 
@@ -357,7 +425,7 @@ class Shape{
 				
 			glBindBuffer(GL_ARRAY_BUFFER, 0); 
 
-			glBindVertexArray(vertexArray); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+			glBindVertexArray(vertexArray);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		}
 
@@ -365,17 +433,6 @@ class Shape{
 		Vector2 Rotate(Vector2 position, Vector2 center, float angle){
 			float rX = cos(angle) * (position.x - center.x) - sin(angle) * (position.y-center.y) + center.x;
 			float rY = sin(angle) * (position.x - center.x) + cos(angle) * (position.y - center.y) + center.y;
-
-			/*
-			Vector2 output;
-			
-			output.x = ((position.x - origin.x) * cos(angle))
-				-((position.y - origin.y) * sin(angle));
-			output.y = ((position.x - origin.x) * sin(angle))
-				+ ((position.y - origin.y) * cos(angle));
-			output = output.Add(origin);
-			float newA = atan(output.x/output.y)*(float)DEGREES;	
-			*/
 			return Vector2{rX,rY};
 		}
 };

@@ -1,18 +1,16 @@
 //
 // Responsible for rendering everything in the main window
 //
-void DrawApp();
-void DrawLocations();
-void DrawTags();
 
 bool selector = false;
 
 Button import = Button{"Image Packs", menuBackground, highlight, White, fontSize/2};
-Button loadBoard = Button{"Load Board", menuBackground, highlight, White, fontSize/2};
-Button newBoard = Button{"New Board", menuBackground, highlight, White, fontSize/2};
+Button bBoards = Button{"Boards", menuBackground, highlight, White, fontSize/2};
+Button bSave = Button{"Save", menuBackground, highlight, White, fontSize/2};
 Button openTags = Button{"Tags", menuBackground, highlight, White, fontSize/2};
 Button openLoc = Button{"Locations", menuBackground, highlight, White, fontSize/2};
-Button closeB = Button{"Close", menuBackground, highlight, White, fontSize/2};
+Button closeLB = Button{"Close", menuBackground, highlight, White, fontSize/2};
+Button closeRB = Button{"Close", menuBackground, highlight, White, fontSize/2};
 Button helpB = Button{"Help", menuBackground, highlight, White, fontSize/2};
 
 string importText = "";
@@ -20,34 +18,10 @@ int importTime = 0;
 extern bool saving;
 extern bool saveError;
 extern string saveText;
-
-vector<Field> textBoxes;
+ColorSelector cs;
 
 void DrawApp(){
-	//
-	// Draw grid
-	//
-	for (int w = -2; w < (Width/gridSize)/(*Scale) + 1; w++){
-		shape.Draw({0, ((float)w*gridSize*(*Scale) - ((int)(View->y/5) % (int)gridSize*(*Scale)))*2}, {fWidth*2, 3}, grid, true);
-	}
-	for (int h = -2; h < (Height/gridSize)/(*Scale) + 1; h++){
-		shape.Draw({((float)h*gridSize*(*Scale) - ((int)(View->x/5) % (int)gridSize*(*Scale)))*2, 0}, {3, fHeight*2}, grid, true);
-	}
-
-	// Origin
-	if (drawOrigin){
-		shape.Draw({0,View->y/2 - Height*2/(*Scale)}, {2/(*Scale), fHeight*16/(*Scale)}, cOrigin, false);
-		shape.Draw({View->x/2 - Width*2/(*Scale), 0}, {fWidth*16/(*Scale), 2/(*Scale)}, cOrigin, false);
-	}
-
-	//
-	// Images
-	//
-	for (auto img : imgs){
-		img.Draw();
-		if (img.selected)
-			img.DrawOutline(borderSize, imageBorder);
-	}
+	DrawMain();
 
 	//
 	// Selector box
@@ -70,8 +44,11 @@ void DrawApp(){
 		buf[2] = '%';
 		buf[3] = '\0';
 	}
-	font.Write(buf, {fWidth/2,fHeight-fontSize*2}, fontSize*.75f, Black, true);
-	font.Write(buf, {fWidth/2,fHeight-fontSize*2}, fontSize*.75f, White, true);
+	if (showZoom){
+		shape.Draw({fWidth/2-fontSize*1.5f-8,fHeight-fontSize*1.5f}, {fontSize*3+16, fontSize*1.5f}, menuBackground, true);
+		font.Write(buf, {0,fHeight-fontSize*1.5f}, fontSize*.75f, White, true, Width, 1);
+		showZoom--;
+	}
 
 	// Saving
 	if (save > 0){
@@ -99,17 +76,17 @@ void DrawApp(){
 	// Image preview
 	//
 	if (previewImg.img.loaded){
-		shape.Draw({fWidth/5*4-fontSize*4, 0}, {fWidth/5+fontSize*4, fWidth/5+fontSize*4}, menuBackground, true);
+		shape.Draw({fWidth/5*4-fontSize*4 - (rMenu ? menuWidth+scrollbarSize : 0), 0}, {fWidth/5+fontSize*4, fWidth/5+fontSize*4}, menuBackground, true);
 
 		// Draw image centered 
 		previewImg.Draw(
-			{fWidth/5*4+(Width/5-previewImg.size.x)/2-fontSize*2, (fWidth/5 - previewImg.size.y)/2 + fontSize/2}, 
+			{fWidth/5*4+(Width/5-previewImg.size.x)/2-fontSize*2 - (rMenu ? menuWidth+scrollbarSize : 0), (fWidth/5 - previewImg.size.y)/2 + fontSize/2}, 
 			previewImg.size, White, true);
 
-		font.Write("Preview", {fWidth/5*4-fontSize*4, fWidth/5+fontSize}, fontSize, White, true, Width/5+fontSize*2, 1);
+		font.Write("Preview", {fWidth/5*4-fontSize*4 - (rMenu ? menuWidth+scrollbarSize : 0), fWidth/5+fontSize}, fontSize, White, true, Width/5+fontSize*4, 1);
 		
 		// Mouse 
-		if (mouse.position.x > menuWidth || !menu){
+		if (mouse.position.x > menuWidth || !lMenu){
 			shape.Draw(
 				mouse.position.Subtract(Vector2{(float)previewImg.img.width, (float)previewImg.img.height}.Multiply((*Scale)).Divide(2)), 
 				Vector2{(float)previewImg.img.width, (float)previewImg.img.height}.Multiply((*Scale)), 
@@ -119,7 +96,7 @@ void DrawApp(){
 
 
 	// Left buttons
-	if (menu){
+	if (lMenu){
 		shape.Draw({0}, {menuWidth, fHeight}, menuBackground, true);
 		if (tagView)
 			DrawTags();
@@ -134,22 +111,29 @@ void DrawApp(){
 			openLoc.Draw({menuWidth-fontSize+scrollbarSize, fHeight-fontSize-8}, {fontSize*5, fontSize*1});
 			openTags.visible = false;
 		}
-		closeB.Draw({menuWidth-fontSize+scrollbarSize, fHeight-fontSize*2-8}, {fontSize*5, fontSize*1});
+		closeLB.Draw({menuWidth-fontSize+scrollbarSize, fHeight-fontSize*2-8}, {fontSize*5, fontSize*1});
 		
 	}else{
 		openTags.Draw({8, fHeight-fontSize-8}, {fontSize*5, fontSize*1});
 		openLoc.Draw({8, fHeight-fontSize*2-8}, {fontSize*5, fontSize*1});
 		helpB.Draw({8, fHeight-fontSize*3-8}, {fontSize*5, fontSize*1});
 		add.visible = false;
-		closeB.visible = false;
+		closeLB.visible = false;
 	}
 
 	// Right buttons
-	import.Draw({fWidth - fontSize*6-12, fHeight - fontSize-8}, {fontSize*6, fontSize});
-	loadBoard.Draw({fWidth - fontSize*6-12, fHeight - fontSize*2-8}, {fontSize*6, fontSize});
-	newBoard.Draw({fWidth - fontSize*6-12, fHeight - fontSize*3-8}, {fontSize*6, fontSize});
-	
-	sShape.Use();
+	if (rMenu) {
+		shape.Draw({fWidth, 0}, {-menuWidth-scrollbarSize, fHeight}, menuBackground, true);
+		DrawBoards();
+		import.Draw({fWidth - fontSize*6-12-menuWidth-scrollbarSize, fHeight - fontSize-8}, {fontSize*6, fontSize});
+		bBoards.Draw({fWidth - fontSize*6-12-menuWidth-scrollbarSize, fHeight - fontSize*2-8}, {fontSize*6, fontSize});
+		bSave.Draw({fWidth - fontSize*6-12-menuWidth-scrollbarSize, fHeight - fontSize*3-8}, {fontSize*6, fontSize});
+	}else{
+		import.Draw({fWidth - fontSize*6-12, fHeight - fontSize-8}, {fontSize*6, fontSize});
+		bBoards.Draw({fWidth - fontSize*6-12, fHeight - fontSize*2-8}, {fontSize*6, fontSize});
+		bSave.Draw({fWidth - fontSize*6-12, fHeight - fontSize*3-8}, {fontSize*6, fontSize});
+	}
+	if (!loaded) font.Write("Loading...", {2,fontSize-2}, fontSize*.75f, White, true, Width, 1);
 }
 
 //
@@ -160,7 +144,7 @@ void DrawLocations(){
 	locScroll.end = fontSize;
 
 	shape.Draw({0, y}, {menuWidth-scrollbarSize, fontSize*2}, menuBackground, true);
-	font.Write("Locations", {8, y}, fontSize, fontColor, true, menuWidth-scrollbarSize);
+	font.Write("Locations", {fontSize, y+8}, fontSize*.75, fontColor, true, menuWidth-scrollbarSize-fontSize*3, 1);
 	add.Draw({menuWidth-fontSize*2-scrollbarSize, y}, {fontSize*2, fontSize*2}, false, true);
 
 	y-=fontSize;
@@ -192,6 +176,37 @@ void DrawLocations(){
 }
 
 //
+// Images and grid
+//
+
+void DrawMain(){
+	//
+	// Draw grid
+	//
+	for (int w = -2; w < (Width/gridSize)/(*Scale) + 1; w++){
+		shape.Draw({0, ((float)w*gridSize*(*Scale) - ((int)(View->y/5) % (int)gridSize*(*Scale)))*2}, {fWidth*2, 3}, grid, true);
+	}
+	for (int h = -2; h < (Height/gridSize)/(*Scale) + 1; h++){
+		shape.Draw({((float)h*gridSize*(*Scale) - ((int)(View->x/5) % (int)gridSize*(*Scale)))*2, 0}, {3, fHeight*2}, grid, true);
+	}
+
+	// Origin
+	if (drawOrigin){
+		shape.Draw({0,View->y/2 - Height*2/(*Scale)}, {2/(*Scale), fHeight*16/(*Scale)}, cOrigin, false);
+		shape.Draw({View->x/2 - Width*2/(*Scale), 0}, {fWidth*16/(*Scale), 2/(*Scale)}, cOrigin, false);
+	}
+
+	//
+	// Images
+	//
+	for (auto img : imgs){
+		img.Draw();
+		if (img.selected)
+			img.DrawOutline(borderSize, imageBorder);
+	}
+}
+
+//
 // Tags
 //
 void DrawTags(){
@@ -199,7 +214,7 @@ void DrawTags(){
 	tagScroll.end = fontSize;
 
 	shape.Draw({0, y}, {menuWidth-scrollbarSize, fontSize*2}, menuBackground, true);
-	font.Write("Tags", {8, y}, fontSize, fontColor, true, menuWidth-scrollbarSize);
+	font.Write("Tags", {fontSize*1.25f, y+8}, fontSize*.75f, fontColor, true, menuWidth-scrollbarSize-fontSize*3.25, 1);
 	add.Draw({menuWidth-fontSize*2-scrollbarSize, y}, {fontSize*2, fontSize*2}, false, true);
 
 	y-=fontSize;

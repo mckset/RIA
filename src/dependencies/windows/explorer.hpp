@@ -115,7 +115,7 @@ char* GetFolder(){
 }
 
 void OpenShared(){
-	//ShellExecuteA(NULL, "open", "shared", NULL, NULL, SW_SHOWDEFAULT);
+	system("start explorer shared");
 }
 
 void OpenHelp(){

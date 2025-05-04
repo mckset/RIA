@@ -76,6 +76,8 @@ string GetFolderName(string path){
 
 // Get saved image pack information
 bool LoadImport(){
+	importScroll.scroll = 0;
+	oldSave = false;
 	importTags.clear();
     completeTags.clear();
 	folders.folders.clear();
@@ -94,6 +96,7 @@ bool LoadImport(){
 }
 
 void ImportTag(Tag imported, Tag *base){
+	importScroll.scroll = 0;
 	for (auto img : imported.imgs){
 		bool newImg = true;
 		for (int i = 0; i < base->imgs.size(); i++){
@@ -164,7 +167,7 @@ void TagsImportInput(){
 void FoldersImportInput(){
 	if (mouse.Click(LM_DOWN) && importB.Hover()){
 		importFiles = folders.GetHidden();
-
+		importScroll.scroll = 0;
 
 		for (auto tag : completeTags){
 			bool newTag = true;
@@ -208,8 +211,8 @@ void FoldersImportInput(){
 		for (int i = 0; i < importTags.size(); i++)
 			sort(importTags[i].subTags.begin(), importTags[i].subTags.end(), SortTag);
 
-		importB.text = "Import tags";
-		createB.text = "Import subtags";
+		importB.text = "Import";
+		createB.text = "Subtags";
 		createB.toggled = true;
 		Import.Render = &DrawImportTags;
 		Import.Input = &TagsImportInput;

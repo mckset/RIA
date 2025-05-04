@@ -68,4 +68,5 @@ void LoadConfig(){
 
 	f.close();
 	if (DEBUG) printf("Loaded config\n");
+	highlight = Color {.7, .7, .7, .5};
 }

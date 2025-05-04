@@ -37,19 +37,19 @@ void DrawImportMain(){
 	float y = Height-fontSize*2+importScroll.scroll;
 
 	for (int i = 0; i < folders.folders.size(); i++){
-		shape.Draw(Vector2{0, y}, Vector2{fWidth-scrollbarSize, fontSize}, backing, true);
+		shape.Draw(Vector2{0, y}, Vector2{fWidth-scrollbarSize, fontSize}, scrollbarNotch, true);
 		
 		// Active indicator
 		if (folders.folders[i].expand)
-			shape.DrawCircle(Vector2{fWidth-scrollbarSize, y} + Vector2{-fontSize/2, fontSize/2}, fontSize, 0, highlight, true);
+			shape.DrawCircle(Vector2{fontSize, y} + Vector2{-fontSize/2, fontSize/2}, fontSize, 0, highlight, true);
 		
 		font.Write(folders.folders[i].name, Vector2{24, y}, fontSize/2, fontColor, true, fWidth-scrollbarSize-48);
 
-		if (y > fontSize && mouse.position.Within(Vector2{0, y}, Vector2{fWidth-scrollbarSize, fontSize}) && Import.Focus()){
+		if (mouse.position.Within(Vector2{0, y}, Vector2{fWidth-scrollbarSize, fontSize}) && Import.Focus()){
 			shape.Draw(Vector2{0, y}, Vector2{fWidth-scrollbarSize, fontSize}, highlight, true);
 
 			// On click
-			if (mouse.Click(LM_DOWN) && y <= fHeight-fontSize*2 && y >= (float)fontSize*2){
+			if (mouse.Click(LM_DOWN) && y <= fHeight-fontSize*2 && y >= (float)fontSize){
 				for (int f = 0; f < folders.folders.size(); f++)
 					folders.folders[f].expand = false;
 				folders.folders[i].expand = true; // Reuses the expand bool as a selection bool because I thought I was being smart
@@ -60,12 +60,12 @@ void DrawImportMain(){
 		y-=fontSize;
 		importScroll.end += fontSize;
 	}
-	importScroll.end += fontSize;
+	importScroll.end += fontSize*2 - fHeight;
 
 	if (!folders.folders.size()){
 		sFont.Use(true);
 		font.Write("No image packs found.", Vector2{16, y}, fontSize/2, fontColor);
-		font.Write("Ensure that your image", Vector2{16, y-fontSize}, fontSize/2, fontColor);
+		font.Write("Check that your image", Vector2{16, y-fontSize}, fontSize/2, fontColor);
 		font.Write("packs are saved to the", Vector2{16, y-fontSize*2}, fontSize/2, fontColor);
 		font.Write("shared folder.", Vector2{16, y-fontSize*3}, fontSize/2, fontColor);
 	}else{
@@ -85,11 +85,11 @@ void DrawImportMain(){
 }
 
 void DrawFolders(float indent, float *y, Vector2 size, Table *folder){
-	shape.Draw(Vector2{indent, *y}, Vector2{fWidth-scrollbarSize-indent, fontSize}, backing, true);
-		
+	shape.Draw(Vector2{indent, *y}, Vector2{fWidth-scrollbarSize-indent, fontSize}, scrollbarNotch, true);
+	
 	// Active indicator
 	if (!folder->expand)
-		shape.DrawCircle(Vector2{fWidth-scrollbarSize, *y} + Vector2{-fontSize/2, fontSize/2}, fontSize, 0, highlight, true);
+		shape.DrawCircle(Vector2{0, *y} + Vector2{fontSize/2, fontSize/2}, fontSize, 0, highlight, true);
 		
 	font.Write(folder->name, Vector2{24+indent, *y}, fontSize/2, fontColor, true, fWidth-scrollbarSize-48);
 
@@ -131,7 +131,7 @@ void DrawImportTags(){
 	}
 		
 	
-	importScroll.end += fontSize;
+	importScroll.end += fontSize*2 - fHeight;
 	if (importScroll.end < 0){
 		importScroll.end = 0;
 		importScroll.scroll = 0;
@@ -151,7 +151,7 @@ void DrawImportFolders(){
 	for (int i = 0; i < folders.folders.size(); i++)
 		DrawFolders(0, &y, Vector2{fWidth-scrollbarSize, fontSize}, &(folders.folders[i]));
 	
-	importScroll.end += fontSize;
+	importScroll.end += fontSize*2 - fHeight;
 	if (importScroll.end < 0){
 		importScroll.end = 0;
 		importScroll.scroll = 0;

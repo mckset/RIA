@@ -59,5 +59,6 @@ class Shader{
 Shader sImage;
 Shader sShape;
 Shader sGradient;
+Shader sHueSelector;
 Shader sColorSelector;
 Shader sCircle;

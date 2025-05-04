@@ -8,13 +8,15 @@ void AppendTag(Image);
 
 Button editB = Button{"Edit", Transparent, highlight, White, fontSize/3};
 Scrollbar tagScroll = Scrollbar{scrollbarBacking, scrollbarNotch, highlight, Transparent};
-Field tagName = Field{"Tag Name", fieldBack, highlight, fontColor, Black, 0, fontSize}; // Edit tag name
+Field tagName = Field{"Tag Name", fieldBack, highlight, fontColor, Black, 0, fontSize*.75f}; // Edit tag name
 
 // Edit tag colors
 Scrollbar rgb[3] = { 
 	Scrollbar{Red, White, highlight, Black, 0, true, 0, 8, 255},
 	Scrollbar{Green, White, highlight, Black, 0, true, 0, 8, 255},
 	Scrollbar{Blue, White, highlight, Black, 0, true, 0, 8, 255}};
+
+Scrollbar sHue = Scrollbar{Transparent, White, highlight, Transparent, 0, false, 0, 8, 360};
 
 class Tag{
 	public:
@@ -47,16 +49,19 @@ class Tag{
 
 			// Edit button
 			if (expand){
-				editB.Draw(position+Vector2{fontSize, 0}, Vector2{fontSize*2, fontSize}, false, true);
+				editB.Draw(position+Vector2{16, 0}, Vector2{fontSize*2, fontSize}, false, true);
 
 				if (mouse.Click(LM_DOWN) && editB.Hover() && Main.Focus()){
 					editTag = tag;
 					editSub = sub;
+					tagName.Reset();
 					tagName.text = name;
-					rgb[0].scroll = color.r*255;
-					rgb[1].scroll = color.g*255;
-					rgb[2].scroll = color.b*255;
+					Color HSV = color.ToHSV();
+					sHue.scroll = 360-HSV.r;
+					csPicker.x = HSV.g/100.0 * csSize.x;
+					csPicker.y = HSV.b/100.0 * csSize.y;
 					TagWin.Show();
+					mouse.prevState = LM_DOWN;
 				}
 				
 			}
@@ -145,23 +150,26 @@ class Tag{
 					else{
 						editTag = tag;
 						editSub = -2;
-						rgb[0].scroll = 0;
-						rgb[1].scroll = 0;
-						rgb[2].scroll = 0;
-						tagName.text = "";
+						Color HSV = color.ToHSV();
+						sHue.scroll = 360-HSV.r;
+						csPicker.x = HSV.g/100.0 * csSize.x;
+						csPicker.y = HSV.b/100.0 * csSize.y;
+						tagName.Reset();
 						TagWin.Show();
 					}
 					mouse.prevState = mouse.state;
 
 				}else if (mouse.Click(RM_DOWN)){
 					// Editing a tag
-					if (!previewImg.img.loaded && !TagWin.visible){
+					if (!previewImg.img.loaded){
 						editTag = tag;
 						editSub = sub;
+						tagName.Reset();
 						tagName.text = name;
-						rgb[0].scroll = color.r*255;
-						rgb[1].scroll = color.g*255;
-						rgb[2].scroll = color.b*255;
+						Color HSV = color.ToHSV();
+						sHue.scroll = 360-HSV.r;
+						csPicker.x = HSV.g/100.0 * csSize.x;
+						csPicker.y = HSV.b/100.0 * csSize.y;
 						TagWin.Show();
 					
 					// Editing tag images
@@ -226,3 +234,4 @@ class Tag{
 			return listSize;
 		}
 };
+vector<Tag> tags;

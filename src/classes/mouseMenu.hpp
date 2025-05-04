@@ -43,7 +43,8 @@ class Menu{
 						shape.DrawCircle(Vector2{position.x + fontSize/2, y+fontSize/2}, fontSize, 0, White, true);
 				}
 
-				font.Write(item.name, Vector2{position.x+fontSize, y}, fontSize/2, fontColor, true, menuSize-fontSize);
+				// Writes menu entries and tags for some reason
+				font.Write(item.name, Vector2{position.x + ((t == 1 && item.name != "+ Add Tag") ? fontSize : 8), y}, fontSize/2, fontColor, true, menuSize- ((t == 1 && item.name != "+ Add Tag") ? fontSize : 0 ));
 				
 				// Draw tags
 				if (!strcmp("Tag", item.name.data()) && expand){
@@ -83,7 +84,7 @@ class Menu{
 							else if (tagged == 2)
 								shape.DrawCircle(Vector2{position.x+menuSize + fontSize/2, y2+fontSize/2}, fontSize, 0, White, true);
 
-							font.Write(tag.name, Vector2{position.x+menuSize+4+fontSize, y2}, fontSize/2, fontColor, true, menuSize-4);
+							font.Write(tag.name, Vector2{position.x+menuSize+4+fontSize, y2}, fontSize/2, fontColor, true, menuSize-fontSize-4);
 							
 							// Sub tag clicked
 							if (mouse.position.Within(Vector2{position.x+menuSize, y2}, Vector2{(float)menuSize, fontSize})){
@@ -137,15 +138,15 @@ class Menu{
 								tagsMenu[0].position = Vector2 {position.x + fontSize*8, y+fontSize};
 							}
 							if (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)){
-								menu = true;
+								lMenu = true;
 								tagView = true;
 							}
 
-						}else if (strcmp("Tag", item.name.data()) && expand)
+						}else if (item.name == "Tag" && expand)
 							expand = 0;
 					}
 
-					if (strcmp("Tag", item.name.data()) || t == 1){
+					if (item.name != "Tag" || t == 1){
 						shape.Draw(Vector2{position.x, y}, Vector2{(float)menuSize, fontSize}, highlight, true);
 					}
 
@@ -155,7 +156,7 @@ class Menu{
 						// Basic functions
 						if (t == 0){
 							if (selImgs.size()){
-								if (!strcmp("Resize", item.name.data())){
+								if (item.name == "Resize"){
 									imgScale = true;
 									mouse.dragOff = mouse.position;
 									mouse.drag = true;
@@ -179,7 +180,7 @@ class Menu{
 										imgs[i].img.loaded = false;
 										imgs[i].img.SetTexture(pixels, true);
 									}
-								}else if (strcmp("Tag", item.name.data())){
+								}else if (item.name != "Tag"){
 									keyboard.newKey = item.action;
 									mouse.state = -1;
 								}
@@ -202,7 +203,7 @@ class Menu{
 				tagIndex++;
 				y-=fontSize;
 			}
-			if (!mouse.position.Within(position, Vector2{(float)menuSize, fontSize}) && (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)) && t == 0){
+			if ((!mouse.position.Within(position, Vector2{(float)menuSize, fontSize}) && (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)) && t == 0) && !showTutorial){
 				mouse.state = -1;
 				Reset();
 			}
