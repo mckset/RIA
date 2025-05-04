@@ -22,6 +22,7 @@ int CreateWindows(){
 	Main.Init();
 
 	// Checks if the icon image exists
+	/*
 	Image img;
 	img.LoadImage("images/icon.png");
 	if (!img.loaded)
@@ -33,7 +34,7 @@ int CreateWindows(){
 		glfwSetWindowIcon(Main.w, 1, i); 
 		stbi_image_free(i[0].pixels);
 		stbi_set_flip_vertically_on_load(true);
-	}
+	}*/
 	
 	glfwSetScrollCallback(Main.w, GetScrollWheel);
 	glfwSetWindowMaximizeCallback(Main.w, Maximize);
@@ -94,6 +95,13 @@ void Init(){
 	sColorSelector.Init(shapeV, colorSelectorF);
 	sHueSelector.Init(shapeV, hueSelectorF);
 	sCircle.Init(shapeV, circleF);
+
+	if (LINUX){
+		if (!stat(fontPath.c_str(), &st) == 0)
+			fontPath = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
+		if (!stat(fontPath.c_str(), &st) == 0)
+			if (DEBUG) printf("Font could not be loaded\n");
+	}
 
 	if (FT_Init_FreeType(&ft))
 		printf("Error: Unable to load font library");
