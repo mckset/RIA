@@ -96,9 +96,12 @@ void Init(){
 	sHueSelector.Init(shapeV, hueSelectorF);
 	sCircle.Init(shapeV, circleF);
 
+	// Check for valid fonts on different Linux distros
 	if (LINUX){
-	        if (!stat(fontPath.c_str(), &st) == 0)
+	    if (!stat(fontPath.c_str(), &st) == 0)
 			fontPath = "/usr/share/fonts/truetype/noto/NotoSansMono-Regular.ttf";
+		if (!stat(fontPath.c_str(), &st) == 0)
+			fontPath = "/usr/share/fonts/open-sans/OpenSans-Light.ttf";
 		if (!stat(fontPath.c_str(), &st) == 0)
 			fontPath = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
 		if (!stat(fontPath.c_str(), &st) == 0)
@@ -109,7 +112,8 @@ void Init(){
 		printf("Error: Unable to load font library");
 	if (FT_New_Face(ft, fontPath.data(), 0, &face))
 		printf("Error: Unable to load font %s\n", fontPath.data());
-
+	else
+		font.loaded = true;
 	InitFont();
 	InitMenu();
 	
