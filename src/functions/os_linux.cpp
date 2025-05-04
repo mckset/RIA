@@ -1,5 +1,8 @@
 void OpenShared();
 void SaveBoard();
+void HideConsole();
+
+void HideConsole(){}; // Needed for windows
 
 void OpenShared(){
 	popen("xdg-open shared/", "r");

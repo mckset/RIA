@@ -1,6 +1,11 @@
 void GetBoard();
 void OpenShared();
 void SaveBoard();
+void HideConsole();
+
+void HideConsole(){
+  ShowWindow(GetConsoleWindow(), SW_HIDE);
+}
 
 // I hate this so much
 

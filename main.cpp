@@ -97,6 +97,8 @@ void Init(){
 	sCircle.Init(shapeV, circleF);
 
 	if (LINUX){
+	        if (!stat(fontPath.c_str(), &st) == 0)
+			fontPath = "/usr/share/fonts/truetype/noto/NotoSansMono-Regular.ttf";
 		if (!stat(fontPath.c_str(), &st) == 0)
 			fontPath = "/usr/share/fonts/truetype/freefont/FreeMono.ttf";
 		if (!stat(fontPath.c_str(), &st) == 0)
@@ -120,7 +122,7 @@ void Init(){
 }
 
 int main(){
-	if (!LINUX) ShowWindow(GetConsoleWindow(), SW_HIDE);
+	if (!LINUX) HideConsole();
 	if (DEBUG) printf("[Initializing]\n");
 
 	if (!CreateWindows() && DEBUG){
