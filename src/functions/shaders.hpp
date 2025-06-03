@@ -1,3 +1,7 @@
+/*
+	Shaders used by RIA
+*/
+
 // Vertex shaders
 const char* shapeV = "#version 330 core\n"
 	"layout (location = 0) in vec2 pos;\n"

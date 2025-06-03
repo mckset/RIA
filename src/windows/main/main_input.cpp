@@ -1,13 +1,9 @@
 //
-// Responsible for handling mouse and keyboard events in the main window
+// Responsible for handling mouse and keyboard events in the main window view
 //
 
-
 void MainInput(){
-	//
-	// Basic inputs
-	//
-
+	// Edits the title of a board
 	if (fCurrentBoard.active){
 		RightMenuInput();
 		if (fCurrentBoard.active)
@@ -66,30 +62,23 @@ void MainInput(){
 	// Copy to clipboard
 	if (keyboard.newKey == KEY_C && keyboard.ctrl) Copy();
 		
-
 	// Pasting from clipboard
 		if (keyboard.GetKey(KEY_V) && keyboard.ctrl && !pasted)
 		Paste();
 	else if (!(keyboard.GetKey(KEY_V) && keyboard.ctrl) && pasted)
 		pasted = false;
 
+	// Left menu input
 	LeftMenuInput();
 	if (lMenu && mouse.position.x < menuWidth+scrollbarSize) return;
+
+	// Right menu input
 	RightMenuInput();
 	if (rMenu && mouse.position.x > fWidth-menuWidth-scrollbarSize) return;
 
 	//
-	// Main input events
+	// Image input events
 	//
-
-	// Import menu
-	if (mouse.Click(LM_DOWN) && import.Hover()){
-		ResetImport();
-		Import.Toggle();
-		keyboard.newKey = -1;
-		mouse.prevState = mouse.state;
-		return;
-	}
 
 	//
 	// Deleting	
@@ -145,7 +134,7 @@ void MainInput(){
 	//
 	// Image board mouse events
 	//
-	if (mouse.Click(LM_DOWN)){
+	if (mouse.Click()){
 		if (imgScale)
 			imgScale = false;
 
@@ -355,20 +344,14 @@ void MainInput(){
 	}
 }
 
-// REMOVE
-Vector2 MouseToScreenSpace(Vector2 position){
-	return position.Subtract(Width/2, Height/2)
-					.Divide(*Scale)
-					.Add(Width/2, Height/2) 
-					.Add(*View);
-}
-
+// Clears selection
 void ResetImages(){
 	selImgs.clear();
 	for (int i = 0; i < imgs.size(); i++)
 		imgs[i].selected = false;
 }
 
+// Moves newest selection to the top of the image order
 void ReorderImages(){
 	int i = selImgs[selImgs.size()-1];
 	Object temp = imgs[i];

@@ -1,6 +1,6 @@
-void DrawTag();
-void TagInput();
-void ResetTagEdit();
+/*
+	Draws the tag editor and handles the input
+*/
 
 Button addTag = Button{"Confirm", menuBackground, highlight, White, fontSize/2};
 Button delTag = Button{"Delete", menuBackground, highlight, White, fontSize/2};
@@ -12,32 +12,38 @@ bool csLock = false;
 float huePosition;
 Color hue;
 
+// Draws the tag editor
 void DrawTag(){
+
+	// Gets the color from the color selector
 	Color HSV = hue.ToHSV();
 	HSV.g = ((csPicker.x) / csSize.x)*100;
 	HSV.b = ((csPicker.y) / csSize.y)*100;
 	newColor = ToRGB(HSV.r, HSV.g, HSV.b);
 
+	// Draws the tag name and options
 	tagName.color = newColor;
 	tagName.Draw(Vector2{0, fHeight - fontSize*1.5f}, Vector2{fWidth, fontSize*1.5f}, true, true);
 	addTag.Draw(Vector2{0, fHeight-fontSize*2.5f}, Vector2{fWidth/2, fontSize}, false, true, TagWin.Focus());
 	delTag.Draw(Vector2{fWidth/2, fHeight-fontSize*2.5f}, Vector2{fWidth/2, fontSize}, false, true, TagWin.Focus());
 	
-	// Hue selector
+	// Color selector math
 	float c = 1-((float)sHue.scroll/(float)sHue.end);
 	if (c <= .33) hue = Color{1-(c/.33f), c/.33f, 0, 1};
 	else if (c <=.67) hue = Color{0, 1-((c-.33f)/.33f), (c-.33f)/.33f, 1};
 	else hue = Color{((c-.67f)/.33f), 0, 1-(c-.67f)/.33f, 1};
+
+	// Draw the color selector
 	shape.DrawHueSelector(csPos+Vector2{csSize.x+16,0}, {64, csSize.y});
 	sHue.Draw(csPos+Vector2{csSize.x+16,0}, {64, csSize.y});
-
 	shape.DrawColorSelector(csPos, csSize, hue);
 	shape.DrawCircle(csPicker + csPos, 24, 24, newColor);
 	shape.DrawCircle(csPicker + csPos, 24, 4, Black);
 }
 
+// Tag editor input
 void TagInput(){
-	// Color picker
+	// Color selector input
 	if (mouse.position.Within(csPos, csSize) && mouse.state == LM_DOWN && !sHue.scrollLock || csLock){
 		csPicker = mouse.position - csPos;
 
@@ -57,7 +63,7 @@ void TagInput(){
 			csLock = false;
 	}
 
-	if (mouse.Click(LM_DOWN)){
+	if (mouse.Click()){
 		tagName.CheckClick();
 		if (addTag.Hover()){
 			// New Tag
@@ -127,6 +133,7 @@ void TagInput(){
 	}
 }
 
+// Resets tag editor variables
 void ResetTagEdit(){
 	editTag = -1;
 	editSub = -1;

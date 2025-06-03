@@ -26,18 +26,12 @@ float fontSpacing = 1;
 
 class Font{
 	public:
-		void Write(int* text, int text_s, Vector2 position, float size, Color color, bool fixed = false, float limit = Width, int align = 0, bool wrap = false){
-			int length = 0;
-			char temp[text_s];
-			for (int i = 0; i < text_s && length < limit; i++){
-				temp[i] = text[i];
-				length += Draw(text[i], position.Add(length, 0), size, color);
-			}
-		}
+		bool loaded = false;
 
 		float Write(string text, Vector2 position, float size, Color color, bool fixed = false, float limit = Width, int align = 0, bool wrap = false){
+			if (!loaded) return 0;
+			
 			int length = 0;
-
 			float fontSize = size;
 			fontSize /= 32;
 			fontSize *= 48.0f/(float)fontResolution;
@@ -158,9 +152,12 @@ class Font{
 			return (c.advance >> 6) * fontSize*1.145;
 		}
 };
+Font font;
+
 
 void AddChar(int c){
-		
+	if (!font.loaded) return;
+	
 	// load character glyph 
 	if (FT_Load_Char(face, c, FT_LOAD_RENDER)){
 		printf("Failed to load character %c\n", c);
@@ -234,4 +231,3 @@ void InitFont(){
 		AddChar(c);
 
 }
-Font font;

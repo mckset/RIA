@@ -1,16 +1,10 @@
 /*
-	handler.cpp
-
 	Stores functions for handling window events such as keyboard/mouse events and scaling
 */
 
-char KeyToChar(int);
-
 extern Scrollbar importScroll;
 
-//
-// Functions to handle window actions
-//
+// Handles drag and drop functions
 void DragDrop(GLFWwindow* w, int c, const char** paths){
 	struct stat st;
 
@@ -28,6 +22,11 @@ void DragDrop(GLFWwindow* w, int c, const char** paths){
 			else if (st.st_mode & S_IFREG && IsImage(p)){
 				Object img;
 				img.img.LoadImage((char*) paths[c-1]);
+
+				if (!img.img.loaded && Lower(p.substr(p.length()-4)) == "webp")
+					img.img = LoadWebp(p);
+				if (!img.img.loaded)
+					return;
 
 				// Magic math that puts the mouse into screen space
 				img.size = Vector2{(float)img.img.width, (float)img.img.height};
@@ -47,45 +46,12 @@ void DragDrop(GLFWwindow* w, int c, const char** paths){
 	sort(locations.begin(), locations.end(), Table{}.SortTable);
 }
 
+// Reports GLFW errors
 static void Error(int e, const char* desc){
 	if (DEBUG) fprintf(stderr, "Error #%d: %s\n", e, desc);
 }
 
-void Maximize(GLFWwindow* w, int max){
-	maximize = max;
-}
-
-void On_Resize(GLFWwindow* w, int width, int height){
-	if (w == Main.w){
-		Main.Use();
-		Main.width = width;
-		Main.height = height;
-		menuWidth = width/6;
-	}else if (w == TagWin.w){
-		TagWin.Use();
-		TagWin.width = width;
-		TagWin.height = height;
-	}else if (w == Import.w){
-		Import.Use();
-		Import.width = width;
-		Import.height = height;
-	}
-	glViewport(0, 0, width, height);
-}
-
-void SubClose(GLFWwindow *w){
-	glfwSetWindowShouldClose(w, GL_FALSE);
-	if (w == TagWin.w)
-		TagWin.Hide();
-	if (w == Import.w)
-		Import.Hide();
-}
-
-
-//
-// Functions to handle mouse actions
-//
-
+// Handles scrollwheel events
 void GetScrollWheel(GLFWwindow* w, double x, double y){
 	if (showTutorial){
 		*Scale = 1;
@@ -161,7 +127,38 @@ void GetScrollWheel(GLFWwindow* w, double x, double y){
 	}
 }
 
+// Shifts a character to upper case when shift is held
+char KeyToChar(int key){
+	int c = key-32;
+	if (keyboard.GetKey(KEY_LEFT_SHIFT) || keyboard.GetKey(KEY_RIGHT_SHIFT))
+		return UpperMap[c];
+	else
+		return LowerMap[c];
+}
 
+// Maximizes a window
+void Maximize(GLFWwindow* w, int max){ maximize = max; }
+
+// Handles resize events
+void On_Resize(GLFWwindow* w, int width, int height){
+	if (w == Main.w){
+		Main.Use();
+		Main.width = width;
+		Main.height = height;
+		menuWidth = width/6;
+	}else if (w == TagWin.w){
+		TagWin.Use();
+		TagWin.width = width;
+		TagWin.height = height;
+	}else if (w == Import.w){
+		Import.Use();
+		Import.width = width;
+		Import.height = height;
+	}
+	glViewport(0, 0, width, height);
+}
+
+// Updates mouse cursor position
 void SetCursorPosition(GLFWwindow* w, double x, double y){
 	if (Main.Focus()) Main.Use();
 	else if (TagWin.Focus()) TagWin.Use();
@@ -171,26 +168,7 @@ void SetCursorPosition(GLFWwindow* w, double x, double y){
 
 }
 
-void SetMouseState(GLFWwindow* w, int button, int action, int mod){
-	mouse.state = button*10 + action;
-	if (mouse.state != LM_DOWN && mouse.state != RM_DOWN && mouse.drag)
-		mouse.drag = false;
-}
-
-//
-// Functions to handle keyboard actions
-//
-
-// Mostly used to apply upperchar shifting
-char KeyToChar(int key){
-	int c = key-32;
-	if (keyboard.GetKey(KEY_LEFT_SHIFT))
-		return UpperMap[c];
-	else
-		return LowerMap[c];
-}
-
-
+// Handles keyboard events
 void SetKeyboardState(GLFWwindow* w, int key, int code, int action, int mod){
 	if (action == 1)
 		keyboard.AddKey(key);
@@ -198,6 +176,18 @@ void SetKeyboardState(GLFWwindow* w, int key, int code, int action, int mod){
 		keyboard.DelKey(key);
 }
 
+// Get mouse button events
+void SetMouseState(GLFWwindow* w, int button, int action, int mod){
+	mouse.state = button*10 + action;
+	if (mouse.state != LM_DOWN && mouse.state != RM_DOWN && mouse.drag)
+		mouse.drag = false;
+}
 
-
-
+// Hides sub windows
+void SubClose(GLFWwindow *w){
+	glfwSetWindowShouldClose(w, GL_FALSE);
+	if (w == TagWin.w)
+		TagWin.Hide();
+	if (w == Import.w)
+		Import.Hide();
+}

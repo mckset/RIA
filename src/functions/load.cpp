@@ -1,6 +1,10 @@
-vector<Tag> LoadTags(ifstream*, bool, bool);
-bool oldSave = false;
+/*
+	Handles loading as well as functions to assist in loading elements such as webp
+*/
 
+bool oldSave = false; // True if an old save file
+
+// Converts path slashes to match system
 void FixString(string *s){
 	string o = "";
 	for (int i = 0; i < s->length(); i++)
@@ -8,6 +12,7 @@ void FixString(string *s){
 			(*s)[i] = slash[0];
 }
 
+// Gets a color from a string
 Color GetColor(string s){
 	Color out = Color{0,0,0,1};
 	int start = 1;
@@ -29,18 +34,6 @@ Color GetColor(string s){
 		start = end;
 	}
 	return out;
-}
-
-string GetLine(){
-	int size = 0;
-	string temp;
-	char c;
-	f.read(reinterpret_cast<char*>(&c), 1);
-	while (c != '\n' && !f.eof()){
-		temp += c;
-		f.read(reinterpret_cast<char*>(&c), 1);
-	}
-	return temp;
 }
 
 string GetName(string path){
@@ -78,18 +71,7 @@ string GetString(){
 	return temp;
 }
 
-/*string GetString(){
-	string temp = "";
-	char c[1];
-	while (f.good()){
-		f.read(c, 1);
-		if (c[0] == lineEnd[0])
-			return temp;
-		temp += c;
-	}
-	return temp;
-}*/
-
+// Backwards compatible name loading for old saves
 string GetStringOld(){
 	int size = 0;
 	string temp;
@@ -107,15 +89,17 @@ string GetStringOld(){
 	return temp;
 }
 
+// Checks if an image already exists in a list
 bool Duplicate(string img, vector<File>* list){
 	for (auto file : *list)
 		if (file.path == img) return true;
 	return false;
 }
 
+// Main loading function
 void Load(){
 	loaded = true;
-	f.open("save.dat", ios::in | ios::binary);
+	f.open(path + "save.dat", ios::in | ios::binary);
     if (!f.good()){
 		if (DEBUG) printf("[Loading] No save data found\n");
 		return;
@@ -162,6 +146,8 @@ void Load(){
     if (menuWidth == 0)
         menuWidth = Main.width/6;
 }
+
+// Loads an image board
 void LoadImageBoard(){
 	if (DEBUG) printf("%s\n", board.data());
 
@@ -225,6 +211,7 @@ void LoadImageBoard(){
 	f.close();
 }
 
+// Loads tags
 vector<Tag> LoadTags(ifstream *f, bool subtag, bool checkValid){
 	struct stat st;
 	int buf = 0;
@@ -287,6 +274,7 @@ vector<Tag> LoadTags(ifstream *f, bool subtag, bool checkValid){
 	return tags;
 }
 
+// Loads a webp image
 Image LoadWebp(string path){
 	Image i;
 	ifstream f(path.c_str(), ios::in | ios::binary);

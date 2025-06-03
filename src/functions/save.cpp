@@ -1,8 +1,9 @@
+/*
+	Handles all the functions needed to save RIA
+*/
+
 #include<iostream>
 #include<fstream>
-
-void SaveImageBoard();
-void SaveTags(ofstream*, vector<Tag>, bool);
 
 ifstream f;
 bool saving = false;
@@ -10,24 +11,18 @@ bool saveError = false;
 string saveText = "";
 const char lineEnd[1] = {'\0'};
 
-/* 
-	Base save function that calls all the other save related functions in order:
-	- Check that the board name exists
-	- Save image folder paths
-	- Save tags
-	- Save board name
-	- Save board
-	- Save configuration
-*/ 
+// Main save function
 void Save(){
 	saveError = true;
 	saving  = true;
 
+	// Sets the board name if left empty
 	if (!board.length())
 		board = "Default.brd";
 
+	// Saves tags and locations
 	saveText = "Opening save.dat";
-	ofstream w("temp.dat", ios::out | ios::binary);
+	ofstream w(path + "temp.dat", ios::out | ios::binary);
 	
 	if (!w.good()){
 		if (DEBUG) printf("[Save] Unable to save file\n");
@@ -64,8 +59,9 @@ void Save(){
 	w.close();
 
 	// Overwrite save file
-	filesystem::rename("temp.dat", "save.dat");
+	filesystem::rename(path+"temp.dat", path+"save.dat");
 
+	// Save image board
 	SaveImageBoard();
 	
 	saving = false;
@@ -75,19 +71,12 @@ void Save(){
 	if (DEBUG) printf("\n");
 }
 
-/*
-	Saves all tags in order of:
-	- Name
-	- Color
-	- Images
-	- Subtags -> call self with subtag = true
-*/
-
+// Saves the current image board
 void SaveImageBoard(){
 	// Board
 	if (DEBUG) printf("Board: %s\n", board.data());
 	ofstream w;
-	w.open("temp.brd", ios::out | ios::binary);
+	w.open(path + "temp.brd", ios::out | ios::binary);
 
 	save = 600;
 	saveText = "Saving image board";
@@ -111,7 +100,6 @@ void SaveImageBoard(){
 	w.write(reinterpret_cast<const char*>(&width), 4);
 	w.write(reinterpret_cast<const char*>(&height), 4);
 	w.write(reinterpret_cast<const char*>(boardScreenshot), width*height*3);
-	//free(boardScreenshot);
 
 	// Images
 	int size = imgs.size();
@@ -141,16 +129,17 @@ void SaveImageBoard(){
 	w.close();
 
 	// Overwrite board
-	filesystem::rename("temp.brd", "boards/"+board);
+	filesystem::rename(path + "temp.brd", path+slash[0]+"boards"+slash[0]+board);
 }
 
+// Saves tag information
 void SaveTags(ofstream *w, vector<Tag> tags, bool subtag = false){
 	int buf = tags.size();
 	w->write(reinterpret_cast<const char*>(&buf), 4);
 	string count = to_string(buf);
 	int subTagCount = 0;
 	
-
+	// Loop through tags
 	for (auto tag : tags){
 		save = 600;
 

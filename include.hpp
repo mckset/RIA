@@ -26,6 +26,15 @@ using namespace pdc;
 #include "src/classes/tag.hpp"
 #include "src/classes/table.hpp"
 
+// Functions are declared here because they rely on classes
+void DrawFolders(float, float*, Vector2, Table*);
+bool Duplicate(string img, vector<File>* list);
+Tag FilterTag(Tag, vector<File>);
+void ImportTag(Tag, Tag*);
+vector<Tag> LoadTags(ifstream*, bool, bool);
+void SaveTags(ofstream*, vector<Tag>, bool);
+bool SortTag(Tag, Tag);
+
 #include "src/functions/sort.cpp"
 #ifdef _WIN32
 	#include "src/functions/os_win.cpp"

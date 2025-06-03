@@ -1,14 +1,5 @@
-void OpenShared();
-void SaveBoard();
-void HideConsole();
-
 void HideConsole(){}; // Needed for windows
 
-void OpenShared(){
-	popen("xdg-open shared/", "r");
-}
+void OpenShared(){popen("xdg-open shared/", "r");}
 
-
-void OpenHelp(){
-	popen("xdg-open help.html", "r");
-}
+void OpenHelp(){popen("xdg-open help.html", "r");}

@@ -3,30 +3,46 @@ void Copy(){
 	if (!selImgs.size())
 		return;
 
-	if (!LINUX){
-
-		return;
-	}
-
 	string ext = "";
 	if (imgs[selImgs[0]].path[imgs[selImgs[0]].path.length()-4] == '.')
 		ext = imgs[selImgs[0]].path.substr(imgs[selImgs[0]].path.length()-3);
 	else
 		ext = imgs[selImgs[0]].path.substr(imgs[selImgs[0]].path.length()-4);
 	string cmd = "xclip -selection clipboard -target image/" + ext + " -i \"" + imgs[selImgs[0]].path + "\"";
+
 	internalClipboard.push_back(imgs[selImgs[0]].path);
 	system(cmd.c_str());
 }
 
-void Paste(){
-	pasted = true;
+bool cbReady = false;
+
+void ReadClipboard(string *out){
 	const char* cb = glfwGetClipboardString(Main.w);
-	printf("Paste: %s\n", cb);
-	if (cb == NULL){
-		printf("Failed to read clipbord\n");
+	cbReady = true;
+	*out = cb;
+}
+
+void Paste(){
+	cbReady = false;
+	pasted = true;
+	string cb = "";
+	thread cbThread(ReadClipboard, &cb);
+	for (int i = 0; i < 50 && !cbReady; i++)
+		SleepFor(100);
+	if (cbReady)
+		cbThread.join();
+	else
+		cbThread.detach();
+
+	if (DEBUG) printf("Paste: %s\n", cb.data());
+	if (!cb.length()){
+		if (DEBUG) printf("Failed to read clipbord\n");
 		if (internalClipboard.size()){
-			Object img;
-			img.img.LoadImage(internalClipboard[0]);
+			Object img = Object{{0,0}, {1,1}, 0, 0, internalClipboard[0]};
+			if (img.path.substr(img.path.length()-4) == "webp")
+				img.img = LoadWebp(img.path);
+			else
+				img.img.LoadImage(img.path);
 			img.size = Vector2{(float)img.img.width, (float)img.img.height};
 			img.position = mouse.ToScreenSpace() - img.size/2;
 			imgs.push_back(img);
@@ -39,7 +55,7 @@ void Paste(){
 	vector<string> images;
 
 	// Split clipboard string by path
-	for (int i = 0; i < strlen(cb); i++){
+	for (int i = 0; i < cb.length(); i++){
 		if (cb[i] == '\n'){
 			images.push_back(path);
 			s=i+1;
@@ -59,7 +75,10 @@ void Paste(){
 
 		Object img;
 		if (IsImage(path)){
-				img.img.LoadImage(path.data());
+				if (path.substr(path.length()-4) == "webp")
+					img.img = LoadWebp(path);
+				else
+					img.img.LoadImage(path.data());
 				img.size = Vector2{(float)img.img.width, (float)img.img.height};
 				img.position = mouse.ToScreenSpace() - img.size/2;
 				imgs.push_back(img);
@@ -142,7 +161,10 @@ void Paste(){
 				if (!IsImage(path)) continue;
 				
 				Object img;
-				img.img.LoadImage(path.data());
+				if (path.substr(path.length()-4) == "webp")
+					img.img = LoadWebp(path);
+				else
+					img.img.LoadImage(path.data());
 				img.size = Vector2{(float)img.img.width, (float)img.img.height};
 				img.position = mouse.ToScreenSpace() - img.size/2;
 				imgs.push_back(img);

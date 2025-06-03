@@ -51,7 +51,7 @@ class Tag{
 			if (expand){
 				editB.Draw(position+Vector2{16, 0}, Vector2{fontSize*2, fontSize}, false, true);
 
-				if (mouse.Click(LM_DOWN) && editB.Hover() && Main.Focus()){
+				if (mouse.Click() && editB.Hover() && Main.Focus()){
 					editTag = tag;
 					editSub = sub;
 					tagName.Reset();
@@ -115,7 +115,7 @@ class Tag{
 							shape.Draw(position.Subtract(0.0f, size.y*subPos), size, highlight, true);
 
 							// Preview Image
-							if (mouse.Click(LM_DOWN)){
+							if (mouse.Click()){
 								if (imgs[i].path.substr(imgs[i].path.length()-4) != "webp")
 									previewImg.img.LoadImage(imgs[i].path);
 								else
@@ -144,7 +144,7 @@ class Tag{
 				return 0;
 
 			if (mouse.position.Within(position, size)){
-				if (mouse.Click(LM_DOWN)){
+				if (mouse.Click()){
 					if (!addButton.Hover() || sub > -1)
 						expand = !expand;
 					else{

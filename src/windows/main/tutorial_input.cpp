@@ -1,3 +1,18 @@
+/*
+	Changes steps in the tutorial depending on the action
+	tStage stores the tutorial step and mState stores the substep
+	mStage usually only counts to 1 or 2
+*/
+
+/*
+tStage
+0 - Main board
+1 - Locations
+2 - Tags
+3 - Boards
+4 - Image packs
+*/
+
 void TutorialInput(){
 	if (keyboard.newKey == KEY_ESCAPE){
 		showTutorial = false;
@@ -5,6 +20,8 @@ void TutorialInput(){
 		Main.Input = &MainInput;
 		lMenu = false;
 		rMenu = false;
+		*Scale = oldScale;
+		*View = oldView;
 	}
 
 	if (keyboard.newKey == KEY_RIGHT){
@@ -109,13 +126,13 @@ void TutorialInput(){
 	}
 
 	if (lMenu && mouse.position.x < menuWidth){
-		if (add.Hover() && mouse.Click(LM_DOWN) && mStage == 0 && (tStage == 1 || tStage == 2)){
+		if (add.Hover() && mouse.Click() && mStage == 0 && (tStage == 1 || tStage == 2)){
 			if (tagView){
 				editTag = -1;
 				TagWin.Show();
 			}else{
 				string folder = GetFolder();
-				if (folder.length() && !((stat(folder.c_str(), &s) == 0) == 0)){
+				if (folder.length() && !((stat(folder.c_str(), &st) == 0) == 0)){
 					locations.push_back(Table{GetName(folder), folder});
 					sort(locations.begin(), locations.end(), locations[0].SortTable);
 				}

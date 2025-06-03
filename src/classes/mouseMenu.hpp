@@ -90,7 +90,7 @@ class Menu{
 							if (mouse.position.Within(Vector2{position.x+menuSize, y2}, Vector2{(float)menuSize, fontSize})){
 								shape.Draw(Vector2{position.x+menuSize, y2}, Vector2{(float)menuSize, fontSize}, highlight, true);
 
-								if (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)){
+								if (mouse.Click() || mouse.Click(RM_DOWN)){
 									AppendToTag(tagIndex, subIndex);
 									expand = 0;
 								}
@@ -109,7 +109,7 @@ class Menu{
 						if (mouse.position.Within(Vector2{position.x+menuSize, y2}, Vector2{(float)menuSize, fontSize})){
 							shape.Draw(Vector2{position.x+menuSize, y2}, Vector2{(float)menuSize, fontSize}, highlight, true);
 
-							if (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)){
+							if (mouse.Click() || mouse.Click(RM_DOWN)){
 								expand = 0;
 								editTag = tagIndex;
 								editSub = -2;
@@ -137,7 +137,7 @@ class Menu{
 								tagsMenu[0].items.push_back(MenuItem{"+ Add Tag", 0, Transparent});
 								tagsMenu[0].position = Vector2 {position.x + fontSize*8, y+fontSize};
 							}
-							if (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)){
+							if (mouse.Click() || mouse.Click(RM_DOWN)){
 								lMenu = true;
 								tagView = true;
 							}
@@ -151,7 +151,7 @@ class Menu{
 					}
 
 					// Main functions
-					if (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)){
+					if (mouse.Click() || mouse.Click(RM_DOWN)){
 						expand = 0;
 						// Basic functions
 						if (t == 0){
@@ -203,7 +203,7 @@ class Menu{
 				tagIndex++;
 				y-=fontSize;
 			}
-			if ((!mouse.position.Within(position, Vector2{(float)menuSize, fontSize}) && (mouse.Click(LM_DOWN) || mouse.Click(RM_DOWN)) && t == 0) && !showTutorial){
+			if ((!mouse.position.Within(position, Vector2{(float)menuSize, fontSize}) && (mouse.Click() || mouse.Click(RM_DOWN)) && t == 0) && !showTutorial){
 				mouse.state = -1;
 				Reset();
 			}

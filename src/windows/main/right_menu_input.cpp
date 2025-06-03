@@ -4,7 +4,7 @@
 
 void RightMenuInput(){
 	// Menu toggle
-	if ((keyboard.newKey == KEY_1 && !fCurrentBoard.active) || mouse.Click(LM_DOWN) && bBoards.Hover()){
+	if ((keyboard.newKey == KEY_ESCAPE && !fCurrentBoard.active) || mouse.Click() && bBoards.Hover()){
 		if (fCurrentBoard.active)
 			fCurrentBoard.Reset();
 		if (!rMenu)
@@ -15,13 +15,22 @@ void RightMenuInput(){
 		mouse.state = -1;
 	}
 
-	// Saving
+	// Image pack button
+	if (mouse.Click() && import.Hover()){
+		ResetImport();
+		Import.Toggle();
+		keyboard.newKey = -1;
+		mouse.state = -1;
+	}
+
+	// Checks if the saving thread is finished
 	if (saveThread && saveThread->joinable() && !saving){
 		saveThread->join();
 		FindBoards();
 	}
 
-	if ((keyboard.newKey == KEY_S && keyboard.ctrl) || mouse.Click(LM_DOWN) && bSave.Hover()){
+	// Save
+	if ((keyboard.newKey == KEY_S && keyboard.ctrl) || mouse.Click() && bSave.Hover()){
 		previewImg.img.loaded = false;
 		for (auto img : selImgs)
 			imgs[img].angle = imgs[img].prevAngle;
@@ -30,6 +39,7 @@ void RightMenuInput(){
 		TagWin.Hide();
 		rmMenu.Reset();
 
+		// Detach saving thread if it is hanging (most likely crashed but rare)
 		if (saveThread && saving)
 			saveThread->detach();
 		

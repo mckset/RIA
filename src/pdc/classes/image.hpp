@@ -8,7 +8,6 @@ class Image{
 		bool hFlip = false;
 		bool vFlip = false;
 		bool filter = true;
-		string path = "";
 
 		// Draws to pixel size
 		void Draw(Vector2 position, Vector2 size, Color color = White, float angle = 0, bool fixed = false){
@@ -58,6 +57,13 @@ class Image{
 				tL.x, tL.y, 		0, 1 // top left 
 			};
 	
+			// Culling
+			if ((tR.x > 1 && tL.x > 1) ||
+				(tR.x < -1 && tL.x < -1) ||
+				(tR.y > 1 && bR.y > 1) || 
+				(tR.y < -1 && bR.y < -1))
+				return;
+
 			// Indices used to draw a box
 			int box[] = {
 				0, 1, 3,
@@ -135,7 +141,6 @@ class Image{
 			if (data){
 				SetTexture(data, nearest);
 				if (PDC_DEBUG) printf("[Image] Loaded %s: %dx%d\n", p.c_str(), width, height);
-				//path = p;
 			}else{
 				if (PDC_DEBUG) printf("[Image] Failed to load image: %s\n", p.c_str());
 			}

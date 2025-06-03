@@ -11,6 +11,21 @@ Download the latest verion from release page for your operating system or compil
 - Arch
 - Ubuntu
 
+
+### Issues with Windows
+Windows requires the following dll files to be available for RIA to run: 
+- freetype.dll
+- libwebp.dll
+- libsharpyuv.dll
+- libwebpdecoder.dll
+- libwebpdemux.dll
+- ucrtbased.dll
+- vcruntime140.dll
+- vcruntime140d.dll
+
+All of which have been packaged with the windows zip in the release section and requires you to run the install script with administrator privileges to install the dll files.
+All the script does is copy the dll files into the proper directories so RIA can use them. 
+
 > **_NOTE:_** The Linux version relies on Zenity to add new folders to the folder view.
 
 # Image Board
@@ -153,4 +168,3 @@ g++ main.cpp src\dependencies\windows\glad\glad.c -o RIA  "src\dependencies\wind
 ```
 
 > **_NOTE:_** The above may vary depending on your Windows workspace and installed libraries.
-

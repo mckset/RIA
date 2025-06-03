@@ -1,8 +1,11 @@
-void DrawTutorial();
-void TutorialInput();
-
+/*
+	Displays the steps of the tutorial
+	tStage stores the tutorial step and mState stores the substep
+	mStage usually only counts to 1 or 2
+*/
 
 /*
+tStage
 0 - Main board
 1 - Locations
 2 - Tags
@@ -11,11 +14,16 @@ void TutorialInput();
 */
 int tStage = 0;
 int mStage = 0;
+float oldScale = 0;
+Vector2 oldView;
+
 
 void OpenTutorial(){
 	showTutorial = true;
 	Main.Render = &DrawTutorial;
 	Main.Input = &TutorialInput;
+	oldScale = *Scale;
+	oldView = *View;
 	*Scale = 1;
 	*View = {0,0};
 	lMenu = false;
@@ -163,6 +171,7 @@ void DrawStage(){
 
 			//shape.DrawLine({});
 			font.Write("Zoom percent", {0,fHeight-fontSize*3}, fontSize*.75f, White, true, Width, 1);
+			font.Write("Scrolling or pressing +/- will zoom in and out", {0,fHeight-fontSize*4-8}, fontSize*.75f, White, true, Width, 1);
 
 			shape.DrawBox({8, fHeight-fontSize*2-8}, {fontSize*5, fontSize}, White, 2);
 			font.Write("Click to open the locations menu", Vector2{8, fHeight-fontSize*2-8}+Vector2{fontSize*6, fontSize/2}, fontSize*.5f, White, true, Width, 0);
@@ -240,7 +249,7 @@ void DrawStage(){
 
 			shape.DrawBox({fWidth - fontSize*6-12, fHeight - fontSize*2-8}, {fontSize*6, fontSize}, White, 2);
 			font.Write("Click to open the boards menu", {fWidth - fontSize*22, fHeight - fontSize*2-8}, fontSize*.5f, White, true, Width, 0);
-			font.Write("or press 1", {fWidth - fontSize*22, fHeight - fontSize*3-8}, fontSize*.5f, White, true, Width, 0);		
+			font.Write("or press escape", {fWidth - fontSize*22, fHeight - fontSize*3-8}, fontSize*.5f, White, true, Width, 0);		
 		}
 
 	// Boards
@@ -293,6 +302,8 @@ void DrawStage(){
 			Main.Input = &MainInput;
 			lMenu = false;
 			rMenu = false;
+			*Scale = oldScale;
+			*View = oldView;
 		}
 	}
 }

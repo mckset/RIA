@@ -1,56 +1,37 @@
 #include <shobjidl.h>
 
-char* GetFile();
-char* GetFolder();
-void OpenHelp();
-void OpenShared();
-
+// I hate windows
 char* GetFile(){
 	PWSTR pszFilePath;
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | 
-        COINIT_DISABLE_OLE1DDE);
-    if (SUCCEEDED(hr))
-    {
-        IFileOpenDialog *pFileOpen;
+		COINIT_DISABLE_OLE1DDE);
+	if (SUCCEEDED(hr)){
+		IFileOpenDialog *pFileOpen;
+		COMDLG_FILTERSPEC filter[1] = {{L"Images", L"*.jpg;*.jpeg;*.png"}};
 
-	COMDLG_FILTERSPEC filter[1] = {{L"Images", L"*.jpg;*.jpeg;*.png"}};
+		hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
 
-        // Create the FileOpenDialog object.
-        hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, 
-                IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
+		if (SUCCEEDED(hr)) {
+			pFileOpen->SetFileTypes(1,filter);
+			hr = pFileOpen->Show(NULL);
 
-        if (SUCCEEDED(hr))
-        {
-		pFileOpen->SetFileTypes(1,filter);
-            // Show the Open dialog box.
-            hr = pFileOpen->Show(NULL);
+			if (SUCCEEDED(hr)) {
+				IShellItem *pItem;
+				hr = pFileOpen->GetResult(&pItem);
+				if (SUCCEEDED(hr)) {
+					hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 
-            // Get the file name from the dialog box.
-            if (SUCCEEDED(hr))
-            {
-                IShellItem *pItem;
-                hr = pFileOpen->GetResult(&pItem);
-                if (SUCCEEDED(hr))
-                {
-                    
-                    hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
-
-                    // Display the file name to the user.
-                    if (SUCCEEDED(hr))
-                    {
-                        //MessageBoxW(NULL, pszFilePath, L"File Path", MB_OK);
-                        CoTaskMemFree(pszFilePath);
-                    }
-                    pItem->Release();
-                }
-            }
-            pFileOpen->Release();
-        }
-        CoUninitialize();
-    }
+					if (SUCCEEDED(hr))
+						CoTaskMemFree(pszFilePath);
+					pItem->Release();
+				}
+			}
+			pFileOpen->Release();
+		}
+		CoUninitialize();
+	}
 	std::wstring ss;
 	ss = pszFilePath;
-	//(char*)pszFilePath
 	char *output = new char[ss.length() + 1];
 	output[ss.size()] = '\0';
 	WideCharToMultiByte(CP_ACP, 0,ss.c_str(), -1, output, (int)ss.length(), NULL, NULL);
@@ -58,66 +39,41 @@ char* GetFile(){
 }
 
 char* GetFolder(){
-    char* output;
+	char* output;
 	PWSTR pszFilePath;
 	
-	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | 
-        COINIT_DISABLE_OLE1DDE);
-    if (SUCCEEDED(hr))
-    {
-        IFileOpenDialog *pFileOpen;
+	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+	if (SUCCEEDED(hr)) {
+		IFileOpenDialog *pFileOpen;
+		COMDLG_FILTERSPEC filter[1] = {{L"Images", L"*.jpg;*.jpeg;*.png"}};
 
-	COMDLG_FILTERSPEC filter[1] = {{L"Images", L"*.jpg;*.jpeg;*.png"}};
+		hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
 
-        // Create the FileOpenDialog object.
-        hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, 
-                IID_IFileOpenDialog, reinterpret_cast<void**>(&pFileOpen));
-
-        if (SUCCEEDED(hr))
-        {
-		//pFileOpen->SetFileTypes(1,filter);
+		if (SUCCEEDED(hr)) {
 			pFileOpen->SetOptions(FOS_PICKFOLDERS);
-            // Show the Open dialog box.
-            hr = pFileOpen->Show(NULL);
+			hr = pFileOpen->Show(NULL);
 
-            // Get the file name from the dialog box.
-            if (SUCCEEDED(hr))
-            {
-                IShellItem *pItem;
-                hr = pFileOpen->GetResult(&pItem);
-                if (SUCCEEDED(hr))
-                {
-                    
-                    hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+			if (SUCCEEDED(hr)) {
+				IShellItem *pItem;
+				hr = pFileOpen->GetResult(&pItem);
+				if (SUCCEEDED(hr)) {
+					hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 
-                    // Display the file name to the user.
-                    if (SUCCEEDED(hr))
-                    {
-                        //MessageBoxW(NULL, pszFilePath, L"File Path", MB_OK);
-                        std::wstring ss = pszFilePath;
-                        output = (char*)malloc((ss.length()+1)*2);
-                        WideCharToMultiByte(CP_ACP, 0, ss.c_str(), -1, output, (int)(ss.length()+1)*2, NULL, NULL);
-                       
-                        CoTaskMemFree(pszFilePath);
-                    }
-                    pItem->Release();
-                }
-            }else{
+					if (SUCCEEDED(hr)) {
+						std::wstring ss = pszFilePath;
+						output = (char*)malloc((ss.length()+1)*2);
+						WideCharToMultiByte(CP_ACP, 0, ss.c_str(), -1, output, (int)(ss.length()+1)*2, NULL, NULL);
+						CoTaskMemFree(pszFilePath);
+					}
+					pItem->Release();
+				}
+			}else
 				return (char*)"";
-			}
-            pFileOpen->Release();
-        }
-        CoUninitialize();
-    }    
+			pFileOpen->Release();
+		}
+		CoUninitialize();
+	}    
 	if (strlen(output))
 		return output;
 	return (char*)"";
-}
-
-void OpenShared(){
-	system("start explorer shared");
-}
-
-void OpenHelp(){
-	popen("help.html", "r");
 }
