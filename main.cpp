@@ -143,6 +143,10 @@ void Init(){
 
 	// Create the right click menu
 	InitMenu();
+
+	// User is running a wayland desktop
+	if (LINUX && getenv("WAYLAND_DISPLAY"))
+		WAYLAND = true;
 }
 
 int main(int argCount, char** argValues){

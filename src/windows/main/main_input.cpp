@@ -21,18 +21,6 @@ void MainInput(){
 		}
 	}
 
-	// Reset selected list
-	if (keyboard.newKey == KEY_ESCAPE){
-		previewImg.img.loaded = false;
-		for (auto img : selImgs)
-			imgs[img].angle = imgs[img].prevAngle;
-		rot = false;
-		ResetImages();
-		TagWin.Hide();
-		rmMenu.Reset();
-		importTime = 0;
-	}
-
 	// View movement
 	if (keyboard.GetKey(KEY_W) || keyboard.GetKey(KEY_UP))
 		View->y += viewSpeed/(*Scale);
@@ -75,6 +63,18 @@ void MainInput(){
 	// Right menu input
 	RightMenuInput();
 	if (rMenu && mouse.position.x > fWidth-menuWidth-scrollbarSize) return;
+
+	// Reset selected list
+	if (keyboard.newKey == KEY_ESCAPE){
+		previewImg.img.loaded = false;
+		for (auto img : selImgs)
+			imgs[img].angle = imgs[img].prevAngle;
+		rot = false;
+		ResetImages();
+		TagWin.Hide();
+		rmMenu.Reset();
+		importTime = 0;
+	}
 
 	//
 	// Image input events

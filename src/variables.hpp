@@ -3,6 +3,8 @@
 	Vector variables of a class are defined with that class
 */
 
+bool WAYLAND = false; // Used by the clipboard to change copying commands on wayland devices
+
 string path = "";
 string board = "Default.brd";
 

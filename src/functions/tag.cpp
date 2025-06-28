@@ -20,12 +20,6 @@ void DrawTag(){
 	HSV.g = ((csPicker.x) / csSize.x)*100;
 	HSV.b = ((csPicker.y) / csSize.y)*100;
 	newColor = ToRGB(HSV.r, HSV.g, HSV.b);
-
-	// Draws the tag name and options
-	tagName.color = newColor;
-	tagName.Draw(Vector2{0, fHeight - fontSize*1.5f}, Vector2{fWidth, fontSize*1.5f}, true, true);
-	addTag.Draw(Vector2{0, fHeight-fontSize*2.5f}, Vector2{fWidth/2, fontSize}, false, true, TagWin.Focus());
-	delTag.Draw(Vector2{fWidth/2, fHeight-fontSize*2.5f}, Vector2{fWidth/2, fontSize}, false, true, TagWin.Focus());
 	
 	// Color selector math
 	float c = 1-((float)sHue.scroll/(float)sHue.end);
@@ -39,6 +33,12 @@ void DrawTag(){
 	shape.DrawColorSelector(csPos, csSize, hue);
 	shape.DrawCircle(csPicker + csPos, 24, 24, newColor);
 	shape.DrawCircle(csPicker + csPos, 24, 4, Black);
+
+	// Draws the tag name and options
+	tagName.color = newColor;
+	tagName.Draw(Vector2{0, fHeight - fontSize*1.5f}, Vector2{fWidth, fontSize*1.5f}, true, true);
+	addTag.Draw(Vector2{0, fHeight-fontSize*2.5f}, Vector2{fWidth/2, fontSize}, false, true, TagWin.Focus());
+	delTag.Draw(Vector2{fWidth/2, fHeight-fontSize*2.5f}, Vector2{fWidth/2, fontSize}, false, true, TagWin.Focus());
 }
 
 // Tag editor input

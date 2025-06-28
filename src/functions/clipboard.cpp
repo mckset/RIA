@@ -8,44 +8,50 @@ void Copy(){
 		ext = imgs[selImgs[0]].path.substr(imgs[selImgs[0]].path.length()-3);
 	else
 		ext = imgs[selImgs[0]].path.substr(imgs[selImgs[0]].path.length()-4);
-	string cmd = "xclip -selection clipboard -target image/" + ext + " -i \"" + imgs[selImgs[0]].path + "\"";
+	
+	string cmd = "";
+	if (!WAYLAND) cmd = "xclip -selection clipboard -target image/" + ext + " -i \"" + imgs[selImgs[0]].path + "\"";
+	else cmd = "wl-copy < \"" + imgs[selImgs[0]].path + "\"";
 
-	internalClipboard.push_back(imgs[selImgs[0]].path);
+	for (auto i : selImgs)
+		internalClipboard.push_back(imgs[i].path);
 	system(cmd.c_str());
 }
 
 bool cbReady = false;
 
-void ReadClipboard(string *out){
-	const char* cb = glfwGetClipboardString(Main.w);
+void ReadClipboard(const char *out){
+	out = glfwGetClipboardString(Main.w);
 	cbReady = true;
-	*out = cb;
 }
 
 void Paste(){
 	cbReady = false;
 	pasted = true;
-	string cb = "";
-	thread cbThread(ReadClipboard, &cb);
+	const char* c = "";
+	thread cbThread(ReadClipboard, c);
 	for (int i = 0; i < 50 && !cbReady; i++)
 		SleepFor(100);
-	if (cbReady)
+	if (cbReady){
 		cbThread.join();
-	else
+		if (DEBUG) printf("Paste: %s\n", c);
+	}else
 		cbThread.detach();
-
+	string cb = c;
 	if (DEBUG) printf("Paste: %s\n", cb.data());
 	if (!cb.length()){
 		if (DEBUG) printf("Failed to read clipbord\n");
 		if (internalClipboard.size()){
-			Object img = Object{{0,0}, {1,1}, 0, 0, internalClipboard[0]};
-			if (img.path.substr(img.path.length()-4) == "webp")
-				img.img = LoadWebp(img.path);
-			else
-				img.img.LoadImage(img.path);
-			img.size = Vector2{(float)img.img.width, (float)img.img.height};
-			img.position = mouse.ToScreenSpace() - img.size/2;
-			imgs.push_back(img);
+			for (auto p : internalClipboard){
+				Object img = Object{{0,0}, {1,1}, 0, 0, p};
+				if (img.path.substr(img.path.length()-4) == "webp")
+					img.img = LoadWebp(img.path);
+				else
+					img.img.LoadImage(img.path);
+				img.size = Vector2{(float)img.img.width, (float)img.img.height};
+				img.position = mouse.ToScreenSpace() - img.size/2;
+				imgs.push_back(img);
+			}
 		}
 		internalClipboard.clear();
 		return;

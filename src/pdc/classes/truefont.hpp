@@ -33,6 +33,7 @@ class Font{
 			
 			int length = 0;
 			float fontSize = size;
+			float offset = 0;
 			fontSize /= 32;
 			fontSize *= 48.0f/(float)fontResolution;
 			for (int i = 0; i < text.length(); i++){
@@ -52,6 +53,8 @@ class Font{
 				length += (c.advance >> 6) * fontSize*1.145;
 			}
 
+			
+
 			// Crop the text if center aligned in case the text bleeds past the width
 			if (align && text.length()*size > limit && limit != Width){
 				int textSize = (int)(limit/size);
@@ -70,16 +73,16 @@ class Font{
 					textSize--;
 				}
 				text = cropped;
-			}
+			}else if (align == 1)
+				offset = (float)(limit/2 - length/2);
 
 			char data[text.length()];
 			for (int i = 0; i < text.length(); i++){
 				if (text[i] == '\n' || text[i] == '\t')
 					text[i] = ' ';
 			}
-			float offset = 0;
-			if (align == 1)
-				offset = (float)(limit/2 - length/2);
+			
+			
 			
 			length = 0;
 			for (int i = 0; i < text.length() && length + offset + size < limit; i++){

@@ -4,7 +4,7 @@
 
 void RightMenuInput(){
 	// Menu toggle
-	if ((keyboard.newKey == KEY_ESCAPE && !fCurrentBoard.active) || mouse.Click() && bBoards.Hover()){
+	if ((keyboard.newKey == KEY_ESCAPE && !fCurrentBoard.active && !selImgs.size()) || mouse.Click() && bBoards.Hover()){
 		if (fCurrentBoard.active)
 			fCurrentBoard.Reset();
 		if (!rMenu)

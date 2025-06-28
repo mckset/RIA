@@ -168,7 +168,7 @@ void DrawLocations(){
 
 	// Location heading, button, and title
 	shape.Draw({0, y}, {menuWidth-scrollbarSize, fontSize*2}, menuBackground, true);
-	font.Write("Locations", {fontSize, y+8}, fontSize*.75, fontColor, true, menuWidth-scrollbarSize-fontSize*3, 1);
+	font.Write("Locations", {0, y+8}, fontSize*.75, fontColor, true, menuWidth-scrollbarSize-fontSize*2, 1);
 	add.Draw({menuWidth-fontSize*2-scrollbarSize, y}, {fontSize*2, fontSize*2}, false, true);
 
 	// Scroll bar end position
@@ -243,7 +243,7 @@ void DrawTags(){
 
 	// Tag heading, button, and title
 	shape.Draw({0, y}, {menuWidth-scrollbarSize, fontSize*2}, menuBackground, true);
-	font.Write("Tags", {fontSize*1.25f, y+8}, fontSize*.75f, fontColor, true, menuWidth-scrollbarSize-fontSize*3.25, 1);
+	font.Write("Tags", {fontSize/2, y+8}, fontSize*.75f, fontColor, true, menuWidth-scrollbarSize-fontSize*2, 1);
 	add.Draw({menuWidth-fontSize*2-scrollbarSize, y}, {fontSize*2, fontSize*2}, false, true);
 
 	// Scroll bar end position

@@ -36,17 +36,17 @@ class Image{
 
 			// Converts pixels to screen space
 			if (!fixed){
-				tR = Vector2{tR.x*2/Width-1,tR.y*2/Height-1}.Subtract(View->Multiply(2).Divide(Width, Height)).Multiply(*Scale);
-				tL = Vector2{tL.x*2/Width-1,tL.y*2/Height-1}.Subtract(View->Multiply(2).Divide(Width, Height)).Multiply(*Scale);
-				bR = Vector2{bR.x*2/Width-1,bR.y*2/Height-1}.Subtract(View->Multiply(2).Divide(Width, Height)).Multiply(*Scale);
-				bL = Vector2{bL.x*2/Width-1,bL.y*2/Height-1}.Subtract(View->Multiply(2).Divide(Width, Height)).Multiply(*Scale);
+				tR = (Vector2{tR.x*2/fWidth-1,tR.y*2/fHeight-1} - ((*View) * 2 / Vector2{fWidth, fHeight})) * (*Scale);
+				tL = (Vector2{tL.x*2/fWidth-1,tL.y*2/fHeight-1} - ((*View) * 2 / Vector2{fWidth, fHeight})) * (*Scale);
+				bR = (Vector2{bR.x*2/fWidth-1,bR.y*2/fHeight-1} - ((*View) * 2 / Vector2{fWidth, fHeight})) * (*Scale);
+				bL = (Vector2{bL.x*2/fWidth-1,bL.y*2/fHeight-1} - ((*View) * 2 / Vector2{fWidth, fHeight})) * (*Scale);
 					
 			}else{
 				// Multiplied by 2 to offset properly otherwise it will only move half
-				tR = Vector2{tR.x*2/Width-1,tR.y*2/Height-1};
-				tL = Vector2{tL.x*2/Width-1,tL.y*2/Height-1};
-				bR = Vector2{bR.x*2/Width-1,bR.y*2/Height-1};
-				bL = Vector2{bL.x*2/Width-1,bL.y*2/Height-1};
+				tR = Vector2{tR.x*2/fWidth-1,tR.y*2/fHeight-1};
+				tL = Vector2{tL.x*2/fWidth-1,tL.y*2/fHeight-1};
+				bR = Vector2{bR.x*2/fWidth-1,bR.y*2/fHeight-1};
+				bL = Vector2{bL.x*2/fWidth-1,bL.y*2/fHeight-1};
 			}
 
 			float data[] = {

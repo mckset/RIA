@@ -216,8 +216,8 @@ void DrawStage(){
 
 			font.Write("While viewing a tag, 2 buttons", Vector2{menuWidth+8.0f, fHeight-fontSize*12}, fontSize*.75f, White, true, Width, 0);
 			font.Write("will appear. The edit button", Vector2{menuWidth+8.0f, fHeight-fontSize*13-8}, fontSize*.75f, White, true, Width, 0);
-			font.Write("on the left of the tag and the", Vector2{menuWidth+8.0f, fHeight-fontSize*14-16}, fontSize*.75f, White, true, Width, 0);
-			font.Write("\"+\" or add button on the right.", Vector2{menuWidth+8.0f, fHeight-fontSize*15-24}, fontSize*.75f, White, true, Width, 0);
+			font.Write("on the right of the tag and the", Vector2{menuWidth+8.0f, fHeight-fontSize*14-16}, fontSize*.75f, White, true, Width, 0);
+			font.Write("\"+\" or add button on the left.", Vector2{menuWidth+8.0f, fHeight-fontSize*15-24}, fontSize*.75f, White, true, Width, 0);
 
 			font.Write("Pressing the edit button or right", Vector2{menuWidth+8.0f, fHeight-fontSize*18}, fontSize*.75f, White, true, Width, 0);
 			font.Write("clicking the tag will allow you to", Vector2{menuWidth+8.0f, fHeight-fontSize*19-8}, fontSize*.75f, White, true, Width, 0);

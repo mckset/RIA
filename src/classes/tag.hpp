@@ -41,15 +41,15 @@ class Tag{
 				shape.Draw(position, size, highlight, true);
 
 			// Name
-			font.Write(name, position, fontSize/2, fontColor, true, size.x-fontSize/2, 1);
+			font.Write(name, position + Vector2{fontSize, 0}, fontSize/2, fontColor, true, size.x-fontSize*3, 1);
 
 			// Add Button
 			if (sub == -1 && expand)
-				addButton.Draw(position.Add(size.x-fontSize, 0), Vector2{fontSize, fontSize}, false, true);
+				addButton.Draw(position, Vector2{fontSize, fontSize}, false, true);
 
 			// Edit button
 			if (expand){
-				editB.Draw(position+Vector2{16, 0}, Vector2{fontSize*2, fontSize}, false, true);
+				editB.Draw(position+Vector2{size.x-fontSize*2, 0}, Vector2{fontSize*2, fontSize}, false, true);
 
 				if (mouse.Click() && editB.Hover() && Main.Focus()){
 					editTag = tag;

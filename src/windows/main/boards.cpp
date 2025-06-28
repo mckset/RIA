@@ -12,7 +12,7 @@ void DrawBoards(){
 
 	// Draw board heading, background, and button
 	shape.Draw({fWidth, y}, {-(menuWidth), -fontSize*2}, menuBackground, true);
-	font.Write("Boards", {fWidth-menuWidth, y-fontSize*2}, fontSize, fontColor, true, menuWidth, 1);
+	font.Write("Boards", {fWidth-menuWidth, y-fontSize*2}, fontSize, fontColor, true, menuWidth-fontSize*2, 1);
 	addBoard.Draw({fWidth-fontSize*2, y-fontSize*2}, {fontSize*2, fontSize*2}, false, true);
 
 	// Add new board
