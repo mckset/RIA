@@ -100,6 +100,7 @@ void Load(void); // Main load function
 void LoadImageBoard(void); // Load an image board
 //vector<Tag> LoadTags(ifstream*, bool, bool); // Load tags
 Image LoadWebp(string); // Load a webp image
+string RemoveExt(string); // Removes the extension from a file name
 
 // src/functions/os_linux.cpp or src/functions/os_windows.cpp
 #ifdef _WIN32 

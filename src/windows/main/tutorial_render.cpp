@@ -292,9 +292,6 @@ void DrawStage(){
 			font.Write("boards on exit. All changes must be", {fWidth - fontSize*26, fHeight - fontSize*4-8}, fontSize*.5f, White, true, Width, 0);
 			font.Write("saved by the user.", {fWidth - fontSize*26, fHeight - fontSize*5-8}, fontSize*.5f, White, true, Width, 0);
 
-			shape.DrawBox({8, fHeight-fontSize*3-8}, {fontSize*5, fontSize}, White, 2);
-			font.Write("Click for more information on image packs", Vector2{8, fHeight-fontSize*4}+Vector2{fontSize*6, fontSize/2}, fontSize*.5f, White, true, Width, 0);
-			
 		//256 360
 		}else if (mStage == 1){
 			showTutorial = false;

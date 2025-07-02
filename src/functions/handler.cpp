@@ -12,14 +12,15 @@ void DragDrop(GLFWwindow* w, int c, const char** paths){
 
 	for (c; c > 0; c--){
 		string p = paths[c-1];
+
 		if (stat(paths[c-1], &st) == 0){ // Is valid
 
 			// Append folder to location menu
-			if (st.st_mode & S_IFDIR && lMenu && !tagView)
+			if (st.st_mode & S_IFDIR && lMenu && !tagView){
 				locations.push_back(Table{GetName(p), p});
-
+				sort(locations.begin(), locations.end(), Table{}.SortTable);
 			// Load image
-			else if (st.st_mode & S_IFREG && IsImage(p)){
+			}else if (st.st_mode & S_IFREG && IsImage(p)){
 				Object img;
 				img.img.LoadImage((char*) paths[c-1]);
 
@@ -41,9 +42,48 @@ void DragDrop(GLFWwindow* w, int c, const char** paths){
 				LoadImageBoard();
 				return;
 			}
+		}else{
+			string fixedURL = "";
+			string url = p;
+			for (char c : p)
+				if (c == ' ')
+					fixedURL += "%20";
+				else
+					fixedURL += c;
+			string base = GetName(url);
+			for (int i = base.length()-1; i > 0; i--)
+				if (base[i] == '.')
+					if (base.substr(i+1,4) != "webp" && base.substr(i+1,4) != "jpeg"){
+						base = base.substr(0,i+4);
+						break;
+					}else{
+						base = base.substr(0,i+5);
+						break;
+					}
+			string file = base;
+			string name = RemoveExt(base);
+			
+			if (file.length() < 5 || !IsImage(base.substr(name.length()))) return;
+			int i = 1;
+			while (stat((path + "downloads" + slash[0] + file).c_str(), &st) == 0){
+				file = name + "_" + to_string(i) + base.substr(name.length());
+				i++;
+			}
+			if (DEBUG) printf("Dropped: %s from %s\n", file.data(), fixedURL.data());
+			string cmd = "curl -s \"" + fixedURL + "\" > \"" + path + "downloads" + slash[0] + file + "\"";
+			system(cmd.c_str());
+			Object img;
+			if (file.substr(file.length()-4) != "webp")
+				img.img.LoadImage(path + "downloads" + slash[0] + file);
+			else
+				img.img = LoadWebp(path + "downloads" + slash[0] + file);
+
+			img.size = Vector2{(float)img.img.width, (float)img.img.height};
+			img.position = mouse.ToScreenSpace() - img.size/2;
+			img.path = p;
+			imgs.push_back(img);
 		}
 	}
-	sort(locations.begin(), locations.end(), Table{}.SortTable);
 }
 
 // Reports GLFW errors

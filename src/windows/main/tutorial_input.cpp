@@ -73,13 +73,6 @@ void TutorialInput(){
 		}
 	}
 
-	if (helpB.Hover() && mouse.Click()){
-		if (tStage == 4 && mStage == 0){
-			OpenHelp();
-			mouse.prevState = mouse.state;
-		}
-	}
-
 	if (openTags.Hover() && mouse.Click()){
 		if (tStage == 1 && mStage == 1){
 			tStage = 2;

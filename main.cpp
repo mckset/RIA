@@ -195,8 +195,17 @@ int main(int argCount, char** argValues){
 		Import.Draw(backing);
 
 		// Loads after drawing the window to show the application did open
-		if (!loaded)
+		if (!loaded){
 			Load();
+			string folder = "downloads";
+			if (!stat(folder.c_str(), &st) == 0){
+				if(!fs::create_directory(folder))
+					if (DEBUG) printf("Failded to create downloads folder");
+				
+				locations.push_back(Table{"downloads", path+"downloads"});
+				sort(locations.begin(), locations.end(), locations[0].SortTable);
+			}
+		}
 	}
 
 	return 0;

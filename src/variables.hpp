@@ -80,6 +80,7 @@ Vector2 csSize = Vector2{256, 256};
 #ifdef _WIN32
 	string altFonts = {""};
 	string fontPath = "C:\\Windows\\Fonts\\tahoma.ttf";
+	string fonts[] = {};
 #else
 	string fontPath = "";
 	string fonts[] = {

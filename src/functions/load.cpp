@@ -318,3 +318,11 @@ Image LoadWebp(string path){
 	f.close();
 	return i;
 }
+
+// Removes the extension from a file
+string RemoveExt(string file){
+	for (int i = file.length()-1; i > 0; i--)
+		if (file[i] == '.')
+			return file.substr(0,i);
+	return file;
+}
