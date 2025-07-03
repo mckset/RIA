@@ -28,19 +28,19 @@ int CreateWindows(){
 	Main.Init();
 
 	// Checks if the icon image exists
-	/*
+	
 	Image img;
-	img.LoadImage("images/icon.png");
+	img.LoadImage("icon.png");
 	if (!img.loaded)
 		if (DEBUG) printf("[Warning] Unable to load icon image\n");
 	else{
 		GLFWimage i[1]; 
 		stbi_set_flip_vertically_on_load(false);
-		i[0].pixels = stbi_load("images/icon.png", &i[0].width, &i[0].height, 0, 4); //rgba channels 
+		i[0].pixels = stbi_load("icon.png", &i[0].width, &i[0].height, 0, 4); //rgba channels 
 		glfwSetWindowIcon(Main.w, 1, i); 
 		stbi_image_free(i[0].pixels);
 		stbi_set_flip_vertically_on_load(true);
-	}*/
+	}
 	
 	// Set window handler events
 	glfwSetScrollCallback(Main.w, GetScrollWheel);

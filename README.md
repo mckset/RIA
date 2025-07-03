@@ -1,23 +1,32 @@
-# RIA (Early access)
-RIA (Reference Image Application) is a cross platform image organizer for both Windows and Linux designed to help artists organize their reference material through the use of tags and folders. 
+# RIA
+RIA (Reference Image Application) is a cross platform image organizer for both Windows and Linux designed to help artists organize their reference material through the use of tags and folders. RIA supports PNG, JPEG, and WebP images.
 
 # Installation
-Download the latest verion from release page for your operating system or compile it from source and run RIA. Note that RIA expects the font and icon images to be in the image folder in the directory you run it from.
-> **_NOTE:_** Currently, the Windows command prompt will open as a display debug information
+Download the latest verion from release page for your operating system or compile it from source and run RIA. Note that RIA expects the icon image to be in the image folder in the directory you run it from.
 
 ### Tested Distros:
 - Arch
 - Ubuntu
+- Fedora
+- Pop OS
+- KDE
 
-> **_NOTE:_** The Linux version relies on Zenity to add new folders to the folder view.
+> **_NOTE:_** The Linux version relies on zenity to add new folders to the folder view and xclip/wl-copy to handle copying and pasting.
 
-# Image Board
+# Shortcuts
+## Image Board
 
-**ESC** - Save the boards current state
+**TAB** - Open the folder view
+
+**~** - Open the tag view
+
+**Escape** - Clear selection or open the image board menu if nothing is selected
+
+**Ctrl + S** - Save the boards current state
 
 **Left mouse click** - Select an image
 
-**Left shift + left mouse click** - Select multiple images
+**Shift + left mouse click** - Select multiple images
 
 **Left mouse drag** - Select images in a window
 
@@ -25,7 +34,7 @@ Download the latest verion from release page for your operating system or compil
 
 **Right mouse drag** - Scale images
 
-**Left-Shift + Right mouse drag** - Scale images while maintaining their ratio
+**Shift + Right mouse drag** - Scale images while maintaining their ratio
 
 **Scroll wheel/+/-** - Zoom in/out
 
@@ -39,16 +48,12 @@ Download the latest verion from release page for your operating system or compil
 
 **SPACE** - Toggle the origin display
 
-**TAB** - Open the folder view
-
 **V** - Flip selected images vertically
-
-**~** - Open the tag view
 
 > **_FOR MORE INFO:_** Open help.html or press the help button in RIA
 
 
-# Folder View (**TAB**)
+## Folder View (**TAB**)
 Contains saved paths to folders that contain the images that you want to tag/use.
 
 **DELETE** (While hovered over a main folder) - Remove the folder from the view.
@@ -57,9 +62,12 @@ Contains saved paths to folders that contain the images that you want to tag/use
 
 **LMB Click** (File) - Load the image into the preview on the bottom right side of the screen. Files that already have been tagged are indicated with a white bar to the left of the file name.
 
+**Ctrl + R** - Refresh locations
+
 **The "+" Button**  - Add a new location to the view. 
 
-# Tag View (**~**)
+
+## Tag View (**~**)
 Only contains images that have been tagged under said tags.
 
 
@@ -75,24 +83,26 @@ Only contains images that have been tagged under said tags.
 
 **The "+" Button** (Tag header) - Add a new sub tag to the tag.
 
+**The "edit" Button** (Tag header) - Edit an existing tag.
+
 # Image Packs (**Image Pack Button**)
-Image packs are an experimental idea only found in RIA. An image pack contains pre-tagged files so they can easily be shared between users. Follow the below instructions for how to create an image pack or see the help file for more detail. Image packs use folders a categories instead of tags and relies on the images to be manually tagged by one users before being able to be shared. While importing an image pack, it gives you the option to exclude folders int the image pack from being imported. EX) An image pack has 3 categories: Buildings, Landscapes, and Clothes. A user can choose to only import images from the Buildings and Landscapes folder and all the images in the Clothes folder will remain without being added to RIA. 
+Image packs are an experimental idea that saves pre-tagged files so they can easily be shared between users. Follow the below instructions for how to create an image pack. Image packs use folders a categories instead of tags and relies on the images to be manually tagged by one users before being shared. While importing an image pack, it gives you the option to exclude folders in the image pack from being imported. EX) An image pack has 3 categories: Buildings, Landscapes, and Clothes. A user can choose to only import images from the Buildings and Landscapes folder and all the images in the Clothes folder will remain without being added to RIA. 
 > **_NOTE:_**  When creating an image pack, it only checks the tags that are in your program. If you hit the create button on a previously imported image pack and removed some of the tags prior, it will overwrite the import file and remove the untagged images from the import file.
 
 Importing Image Packs
 ---------
-1) Click on an image pack to import and press the import button. The image pack with a square indicates that the image pack is selected.
-2) Select/deselect the folders from the image pack you want to import. Folders with a square next to them are selected. 
+1) Select and image pack and press the import button. A dot will appear next to the selected image pack.
+2) Select/deselect the folders from the image pack you want to import. A dot is again used to indicate if the folder is going to be imported. 
 3) Verify you want to import the tags. Pressing the sub tag button will enable/disable importing sub tags.
-> **_NOTE:_**  Imported tags do not overwrite color values of existing tags with the same name
+> **_NOTE:_**  Imported tags do not overwrite existing tags with the same name
 
 Creating Image Packs
 --------
 1) Create a new folder in the shared directory with the name of your image pack.
-2) Create subfolders to categorizes the images you will be using.
+2) Create subfolders to categorizes the images you will be using. Multiple levels of subfolders can be used.
 3) Tag the images in RIA.
 4) Open the import menu, select your image pack and press the create button. 
-> **_NOTE:_**  Importing only uses the first level of folders in an image pack. further subdirectories are ignored
+> **_NOTE:_**  Importing can read multiple levels of sub directories but the example pack keeps things simple.
 
 Image Pack Layout Example (See the example image pack in the latest release)
 ------------------
@@ -101,7 +111,13 @@ Image Pack Layout Example (See the example image pack in the latest release)
 
 	-> [Folder] Buildings (Category)
  
-		-> [Image] New York.png
+		-> [Folder] Cities (Sub-Category)
+
+            -> [Image] New York.png
+
+            -> [Image] Chicago.png
+
+        -> [Image] Farm house.png
   
 			ect
    
@@ -117,26 +133,39 @@ Image Pack Layout Example (See the example image pack in the latest release)
 
 ### RIA depends on:
 
-**Glad**: https://github.com/Dav1dde/glad
+**Glad**: <https://github.com/Dav1dde/glad>
 
-**STB_Image**: https://github.com/nothings/stb
+**STB_Image**: <https://github.com/nothings/stb>
 
-**glfw3-x11 or glfw-dev**
-
-**xorg-dev**
+**glfw or glfw-dev** (Sometimes called **libglfw-dev** or **libglfw3-dev**)
 
 **g++**
 
+**libwebp** or **libwebp-dev**
+
+**freetype font** or **libfreetype-dev**
 
 
+### Package Dependencies:
+APT:
+```
+sudo apt-get install g++ libglfw3-dev libfreetype-dev libwebp-dev
+```
+
+DNF:
+```
+sudo dnf install g++ glfw-devel freetype-devel libwebp-devel
+```
+
+Pacman:
+```
+sudo pacman -S gcc glfw freetype libwebp
+```
+
+### Compile Command:
 Linux:
-Arch Linux/Manjaro:
 ```
-g++ main.cpp linux/glad/glad.c -o RIA -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi -ldl
-```
-Ubuntu:
-```
-g++ main.cpp linux/glad/glad.c -o RIA -lstdc++fs -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl -static-libgcc -static-libstdc++
+g++ main.cpp src/dependences/linux/glad/glad.c -o RIA -I/usr/include/freetype2 -lstdc++fs -lglfw -lGL -lXrandr -lX11 -lpthread -ldl -static-libgcc -lwebp -lfreetype
 ```
 > **_NOTE:_**  Be sure to set UBUNTU to 1 in "config.hpp" before compiling.
 
@@ -146,4 +175,15 @@ g++ main.cpp windows/glad/glad.c -o RIA windows/glfw/libglfw3.a -lopengl32 -lgdi
 ```
 
 > **_NOTE:_**  The command may vary between distros/OS. 
+
+# Troubleshooting
+### Error while loading shared libraries: libglfw3.so
+Install libglfw3-dev, glfw, or glfw-devel depending on your operating system
+
+### DLLs missing on 32-bit Windows systems
+Copy the DLLs from the SysWOW64 folder into System32 and replace any files that already exist
+
+### Not working on Mac
+RIA was not tested on or compiled for Mac
+
 
