@@ -3,8 +3,8 @@
 
 #define		FONTTYPE 	1
 #define		PDC_DEBUG	1
-#define 	UBUNTU		0 // Set to 1 to use older filesystem libraries
-#define		DEBUG		1 // Set to 1 to print debug information to a terminal
+#define 	UBUNTU		1 // Set to 1 to use older filesystem libraries
+#define		DEBUG		0 // Set to 1 to print debug information to a terminal
 
 #include "src/pdc/pdc.hpp"
 using namespace pdc;
@@ -38,8 +38,14 @@ bool SortTag(Tag, Tag);
 #include "src/functions/sort.cpp"
 #ifdef _WIN32
 	#include "src/functions/os_win.cpp"
+	const char *usrHome = "";
 #else
 	#include "src/functions/os_linux.cpp"
+	#include <sys/types.h>
+	#include <pwd.h>
+
+	struct passwd *pw = getpwuid(getuid());
+	const char *usrHome = pw->pw_dir;
 #endif
 #include "src/classes/mouseMenu.hpp"
 

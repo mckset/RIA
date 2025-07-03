@@ -45,12 +45,43 @@ void DragDrop(GLFWwindow* w, int c, const char** paths){
 		}else{
 			string fixedURL = "";
 			string url = p;
+
+			string formats[] = {
+				"fm=jpg",
+				"f=jpg",
+				"format=jpg",
+				"fm=jpeg",
+				"f=jpeg",
+				"format=jpeg",
+				"f=webp",
+				"fm=webp",
+				"format=webp",
+				"fm=png",
+				"f=png",
+				"format=png",
+			};
+			string f[] = {
+				".jpg",
+				".jpeg",
+				".webp",
+				".png"
+			};
+
 			for (char c : p)
 				if (c == ' ')
 					fixedURL += "%20";
 				else
 					fixedURL += c;
 			string base = GetName(url);
+
+			for (int i = 0; i < 12; i++){
+				int x = base.find(formats[i], 0);
+				if (x != string::npos){
+					base = base.substr(0,x-1) + f[i/3];
+					break;
+				}
+			}
+
 			for (int i = base.length()-1; i > 0; i--)
 				if (base[i] == '.')
 					if (base.substr(i+1,4) != "webp" && base.substr(i+1,4) != "jpeg"){

@@ -18,7 +18,7 @@ void RightMenuInput(){
 	// Image pack button
 	if (mouse.Click() && import.Hover()){
 		ResetImport();
-		Import.Toggle();
+		Import.Show();
 		keyboard.newKey = -1;
 		mouse.state = -1;
 	}

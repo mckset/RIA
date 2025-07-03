@@ -102,6 +102,7 @@ void Load(){
 	f.open(path + "save.dat", ios::in | ios::binary);
     if (!f.good()){
 		if (DEBUG) printf("[Loading] No save data found\n");
+		locations.push_back(Table{"downloads", path+"downloads"});
 		return;
 	}
 
@@ -118,12 +119,15 @@ void Load(){
 	// Locations
 	f.read(reinterpret_cast<char*>(&ibuffer), 4);
 	int locationSize = ibuffer;
+	bool downloadsLoaded = false;
 	for (int l = 0; l < locationSize; l++){
 		string loc = (!oldSave ? GetString() : GetStringOld());
 		locations.push_back(Table{GetName(loc), loc});
+		if (loc == path+"downloads") downloadsLoaded = true;
 		if (DEBUG) printf("%d) %s\n", l, loc.data());
 	}
 
+	if (!downloadsLoaded) locations.push_back(Table{"downloads", path+"downloads"});
 	if (DEBUG) printf("[Loading] Sorting locations\n");
 	sort(locations.begin(), locations.end(), locations[0].SortTable);
 

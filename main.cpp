@@ -27,21 +27,6 @@ int CreateWindows(){
 	Main.w = glfwCreateWindow(Width, Height-42, "RIA", NULL, NULL);
 	Main.Init();
 
-	// Checks if the icon image exists
-	
-	Image img;
-	img.LoadImage("icon.png");
-	if (!img.loaded)
-		if (DEBUG) printf("[Warning] Unable to load icon image\n");
-	else{
-		GLFWimage i[1]; 
-		stbi_set_flip_vertically_on_load(false);
-		i[0].pixels = stbi_load("icon.png", &i[0].width, &i[0].height, 0, 4); //rgba channels 
-		glfwSetWindowIcon(Main.w, 1, i); 
-		stbi_image_free(i[0].pixels);
-		stbi_set_flip_vertically_on_load(true);
-	}
-	
 	// Set window handler events
 	glfwSetScrollCallback(Main.w, GetScrollWheel);
 	glfwSetWindowMaximizeCallback(Main.w, Maximize);
@@ -152,7 +137,16 @@ void Init(){
 int main(int argCount, char** argValues){
 
 	// Get application directory
-	{
+	if (LINUX){
+		path = usrHome;
+		path += "/.local/share/RIA/";
+		if (!stat(path.c_str(), &st) == 0)
+			if(!fs::create_directory(path)){
+				if (DEBUG) printf("Failded to create app directoty");
+				return -1;
+			}
+		fs::current_path(path);
+	}else{
 		path = argValues[0];
 		string exe = GetName(path);
 		path = path.substr(0,path.length()-exe.length());
@@ -161,7 +155,7 @@ int main(int argCount, char** argValues){
 	if (DEBUG) printf("Application path: %s\n", path.data());
 
 	// Hides the scary console on Windows devices
-	if (!LINUX) HideConsole();
+	if (!LINUX && !DEBUG) HideConsole();
 	if (DEBUG) printf("[Initializing]\n");
 
 	// Creates the 3 windows (main, tag edit, import) used by RIA
@@ -201,9 +195,6 @@ int main(int argCount, char** argValues){
 			if (!stat(folder.c_str(), &st) == 0){
 				if(!fs::create_directory(folder))
 					if (DEBUG) printf("Failded to create downloads folder");
-				
-				locations.push_back(Table{"downloads", path+"downloads"});
-				sort(locations.begin(), locations.end(), locations[0].SortTable);
 			}
 		}
 	}

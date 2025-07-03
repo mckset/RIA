@@ -62,3 +62,4 @@ Shader sGradient;
 Shader sHueSelector;
 Shader sColorSelector;
 Shader sCircle;
+Shader sBox;

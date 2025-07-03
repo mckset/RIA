@@ -24,7 +24,7 @@ void DrawFolders(float indent, float *y, Vector2 size, Table *folder){
 	
 	// Active indicator
 	if (!folder->expand)
-		shape.DrawCircle(Vector2{0, *y} + Vector2{fontSize/2, fontSize/2}, fontSize, 0, highlight, true);
+		shape.DrawCircle(Vector2{indent, *y} + Vector2{fontSize/2, fontSize/2}, fontSize, 0, highlight, true);
 		
 	// Write name
 	font.Write(folder->name, Vector2{24+indent, *y}, fontSize/2, fontColor, true, fWidth-scrollbarSize-48);
@@ -146,9 +146,9 @@ void DrawImportMain(){
 	importScroll.Draw(Vector2{(float)Width-scrollbarSize, 0}, Vector2{(float)scrollbarSize, (float)Height});
 
 	// Draw buttons
-	createB.Draw({fWidth/3*2-scrollbarSize/3*2, 0}, {fWidth/3-scrollbarSize/3, fontSize}, false, true);
-	openB.Draw({fWidth/3-scrollbarSize/3, 0}, {fWidth/3-scrollbarSize/3, fontSize}, false, true);
-	importB.Draw({0, 0}, {fWidth/3-scrollbarSize/3, fontSize}, false, true);
+	createB.Draw({fWidth/3*2-scrollbarSize/3*2, 0}, {fWidth/3-scrollbarSize/3, fontSize}, false, true, Import.Focus());
+	openB.Draw({fWidth/3-scrollbarSize/3, 0}, {fWidth/3-scrollbarSize/3, fontSize}, false, true, Import.Focus());
+	importB.Draw({0, 0}, {fWidth/3-scrollbarSize/3, fontSize}, false, true, Import.Focus());
 }
 
 // Draw all the tags that will be imported
@@ -193,8 +193,8 @@ void DrawImportTags(){
 	importScroll.Draw(Vector2{(float)Width-scrollbarSize, 0}, Vector2{(float)scrollbarSize, (float)Height});
 
 	// Draw buttons
-	importB.Draw({0, 0}, {fWidth/2, fontSize}, false, true); // Accept
-	createB.Draw({fWidth/2, 0}, {fWidth/2, fontSize}, false, true); // Toggle tags
+	importB.Draw({0, 0}, {fWidth/2, fontSize}, false, true, Import.Focus()); // Accept
+	createB.Draw({fWidth/2, 0}, {fWidth/2, fontSize}, false, true, Import.Focus()); // Toggle tags
 
 	// Draw header over tags that might be higher from scrolling
 	shape.Draw(Vector2{0, fHeight-fontSize}, Vector2{fWidth-scrollbarSize, fontSize}, importButton, true );

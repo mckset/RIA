@@ -49,6 +49,13 @@ class Image{
 				bL = Vector2{bL.x*2/fWidth-1,bL.y*2/fHeight-1};
 			}
 
+			// Culling
+			if ((tR.x > 1 && tL.x > 1 && bL.x > 1 && bR.x > 1) ||
+				(tR.x < -1 && tL.x < -1 && bL.x < -1 && bR.x < -1) ||
+				(tR.y > 1 && bR.y > 1 && tL.y > 1 && bL.y > 1) || 
+				(tR.y < -1 && bR.y < -1 && tL.y < -1 && bL.y < -1))
+				return;
+
 			float data[] = {
 				// positions       	// texture coords
 				tR.x, tR.y,			1, 1, // top right
@@ -57,12 +64,7 @@ class Image{
 				tL.x, tL.y, 		0, 1 // top left 
 			};
 	
-			// Culling
-			if ((tR.x > 1 && tL.x > 1) ||
-				(tR.x < -1 && tL.x < -1) ||
-				(tR.y > 1 && bR.y > 1) || 
-				(tR.y < -1 && bR.y < -1))
-				return;
+			
 
 			// Indices used to draw a box
 			int box[] = {
@@ -100,36 +102,11 @@ class Image{
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		}
 
-		void DrawOutline(Vector2 position, Vector2 size, float angle, int w, Color c){
-			Vector2 tR = Vector2{!hFlip ? position.x + size.x : position.x, !vFlip ? position.y + size.y : position.y};
-			Vector2 tL = Vector2{!hFlip ? position.x : position.x + size.x, !vFlip ? position.y + size.y : position.y};
-			Vector2 bR = Vector2{!hFlip ? position.x + size.x : position.x, !vFlip ? position.y : position.y + size.y};
-			Vector2 bL = Vector2{!hFlip ? position.x : position.x + size.x, !vFlip ? position.y : position.y + size.y};
-
-			if (angle != 0){
-				if (angle < 0)
-					angle += 360;
-				else if (angle > 360*RADIANS)
-					angle -= 360;
-				float a = angle*RADIANS;
-				Vector2 center = position + size/2;
-				tR.Rotate(center, a);
-				tL.Rotate(center, a);
-				bR.Rotate(center, a);
-				bL.Rotate(center, a);
-			}
-
-			// Top Left to Top Right
-			shape.DrawLine(tL, tR, c, w, false);
-
-			// Bottom Left to Top Left
-			shape.DrawLine(bL, tL, c, w, false);
-
-			// Bottom Left to Bottom Right
-			shape.DrawLine(bL, bR, c, w, false);
-				
-			// Bottom Right to Top Right
-			shape.DrawLine(bR, tR, c, w, false);
+		void DrawOutline(Vector2 position, Vector2 size, float angle, float w, Color c){
+			shape.Draw(position, {w, size.y}, c, false, angle, position + size/2);
+			shape.Draw(position + Vector2{size.x, 0}, {w, size.y}, c, false, angle, position + size/2);
+			shape.Draw(position, {size.x, w}, c, false, angle, position + size/2);
+			shape.Draw(position + Vector2{0, size.y}, {size.x+w, w}, c, false, angle, position + size/2);
 		}
 
 		bool LoadImage(string p, bool nearest = false){

@@ -13,7 +13,7 @@ void DrawBoards(){
 	// Draw board heading, background, and button
 	shape.Draw({fWidth, y}, {-(menuWidth), -fontSize*2}, menuBackground, true);
 	font.Write("Boards", {fWidth-menuWidth, y-fontSize*2}, fontSize, fontColor, true, menuWidth-fontSize*2, 1);
-	addBoard.Draw({fWidth-fontSize*2, y-fontSize*2}, {fontSize*2, fontSize*2}, false, true);
+	addBoard.Draw({fWidth-fontSize*2, y-fontSize*2}, {fontSize*2, fontSize*2}, false, true, Main.Focus());
 
 	// Add new board
 	if (addBoard.Hover() && mouse.Click()){
@@ -30,7 +30,7 @@ void DrawBoards(){
 	fCurrentBoard.Draw({fWidth-menuWidth+fontSize*4+8, y-fontSize*2}, {menuWidth, fontSize});
 
 	// Handles mouse events for the current board field
-	if (mouse.position.Within({fWidth-menuWidth+4, y-fontSize*2}, {menuWidth, fontSize}) || fCurrentBoard.active){
+	if ((mouse.position.Within({fWidth-menuWidth+4, y-fontSize*2}, {menuWidth, fontSize}) && Main.Focus())|| fCurrentBoard.active){
 		shape.Draw({fWidth-menuWidth, y-fontSize*2}, {menuWidth, fontSize}, highlight, true);
 		if (mouse.Click()){
 			fCurrentBoard.CheckClick();
@@ -84,7 +84,7 @@ void DrawBoards(){
 	for (auto board : imgBoards){
 
 		// Deletes a board if returned with 0
-		if (!board.Draw({fWidth-menuWidth, y}, {menuWidth, menuWidth+boardNamePlate})){
+		if (!board.Draw({fWidth-menuWidth, y}, {menuWidth, menuWidth+boardNamePlate}, Main.Focus())){
 			FindBoards();
 			return;
 		}

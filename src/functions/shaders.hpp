@@ -69,7 +69,7 @@ const char* colorSelectorF = "#version 330 core\n"
 		"outColor = vec4(outColor.rgb * abs(p.y), color.a);\n"
 
 		"gl_FragColor = outColor;}";
-
+		
 const char* hueSelectorF = "#version 330 core\n"
 	"uniform vec4 color;\n"
 	"uniform vec2 pos;\n"

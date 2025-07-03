@@ -10,7 +10,7 @@ class Board{
 
 		bool Hover(){return mouse.position.Within(position, size);}
 
-		int Draw(Vector2 p, Vector2 s){
+		int Draw(Vector2 p, Vector2 s, bool focused = true){
 			position = p;
 			size = s;
 			shape.Draw(position, size, locationHeading, true);
@@ -20,7 +20,7 @@ class Board{
 			float ratio = (img.width > img.height) ? s.x/img.width : s.y/img.height;
 			img.Draw(p+s/2-Vector2{(float)img.width, (float)img.height}*ratio/2+Vector2{8, 8+boardNamePlate}, Vector2{(float)img.width, (float)img.height}*ratio-16, White, 0, true);
 
-			if (Hover()){
+			if (Hover() && focused){
 				shape.Draw(position, size, highlight, true);
                 if (mouse.Click()){
                     board = name + ".brd";

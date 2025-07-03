@@ -118,23 +118,23 @@ void DrawApp(){
 
 		// Enable tag button and disable location button when locations are being shown
 		if (!tagView){
-			openTags.Draw({menuWidth-fontSize+scrollbarSize, fHeight-fontSize-8}, {fontSize*5, fontSize*1});
+			openTags.Draw({menuWidth-fontSize+scrollbarSize, fHeight-fontSize-8}, {fontSize*5, fontSize*1}, false, false, Main.Focus());
 			openLoc.visible = false;
 
 		// Enable location button and disable tag button when tags are being shown
 		}else{
-			openLoc.Draw({menuWidth-fontSize+scrollbarSize, fHeight-fontSize-8}, {fontSize*5, fontSize*1});
+			openLoc.Draw({menuWidth-fontSize+scrollbarSize, fHeight-fontSize-8}, {fontSize*5, fontSize*1}, false, false, Main.Focus());
 			openTags.visible = false;
 		}
 
 		// Close button is only shown when the menu is open
-		closeLB.Draw({menuWidth-fontSize+scrollbarSize, fHeight-fontSize*2-8}, {fontSize*5, fontSize*1});
+		closeLB.Draw({menuWidth-fontSize+scrollbarSize, fHeight-fontSize*2-8}, {fontSize*5, fontSize*1}, false, false, Main.Focus());
 	
 	// Left menu closed (default)
 	}else{
-		openTags.Draw({8, fHeight-fontSize-8}, {fontSize*5, fontSize*1});
-		openLoc.Draw({8, fHeight-fontSize*2-8}, {fontSize*5, fontSize*1});
-		helpB.Draw({8, fHeight-fontSize*3-8}, {fontSize*5, fontSize*1});
+		openTags.Draw({8, fHeight-fontSize-8}, {fontSize*5, fontSize*1}, false, false, Main.Focus());
+		openLoc.Draw({8, fHeight-fontSize*2-8}, {fontSize*5, fontSize*1}, false, false, Main.Focus());
+		helpB.Draw({8, fHeight-fontSize*3-8}, {fontSize*5, fontSize*1}, false, false, Main.Focus());
 	}
 
 	// Right menu opened
@@ -145,15 +145,15 @@ void DrawApp(){
 		DrawBoards();
 
 		// Buttons
-		import.Draw({fWidth - fontSize*6-12-menuWidth-scrollbarSize, fHeight - fontSize-8}, {fontSize*6, fontSize});
-		bBoards.Draw({fWidth - fontSize*6-12-menuWidth-scrollbarSize, fHeight - fontSize*2-8}, {fontSize*6, fontSize});
-		bSave.Draw({fWidth - fontSize*6-12-menuWidth-scrollbarSize, fHeight - fontSize*3-8}, {fontSize*6, fontSize});
+		import.Draw({fWidth - fontSize*6-12-menuWidth-scrollbarSize, fHeight - fontSize-8}, {fontSize*6, fontSize}, false, false, Main.Focus());
+		bBoards.Draw({fWidth - fontSize*6-12-menuWidth-scrollbarSize, fHeight - fontSize*2-8}, {fontSize*6, fontSize}, false, false, Main.Focus());
+		bSave.Draw({fWidth - fontSize*6-12-menuWidth-scrollbarSize, fHeight - fontSize*3-8}, {fontSize*6, fontSize}, false, false, Main.Focus());
 	
 	// Right menu closed (default)
 	}else{
-		import.Draw({fWidth - fontSize*6-12, fHeight - fontSize-8}, {fontSize*6, fontSize});
-		bBoards.Draw({fWidth - fontSize*6-12, fHeight - fontSize*2-8}, {fontSize*6, fontSize});
-		bSave.Draw({fWidth - fontSize*6-12, fHeight - fontSize*3-8}, {fontSize*6, fontSize});
+		import.Draw({fWidth - fontSize*6-12, fHeight - fontSize-8}, {fontSize*6, fontSize}, false, false, Main.Focus());
+		bBoards.Draw({fWidth - fontSize*6-12, fHeight - fontSize*2-8}, {fontSize*6, fontSize}, false, false, Main.Focus());
+		bSave.Draw({fWidth - fontSize*6-12, fHeight - fontSize*3-8}, {fontSize*6, fontSize}, false, false, Main.Focus());
 	}
 
 	// Draw loading text
@@ -169,7 +169,7 @@ void DrawLocations(){
 	// Location heading, button, and title
 	shape.Draw({0, y}, {menuWidth-scrollbarSize, fontSize*2}, menuBackground, true);
 	font.Write("Locations", {0, y+8}, fontSize*.75, fontColor, true, menuWidth-scrollbarSize-fontSize*2, 1);
-	add.Draw({menuWidth-fontSize*2-scrollbarSize, y}, {fontSize*2, fontSize*2}, false, true);
+	add.Draw({menuWidth-fontSize*2-scrollbarSize, y}, {fontSize*2, fontSize*2}, false, true, Main.Focus());
 
 	// Scroll bar end position
 	locScroll.end = fontSize;
@@ -215,24 +215,30 @@ void DrawLocations(){
 void DrawMain(){
 	// Draw grid
 	// The % adds parallax to the background
-	for (int w = -2; w < (Width/gridSize)/(*Scale) + 1; w++)
+
+	int test2 = (Width/gridSize)/(*Scale) + 1;
+	Vector2 tv2 = Vector2{0, ((float)-2*gridSize*(*Scale) - ((int)(View->y/5) % (int)gridSize*(*Scale)))*2};
+	for (int w = -2; w < (Height/gridSize)/(*Scale) + 1; w++)
 		shape.Draw({0, ((float)w*gridSize*(*Scale) - ((int)(View->y/5) % (int)gridSize*(*Scale)))*2}, {fWidth*2, 3}, grid, true);
 	
-	for (int h = -2; h < (Height/gridSize)/(*Scale) + 1; h++)
+	int test = (Height/gridSize)/(*Scale) + 1;
+	Vector2 tv = Vector2{((float)-2*gridSize*(*Scale) - ((int)(View->x/5) % (int)gridSize*(*Scale)))*2, 0};
+
+	for (int h = -2; h < (Width/gridSize)/(*Scale) + 1; h++)
 		shape.Draw({((float)h*gridSize*(*Scale) - ((int)(View->x/5) % (int)gridSize*(*Scale)))*2, 0}, {3, fHeight*2}, grid, true);
 	
 
 	// Draw origin if visible
 	if (drawOrigin){
-		shape.Draw({0,View->y/2 - Height*2/(*Scale)}, {2/(*Scale), fHeight*16/(*Scale)}, cOrigin, false);
-		shape.Draw({View->x/2 - Width*2/(*Scale), 0}, {fWidth*16/(*Scale), 2/(*Scale)}, cOrigin, false);
+		shape.Draw({0,View->y/2 - Height*8/(*Scale)}, {2/(*Scale), fHeight*16/(*Scale)}, cOrigin, false);
+		shape.Draw({View->x/2 - Width*8/(*Scale), 0}, {fWidth*16/(*Scale), 2/(*Scale)}, cOrigin, false);
 	}
 
 	// Draw images
 	for (auto img : imgs){
 		img.Draw();
 		if (img.selected)
-			img.DrawOutline(borderSize, imageBorder);
+			img.DrawOutline(borderSize/(*Scale), imageBorder);
 	}
 }
 
@@ -244,7 +250,7 @@ void DrawTags(){
 	// Tag heading, button, and title
 	shape.Draw({0, y}, {menuWidth-scrollbarSize, fontSize*2}, menuBackground, true);
 	font.Write("Tags", {fontSize/2, y+8}, fontSize*.75f, fontColor, true, menuWidth-scrollbarSize-fontSize*2, 1);
-	add.Draw({menuWidth-fontSize*2-scrollbarSize, y}, {fontSize*2, fontSize*2}, false, true);
+	add.Draw({menuWidth-fontSize*2-scrollbarSize, y}, {fontSize*2, fontSize*2}, false, true, Main.Focus());
 
 	// Scroll bar end position
 	tagScroll.end = fontSize;

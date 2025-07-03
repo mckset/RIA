@@ -7,6 +7,7 @@ bool WAYLAND = false; // Used by the clipboard to change copying commands on way
 
 string path = "";
 string board = "Default.brd";
+string exe = "";
 
 bool drawOrigin = true; // Show origin
 bool DnD = false; // If a file was added via Drag and Drop
@@ -24,7 +25,7 @@ const int scrollbarSize = 32;
 const int sampleSize = 8; // Anti-Aliasing level
 const int viewSpeed = 16; // How fast to move the view
 
-int borderSize = 6; // Size of the border on selected images
+int borderSize = 4; // Size of the border on selected images
 int editTag = -1; // Index of an edited tag
 int editSub = -1; // Index of an edited sub tag
 float fontSize = 24;

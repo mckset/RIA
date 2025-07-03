@@ -37,7 +37,7 @@ class Tag{
 			shape.Draw(position, size, color, true);
 
 			// Hover
-			if (mouse.position.Within(position, size))
+			if (mouse.position.Within(position, size) && Main.Focus())
 				shape.Draw(position, size, highlight, true);
 
 			// Name
@@ -45,7 +45,7 @@ class Tag{
 
 			// Add Button
 			if (sub == -1 && expand)
-				addButton.Draw(position, Vector2{fontSize, fontSize}, false, true);
+				addButton.Draw(position, Vector2{fontSize, fontSize}, false, true, Main.Focus());
 
 			// Edit button
 			if (expand){
