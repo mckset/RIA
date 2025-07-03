@@ -165,13 +165,13 @@ sudo pacman -S gcc glfw freetype libwebp
 ### Compile Command:
 Linux:
 ```
-g++ main.cpp src/dependences/linux/glad/glad.c -o RIA -I/usr/include/freetype2 -lstdc++fs -lglfw -lGL -lXrandr -lX11 -lpthread -ldl -static-libgcc -lwebp -lfreetype
+g++ main.cpp src/dependencies/linux/glad/glad.c -o RIA -I/usr/include/freetype2 -lstdc++fs -lglfw -lGL -lXrandr -lX11 -lpthread -ldl -static-libgcc -lwebp -lfreetype
 ```
 > **_NOTE:_**  Be sure to set UBUNTU to 1 in "config.hpp" before compiling.
 
 Windows:
 ```
-g++ main.cpp windows/glad/glad.c -o RIA windows/glfw/libglfw3.a -lopengl32 -lgdi32 -lole32 -loleaut32 -luuid -static -static-libgcc -static-libstdc++
+g++ main.cpp src\dependencies\windows\glad\glad.c -o RIA  "src\dependencies\windows\glfw\libglfw3.a" -lopengl32 -lgdi32 -lole32 -loleaut32 -luuid -Lwebp freetype.dll libwebp.dll -static -static-libgcc -static-libstdc++
 ```
 
 > **_NOTE:_**  The command may vary between distros/OS. 
