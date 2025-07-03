@@ -1,0 +1,22 @@
+This image pack is meant to be used as an example of how the feature works. Note that each directory is used like category, and does not correlate with imported tag names.
+
+All files were downloaded from Adobe Stock Images. To my knowledge, none of the images are AI genrated.
+I do not own any of these files. Nor do I claim rights or ownership of any of the files. 
+
+Below is a list with the file name and the source:
+
+Photos:
+	Bunny 1.jpg: https://as1.ftcdn.net/v2/jpg/03/29/65/90/1000_F_329659010_GAm4evQNA32qfhY0Q0Pw6UsZyDuGasyh.jpg
+	Cat 1.jpg: https://as2.ftcdn.net/v2/jpg/03/03/62/45/1000_F_303624505_u0bFT1Rnoj8CMUSs8wMCwoKlnWlh5Jiq.jpg
+	Cat 2.jpg: https://as2.ftcdn.net/v2/jpg/02/66/72/41/1000_F_266724172_Iy8gdKgMa7XmrhYYxLCxyhx6J7070Pr8.jpg
+	Dog 1.jpg: https://as1.ftcdn.net/v2/jpg/03/15/33/46/1000_F_315334622_sU5qBAIVbeLTeaZt2t6TBGhS4De4ShXA.jpg
+	Dog 2.jpg: https://as2.ftcdn.net/v2/jpg/00/24/85/45/1000_F_24854585_YrEkKKtmOIoZbq8MT8JOfqoAdahpV8Qt.jpg
+
+Cartoon:
+	Bunny 2.jpg: https://as2.ftcdn.net/v2/jpg/01/16/45/35/1000_F_116453577_I35yZOAvDshOTGZXVpEoTWTYdzjBDcsL.jpg
+	Cat 3.jpg: https://as2.ftcdn.net/v2/jpg/03/02/74/49/1000_F_302744994_SRKeSi4JVNu87kHE7xrt1iDI9doJGhOZ.jpg
+
+Ink:
+	Bunny 3.jpg: https://as1.ftcdn.net/v2/jpg/05/76/61/94/1000_F_576619441_nqiqG8Us603dbKyJRPfsGc2bdfZPLje2.jpg
+	Dog 3.jpg: https://as1.ftcdn.net/v2/jpg/02/71/81/20/1000_F_271812013_pddjObcO3q5gROR9fdgd2VrpUgR0ocUT.jpg
+	Dog 4.jpg: https://as2.ftcdn.net/v2/jpg/01/93/90/59/1000_F_193905959_ozyvocptaD7BmQ4vinDgfxCX8vNA5NVj.jpg

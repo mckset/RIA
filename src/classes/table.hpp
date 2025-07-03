@@ -1,6 +1,7 @@
-//
-// Stores location information in a recusive list and displays it as a table
-//
+/*
+	Stores location information in a recusive list and displays it as a table
+	I'm sorry if you want to edit this
+*/
 
 using namespace std;
 #if UBUNTU
@@ -49,7 +50,7 @@ class Table{
 				}
 
 				// Expand folder
-				if (mouse.Click(LM_DOWN)){
+				if (mouse.Click()){
 					expand = !expand;
 					for (int i = 0; i < folders.size(); i++)
 						folders[i].inited = false;
@@ -73,7 +74,7 @@ class Table{
 				for (int i = 0; i < files.size(); i++){
 					if (position.y - listSize > -fontSize){
 						shape.Draw(position + Vector2{16, (float)-listSize}, size - Vector2{16, 0}, locationFile, true);
-						font.Write(files[i].name, position + Vector2{16, (float)-listSize}, fontSize/2, fontColor, true, size.x-8);
+						font.Write(files[i].name, position + Vector2{16, (float)-listSize}, fontSize/2, fontColor, true, size.x-16);
 						
 						// Tagged indicator
 						bool tagged = false;
@@ -96,7 +97,7 @@ class Table{
 						if (mouse.position.Within(position.Add(16, -listSize), size.Subtract(16, 0)) && (Main.Focus())){
 						
 							// Preview Image
-							if (mouse.Click(LM_DOWN)){
+							if (mouse.Click()){
 								if (files[i].path.substr(files[i].path.length()-4) != "webp")
 									previewImg.img.LoadImage((char*)files[i].path.data());
 								else
@@ -121,7 +122,7 @@ class Table{
 			files.clear();
 
 			// Empty directory
-			if ((stat(path.c_str(), &s) == 0) == 0)
+			if ((stat(path.c_str(), &st) == 0) == 0)
 				return;
 
 			for (const auto& entry : fs::directory_iterator((string)path)) {
@@ -132,20 +133,22 @@ class Table{
 
 				// Windows doesn't know how to handle UTF-16 characters in paths for some reason
 				if (LINUX){
-					if (stat(p, &s) == 0) // Is valid
+					if (stat(p, &st) == 0) // Is valid
 
-						if (s.st_mode & S_IFDIR) // Folders
+						if (st.st_mode & S_IFDIR){ // Folders
 							folders.push_back(Table{GetName(p), p});
-
-						else if (s.st_mode & S_IFREG && IsImage(p)){ // Files
+							CheckString(folders[folders.size()-1].name);
+						
+						}else if (st.st_mode & S_IFREG && IsImage(p)){ // Files
 							files.push_back(File{GetName(p), p});
 							CheckString(files[files.size()-1].name);
 						}
 				}else{
-					if (fs::is_directory(p)) // Folder
+					if (fs::is_directory(p)){ // Folder
 						folders.push_back(Table{GetName(p), p});
-
-					else if (IsImage(p)){ // File
+						CheckString(folders[folders.size()-1].name);
+					
+					}else if (IsImage(p)){ // File
 						files.push_back(File{GetName(p), p});
 						CheckString(files[files.size()-1].name);
 					}
@@ -223,8 +226,9 @@ class Table{
 					folders[i].RefreshTable();
 		}
 };
+vector<Table> locations;
 
 bool IsImage(string path){
-	string ext = path.substr(path.length()-4);
+	string ext = Lower(path.substr(path.length()-4));
 	return ext == ".png" || ext == "jpeg" || ext == ".jpg" || ext == "webp";
 }

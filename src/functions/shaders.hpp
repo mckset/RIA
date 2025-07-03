@@ -1,3 +1,7 @@
+/*
+	Shaders used by RIA
+*/
+
 // Vertex shaders
 const char* shapeV = "#version 330 core\n"
 	"layout (location = 0) in vec2 pos;\n"
@@ -52,7 +56,7 @@ const char* circleF = "#version 330 core\n"
 		"}\n"
 
 		"gl_FragColor = outColor;}";
-		
+
 const char* colorSelectorF = "#version 330 core\n"
 	"uniform vec4 color;\n"
 	"uniform vec2 pos;\n"
@@ -65,6 +69,29 @@ const char* colorSelectorF = "#version 330 core\n"
 		"outColor = vec4(outColor.rgb * abs(p.y), color.a);\n"
 
 		"gl_FragColor = outColor;}";
+		
+const char* hueSelectorF = "#version 330 core\n"
+	"uniform vec4 color;\n"
+	"uniform vec2 pos;\n"
+	"vec4 outColor;\n"
+	"uniform vec2 size;\n"
+	"uniform int rotate;\n"
+
+	"void main(void){\n"
+		"vec2 p = (gl_FragCoord.xy - pos) / size;\n"
+		"if (rotate == 0){\n"
+			"if (p.x <= 0.33) outColor = vec4(1-(p.x/0.33),(p.x/0.33),0,1);\n"
+			"else if (p.x <= 0.67) outColor = vec4(0,1-((p.x-0.33)/0.33),((p.x-0.33)/0.33),1);\n"
+			"else outColor = vec4(((p.x-0.67)/0.33),0,1-((p.x-0.67)/0.33),1);\n"
+		"}else{\n"
+			"if (p.y <= 0.33) outColor = vec4(1-(p.y/0.33),(p.y/0.33),0,1);\n"
+			"else if (p.y <= 0.67) outColor = vec4(0,1-((p.y-0.33)/0.33),((p.y-0.33)/0.33),1);\n"
+			"else outColor = vec4(((p.y-0.67)/0.33),0,1-((p.y-0.67)/0.33),1);\n"
+		"}\n"
+		"outColor.a = 1;\n"
+
+		"gl_FragColor = outColor;}";
+
 
 const char* shapeF = "#version 330 core\n"
 	"out vec4 shaderColor;\n"

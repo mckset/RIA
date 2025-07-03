@@ -81,6 +81,7 @@ namespace pdc{
 	//
 
 	// Common classes and headers
+	#include "time.hpp"
 	#include "classes/color.hpp"
 	#include "classes/shader.hpp"
 	#include "classes/vector.hpp"
@@ -94,12 +95,13 @@ namespace pdc{
 
 	// UI classes
 	#include "classes/shape.hpp"
-	#include "classes/image.hpp" // Relies on shape.hpp
+	#include "classes/image.hpp" // Relies on shape.hpp?
+	#include "classes/colorselector.hpp"
 
 	#if FONTTYPE
 		#include "classes/truefont.hpp" // Full font support
 	#else
-		#include "classes/font.hpp" // Relies on image.hpp (Legacy support)
+		#include "classes/font.hpp" // Relies on image.hpp (Legacy spritesheet font support)
 	#endif
 
 	#include "classes/field.hpp" // Relies on font.hpp and shape.hpp

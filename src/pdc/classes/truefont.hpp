@@ -12,7 +12,7 @@ int GetUTF16Length(string);
 // Unicode Character
 class Unichar{
 	public:
-		uint ID;
+		uint ID = 0;
 		uint advance;
 		Vector2 size;
 		Vector2 origin;
@@ -20,24 +20,40 @@ class Unichar{
 
 map<int, Unichar> characters;
 Shader sFont;
-
-int fontResolution = 128;
+int fontResolution = 64;
 float fontSpacing = 1;
+
 
 class Font{
 	public:
-
-		void Write(int* text, int text_s, Vector2 position, float size, Color color, bool fixed = false, float limit = Width, int align = 0, bool wrap = false){
-			int length = 0;
-			char temp[text_s];
-			for (int i = 0; i < text_s && length < limit; i++){
-				temp[i] = text[i];
-				length += Draw(text[i], position.Add(length, 0), size, color);
-			}
-		}
+		bool loaded = false;
 
 		float Write(string text, Vector2 position, float size, Color color, bool fixed = false, float limit = Width, int align = 0, bool wrap = false){
+			if (!loaded) return 0;
+			
 			int length = 0;
+			float fontSize = size;
+			float offset = 0;
+			fontSize /= 32;
+			fontSize *= 48.0f/(float)fontResolution;
+			for (int i = 0; i < text.length(); i++){
+				int ch = text[i];
+				if (text[i] < 0){
+					string c = "";
+					c+= text[i];
+					i++;
+					while (text[i] <= -65){
+						c += text[i];
+						i++;
+					}
+					i--;
+					ch = UTF16(c);
+				}
+				Unichar c = characters[ch];
+				length += (c.advance >> 6) * fontSize*1.145;
+			}
+
+			
 
 			// Crop the text if center aligned in case the text bleeds past the width
 			if (align && text.length()*size > limit && limit != Width){
@@ -57,17 +73,18 @@ class Font{
 					textSize--;
 				}
 				text = cropped;
-			}
+			}else if (align == 1)
+				offset = (float)(limit/2 - length/2);
 
 			char data[text.length()];
 			for (int i = 0; i < text.length(); i++){
 				if (text[i] == '\n' || text[i] == '\t')
 					text[i] = ' ';
 			}
-			float offset = 0;
-			if (align == 1)
-				offset = (float)(limit/2 - text.length()*size/2);
 			
+			
+			
+			length = 0;
 			for (int i = 0; i < text.length() && length + offset + size < limit; i++){
 				if (text[i] < 0){
 					string c = "";
@@ -88,6 +105,7 @@ class Font{
 		int Draw(int ch, Vector2 position, float fontSize, Color color){
 			sFont.Use();
 			Unichar c = characters[ch];
+			if (!c.ID) return 0;
 
 			fontSize /= 32;
 			fontSize *= 48.0f/(float)fontResolution;
@@ -119,6 +137,7 @@ class Font{
 			// Bind array
 			glBindVertexArray(vertexArray);
 			glBindTexture(GL_TEXTURE_2D, c.ID);
+
 			// Bind vertex buffer
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 
@@ -136,9 +155,12 @@ class Font{
 			return (c.advance >> 6) * fontSize*1.145;
 		}
 };
+Font font;
+
 
 void AddChar(int c){
-		
+	if (!font.loaded) return;
+	
 	// load character glyph 
 	if (FT_Load_Char(face, c, FT_LOAD_RENDER)){
 		printf("Failed to load character %c\n", c);
@@ -146,15 +168,19 @@ void AddChar(int c){
 	}
 			
 	// generate texture
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	Unichar ch;
+	ch.advance = face->glyph->advance.x;
+	ch.size = Vector2{(float)face->glyph->bitmap.width, (float)face->glyph->bitmap.rows};
+	ch.origin = Vector2{(float)face->glyph->bitmap_left, (float)face->glyph->bitmap_top};
+
+	glGenTextures(1, &ch.ID);
+	glBindTexture(GL_TEXTURE_2D, ch.ID);
 	glTexImage2D(
 		GL_TEXTURE_2D,
 		0,
 		GL_RED,
-		face->glyph->bitmap.width,
-		face->glyph->bitmap.rows,
+		(int)ch.size.x,
+		(int)ch.size.y,
 		0,
 		GL_RED,
 		GL_UNSIGNED_BYTE,
@@ -166,35 +192,20 @@ void AddChar(int c){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	if (texture == 0)
-		return;
-		
-	Unichar ch;
-	ch.ID = texture;
-	ch.advance = face->glyph->advance.x;
-	ch.size = Vector2{(float)face->glyph->bitmap.width, (float)face->glyph->bitmap.rows};
-	ch.origin = Vector2{(float)face->glyph->bitmap_left, (float)face->glyph->bitmap_top};
-	characters.insert(pair<int, Unichar>(c, ch));
+	characters[c] = ch;
 }
 
-int UTF16(string s){
-	std::wstring_convert<std::codecvt_utf8_utf16<char16_t>,char16_t> convert;
-	std::u16string dest = convert.from_bytes(s);
- 
-	uint utf16 = 0;
-	utf16 = dest[0];
 
+int UTF16(string s){
+	wstring_convert<codecvt_utf8_utf16<char16_t>,char16_t> convert;
+	u16string dest = convert.from_bytes(s);
+	uint utf16 = dest[0];
 	return utf16;
 }
 
 
 void CheckString(string s){
-	char data[s.length()];
-	for (int c = 0; c < s.length(); c++)
-		data[c] = s[c];
-
-	
-
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
 	for (int i = 0; i < s.length(); i++){
 		if (s[i] < 0){
 			string char16 = "";
@@ -206,12 +217,10 @@ void CheckString(string s){
 			}
 			i--;
 			int ch = UTF16(char16);
-			if (characters.find(ch) == characters.end()){
-				if (PDC_DEBUG) printf("Added character: %s : %u\n", char16.data(), ch);
+			if (!characters[ch].ID){
+				printf("Added character: %s : %u\n", char16.data(), ch);
 				AddChar(ch);
 			}
-		}else if (s[i] > 127){
-			printf("\n");
 		}
 	}
 }
@@ -220,8 +229,8 @@ void InitFont(){
 	FT_Set_Pixel_Sizes(face, 0, fontResolution);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
 		
-	// Add english alphabet
+	// Cache english alphabet
 	for (int c = 0; c < 127; c++)
 		AddChar(c);
+
 }
-Font font;

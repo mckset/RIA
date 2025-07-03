@@ -62,7 +62,6 @@ class Keyboard{
 
 				else if (newKey == KEY_DELETE && pos != 0)
 					*str = str->substr(0, str->length() - pos) + str->substr(str->length() - pos + 1);
-
 			}
 		}
 
@@ -75,8 +74,16 @@ class Keyboard{
 			else
 				return LowerMap[key];
 		}
+
 };
 Keyboard keyboard;
+
+void SetKeyboardState(GLFWwindow* w, int key, int code, int action, int mod){
+	if (action == 1)
+		keyboard.AddKey(key);
+	else if (action == 0)
+		keyboard.DelKey(key);
+}
 
 char KeyToChar(int key){
 	if (key == -1)

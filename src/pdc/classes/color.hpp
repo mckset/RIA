@@ -18,6 +18,44 @@ class Color{
 			return Color{r * f, g * f, b * f, a};
 		}
 
+		Color ToHSV(){
+			float min, max;
+			Color c = {r*255, g*255, b*255, 1};
+			min = c.r < c.g ? c.r : c.g;
+    		min = min < c.b ? min : c.b; 
+
+			max = c.r > c.g ? c.r : c.g;
+		    max = max > c.b ? max : c.b;
+			
+			float delta = max-min;
+			if (delta < .00001)
+				return {0, 0, max, 1};
+
+			Color HSV;
+			HSV.b = max;
+			if (max > 0)
+				HSV.g = (delta/max);
+			else{
+				HSV.g = 0;
+				HSV.r = 0;
+				return HSV;
+			}
+
+			if (c.r >= max)
+				HSV.r = (c.g-c.b)/delta;
+			else if (c.g >= max)
+				HSV.r = 2 + (c.b-c.r)/delta;
+			else
+				HSV.r = 4 + (c.r-c.g)/delta;
+			
+			HSV.r *= 60;
+			if (HSV.r < 0)
+				HSV.r += 360;
+			HSV.b /= 2.55;
+			HSV.g *= 100;
+			return HSV;
+		}
+
 		Color Subtract(float sR, float sG, float sB, float sA, float min = 0){
 			return Color{
 				r-sR >= min ? r-sR : min, 
@@ -29,6 +67,38 @@ class Color{
 			return "Color {" + to_string(r) + ", " + to_string(g) + ", " + to_string(b) + "}";
 		}
 };
+
+
+Color ToRGB(float h, float s, float v){
+	s /= 100;
+	v *= 2.55f;
+	if (s <= 0)
+		return Color{v/255, v/255, v/255, 1};
+			
+	if (h >= 360) h-= 360;
+	h /= 60;
+	long i;
+	float p, q, t, f;
+
+	i = (long)h;
+	f = h-i;
+	p = v * (1.0f - s);
+	q = v * (1.0f - (s*f));
+	t = v * (1.0f - (s * (1.0f-f)));
+
+
+	if (i == 0)
+		return Color{v/255.0f, t/255.0f, p/255.0f, 1};
+	else if (i == 1)
+		return Color{q/255.0f, v/255.0f, p/255.0f, 1};
+	else if (i == 2)
+		return Color{p/255.0f, v/255.0f, t/255.0f, 1};
+	else if (i == 3)
+		return Color{p/255.0f, q/255.0f, v/255.0f, 1};
+	else if (i == 4)
+		return Color{t/255.0f, p/255.0f, v/255.0f, 1};
+	return Color {v/255.0f, p/255.0f, q/255.0f, 1};
+}
 
 string ColorToHex(Color c){
 	int r1 = (int)(c.r*255) >> 4;
