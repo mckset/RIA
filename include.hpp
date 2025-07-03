@@ -3,7 +3,7 @@
 
 #define		FONTTYPE 	1
 #define		PDC_DEBUG	1
-#define 	UBUNTU		1 // Set to 1 to use older filesystem libraries
+#define 	UBUNTU		0 // Set to 1 to use older filesystem libraries
 #define		DEBUG		0 // Set to 1 to print debug information to a terminal
 
 #include "src/pdc/pdc.hpp"
