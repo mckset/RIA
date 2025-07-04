@@ -2,7 +2,10 @@
 RIA (Reference Image Application) is a cross platform image organizer for both Windows and Linux designed to help artists organize their reference material through the use of tags and folders. RIA supports PNG, JPEG, and WebP images.
 
 # Installation
-Download the latest verion from release page for your operating system or compile it from source and run RIA. Note that RIA expects the icon image to be in the image folder in the directory you run it from.
+Download the latest verion from release page for your OS or compile it from source and run RIA.
+> **_Windows:_** You do not need to run the install script if RIA runs without issues.
+> 
+> **_Linux:_** The install script move RIA into /usr/local/bin and adds a desktop entry and icon. RIA can run without the script being used. 
 
 ### Tested Distros:
 - Arch
@@ -167,11 +170,11 @@ Linux:
 ```
 g++ main.cpp src/dependencies/linux/glad/glad.c -o RIA -I/usr/include/freetype2 -lstdc++fs -lglfw -lGL -lXrandr -lX11 -lpthread -ldl -static-libgcc -lwebp -lfreetype
 ```
-> **_NOTE:_**  Be sure to set UBUNTU to 1 in "config.hpp" before compiling.
+> **_NOTE:_**  If you are having problems with the filesystem libraries, try setting UBUNTU to 1 in the include.hpp file before compiling
 
 Windows:
 ```
-g++ main.cpp src\dependencies\windows\glad\glad.c -o RIA  "src\dependencies\windows\glfw\libglfw3.a" -lopengl32 -lgdi32 -lole32 -loleaut32 -luuid -Lwebp freetype.dll libwebp.dll -static -static-libgcc -static-libstdc++
+g++ main.cpp src\dependencies\windows\glad\glad.c -o RIA  "src\dependencies\windows\glfw\libglfw3.a" -Isrc/dependencies/libwebp/include -Isrc/dependencies/freetype -lopengl32 -lgdi32 -lole32 -loleaut32 -luuid -Lwebp freetype.dll libwebp.dll -static -static-libgcc -static-libstdc++
 ```
 
 > **_NOTE:_**  The command may vary between distros/OS. 
