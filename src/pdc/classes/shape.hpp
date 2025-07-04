@@ -1,6 +1,6 @@
 class Shape{
 	public:
-		void DrawBox(Vector2 start, Vector2 size, Color color, float w = 1.0f, bool fixed = false, bool sort = false){
+		void DrawBox(Vector2 start, Vector2 size, Color color, float w = 0.0f, bool fixed = false, bool sort = false){
 			Vector2 l1=start, l2=start.Add(size);
 
 			// Moves the first point to the lower left corner
@@ -363,20 +363,41 @@ class Shape{
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		}
 
-		void Draw(Vector2 position, Vector2 size, Color color, bool fixed = false){
+		void Draw(Vector2 position, Vector2 size, Color color, bool fixed = false, float angle = 0.0f, Vector2 origin = {std::numeric_limits<float>::infinity()}){
 			sShape.Use();
-			size = size * 2;
-			position.x = position.x*2/Width;
-			position.y = position.y*2/Height;
-			// Multiplied by 2 to offset properly otherwise it will only move half
+
+			Vector2 tR = Vector2{position.x + size.x, position.y + size.y};
+			Vector2 tL = Vector2{position.x, position.y + size.y};
+			Vector2 bR = Vector2{position.x + size.x, position.y};
+			Vector2 bL = Vector2{position.x, position.y};
+
+			if (angle != 0){
+				if (angle < 0)
+					angle += 360;
+				else if (angle > 360*RADIANS)
+					angle -= 360;
+				float a = angle*RADIANS;
+				Vector2 center = origin.x == std::numeric_limits<float>::infinity() ? position + size/2 : origin;
+				tR.Rotate(center, a);
+				tL.Rotate(center, a);
+				bR.Rotate(center, a);
+				bL.Rotate(center, a);
+			}
+
+			// Converts pixels to screen space
 			if (!fixed){
-				position.x -= View->x*2/Width;
-				position.y -= View->y*2/Height;
-				size.x *= (*Scale);
-				size.y *= (*Scale);
-			}	
-			position.x-=1;
-			position.y-=1;
+				tR = (Vector2{tR.x*2/fWidth-1,tR.y*2/fHeight-1} - ((*View) * 2 / Vector2{fWidth, fHeight})) * (*Scale);
+				tL = (Vector2{tL.x*2/fWidth-1,tL.y*2/fHeight-1} - ((*View) * 2 / Vector2{fWidth, fHeight})) * (*Scale);
+				bR = (Vector2{bR.x*2/fWidth-1,bR.y*2/fHeight-1} - ((*View) * 2 / Vector2{fWidth, fHeight})) * (*Scale);
+				bL = (Vector2{bL.x*2/fWidth-1,bL.y*2/fHeight-1} - ((*View) * 2 / Vector2{fWidth, fHeight})) * (*Scale);
+					
+			}else{
+				// Multiplied by 2 to offset properly otherwise it will only move half
+				tR = Vector2{tR.x*2/fWidth-1,tR.y*2/fHeight-1};
+				tL = Vector2{tL.x*2/fWidth-1,tL.y*2/fHeight-1};
+				bR = Vector2{bR.x*2/fWidth-1,bR.y*2/fHeight-1};
+				bL = Vector2{bL.x*2/fWidth-1,bL.y*2/fHeight-1};
+			}
 
 			if (!fixed)
 				position = position * (*Scale);
@@ -385,11 +406,12 @@ class Shape{
 			float h = position.y + size.y/Height;
 
 			// Location of the object
-			float data[] = {  
-				w,  h,
-				w, position.y,
-				position.x, position.y,	
-				position.x,  h,
+			float data[] = {
+				// positions 
+				tR.x, tR.y,			 // top right
+				bR.x, bR.y,  		// bottom right
+				bL.x, bL.y,  		 // bottom left
+				tL.x, tL.y 		// top left 
 			};
 
 			// Indices used to draw a box
