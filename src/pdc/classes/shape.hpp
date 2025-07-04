@@ -15,12 +15,60 @@ class Shape{
 				}
 			}
 
-			size += l1;
+			if (!fixed)
+				position = position * (*Scale);
 
-			DrawLine(l1, Vector2{size.x, l1.y}, color, w, fixed); // Lower Left to Lower Right
-			DrawLine(Vector2{size.x, l1.y}, size, color, w, fixed); // Lower Right to Upper Right
-			DrawLine(size, Vector2{l1.x, size.y}, color, w, fixed); // Upper Right to Upper Left
-			DrawLine(Vector2{l1.x, size.y}, l1, color, w, fixed); // Upper Left to Lower Right
+			float w = position.x + size.x/Width;
+			float h = position.y + size.y/Height;
+
+			width *= 2.0/fWidth;
+
+			// Location of the object
+			float data[] = {
+				// positions 
+				tR.x, tR.y,			 // top right
+				bR.x, bR.y,  		// bottom right
+				bL.x, bL.y,  		 // bottom left
+				tL.x, tL.y 		// top left 
+			};
+
+			// Indices used to draw a box
+			int box[] = {
+				0, 1, 3,
+				1, 2, 3};
+				
+			// Bind array
+			glBindVertexArray(vertexArray);
+
+			// Bind vertex buffer
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+
+			// Send vertices to buffer
+			glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+
+			// Bind element buffer
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
+
+			// Send vertices to buffer
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(int), box, GL_STATIC_DRAW);
+
+			// Position attribute
+			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+			glEnableVertexAttribArray(0);
+
+			//
+			// Shader options
+			//
+
+			glUniform2f(glGetUniformLocation(ShaderID, "size"), shaderSize.x, shaderSize.y);
+			glUniform2f(glGetUniformLocation(ShaderID, "pos"), shaderPos.x, shaderPos.y);
+			glUniform4f(glGetUniformLocation(ShaderID, "color"), color.r, color.g, color.b, color.a);
+			glUniform1f(glGetUniformLocation(ShaderID, "width"), width);
+				
+			glBindBuffer(GL_ARRAY_BUFFER, 0); 
+
+			glBindVertexArray(vertexArray);
+			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		}
 
 		void DrawCircle(Vector2 position, float size, float border, Color color, bool fixed = false){
