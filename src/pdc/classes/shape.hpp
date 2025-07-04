@@ -1,40 +1,18 @@
 class Shape{
 	public:
-		void DrawBox(Vector2 position, Vector2 size, Color color, float width = 0.0f, bool fixed = false, float angle = 0.0f){
-			sBox.Use();
-			Vector2 shaderSize = size;
-			Vector2 shaderPos = position;
-			Vector2 tR = Vector2{position.x + size.x, position.y + size.y};
-			Vector2 tL = Vector2{position.x, position.y + size.y};
-			Vector2 bR = Vector2{position.x + size.x, position.y};
-			Vector2 bL = Vector2{position.x, position.y};
+		void DrawBox(Vector2 start, Vector2 size, Color color, float w = 0.0f, bool fixed = false, bool sort = false){
+			Vector2 l1=start, l2=start.Add(size);
 
-			if (angle != 0){
-				if (angle < 0)
-					angle += 360;
-				else if (angle > 360*RADIANS)
-					angle -= 360;
-				float a = angle*RADIANS;
-				Vector2 center = position + size/2;
-				tR.Rotate(center, a);
-				tL.Rotate(center, a);
-				bR.Rotate(center, a);
-				bL.Rotate(center, a);
-			}
-
-			// Converts pixels to screen space
-			if (!fixed){
-				tR = (Vector2{tR.x*2/fWidth-1,tR.y*2/fHeight-1} - ((*View) * 2 / Vector2{fWidth, fHeight})) * (*Scale);
-				tL = (Vector2{tL.x*2/fWidth-1,tL.y*2/fHeight-1} - ((*View) * 2 / Vector2{fWidth, fHeight})) * (*Scale);
-				bR = (Vector2{bR.x*2/fWidth-1,bR.y*2/fHeight-1} - ((*View) * 2 / Vector2{fWidth, fHeight})) * (*Scale);
-				bL = (Vector2{bL.x*2/fWidth-1,bL.y*2/fHeight-1} - ((*View) * 2 / Vector2{fWidth, fHeight})) * (*Scale);
-					
-			}else{
-				// Multiplied by 2 to offset properly otherwise it will only move half
-				tR = Vector2{tR.x*2/fWidth-1,tR.y*2/fHeight-1};
-				tL = Vector2{tL.x*2/fWidth-1,tL.y*2/fHeight-1};
-				bR = Vector2{bR.x*2/fWidth-1,bR.y*2/fHeight-1};
-				bL = Vector2{bL.x*2/fWidth-1,bL.y*2/fHeight-1};
+			// Moves the first point to the lower left corner
+			if (sort){
+				if (size.x < 0){
+					l1.x += size.x;
+					size.x = -size.x;
+				}
+				if (size.y < 0){
+					l1.y += size.y;
+					size.y = -size.y;
+				}
 			}
 
 			if (!fixed)
