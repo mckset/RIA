@@ -4,53 +4,60 @@
 
 void LeftMenuInput(){
     // Menu toggle
-	if ((keyboard.newKey == KEY_TAB) || mouse.Click() && openLoc.Hover()){
-		if (!lMenu)
-			lMenu = true;
-		else if (lMenu && !tagView)
-			lMenu = false;
-		tagView = false;
-		rmMenu.Reset();
-		mouse.state = -1;
+	if ((keyboard.newKey == KEY_TAB) || openLocations_Button.pressed){
+		if (!showLeftMenu)
+			showLeftMenu = true;
+		else if (showLeftMenu && !showTags)
+			showLeftMenu = false;
+		showTags = false;
+		mouseMenu.Reset();
+		mouse.state = INPUT_NULL;
+		openLocations_Button.pressed = false;
 	}
 
 	// Tag toggle
-	if ((keyboard.newKey == KEY_TILDE) || mouse.Click() && openTags.Hover()){
-		if (!lMenu && !tagView)
-			lMenu = true;
-		else if (lMenu && tagView)
-			lMenu = false;
-		tagView = !tagView;
-		rmMenu.Reset();
-		mouse.state = -1;
+	if ((keyboard.newKey == KEY_TILDE) || openTags_Button.pressed){
+		if (!showLeftMenu && !showTags)
+			showLeftMenu = true;
+		else if (showLeftMenu && showTags)
+			showLeftMenu = false;
+		showTags = !showTags;
+		mouseMenu.Reset();
+		mouse.state = INPUT_NULL;
+		openTags_Button.pressed = false;
 	}
 
 	// Close Menu
-	if (mouse.Click() && lMenu && closeLB.Hover()){
-		lMenu = false;
-		rmMenu.Reset();
-		mouse.state = -1;
+	if (showLeftMenu && leftClose_Button.pressed){
+		showLeftMenu = false;
+		mouseMenu.Reset();
+		mouse.state = INPUT_NULL;
+		leftClose_Button.pressed = false;
 	}
 	
 	// Help button
-	if (mouse.Click() && !lMenu && helpB.Hover()){
+	if (!showLeftMenu && help_Button.pressed){
 		OpenTutorial();
-		mouse.state = -1;
+		mouse.state = INPUT_NULL;
 	}
 
     //
 	// Side bar stuff (Most input for the side bar is in table.hpp and tag.hpp)
 	//
-	if (lMenu && mouse.position.x < menuWidth){
-		if (keyboard.newKey == KEY_KP_ADD || keyboard.newKey == KEY_EQUAL || add.Hover() * mouse.Click()){
-			if (tagView){
-				editTag = -1;
+	if (showLeftMenu && mouse.position.x < sideMenuWidth){
+		if (keyboard.newKey == KEY_KP_ADD || keyboard.newKey == KEY_EQUAL || add_Button.pressed){
+			if (showTags){
+				editTag = nullptr;
+				parentTag = nullptr;
+				newTag_ColorSelector.SetColor(Red);
+				deleteTag_Button.text = "Cancel";
+				newTagName_Field.text = "";
 				TagWin.Show();
 			}else{
 				string folder = GetFolder();
 				if (folder.length() && !((stat(folder.c_str(), &st) == 0) == 0)){
-					locations.push_back(Table{GetName(folder), folder});
-					sort(locations.begin(), locations.end(), locations[0].SortTable);
+					locations.push_back(Location{GetName(folder), folder});
+					sort(locations.begin(), locations.end(), locations[0].SortLocations);
 				}
 			}
 		}

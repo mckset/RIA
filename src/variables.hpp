@@ -3,80 +3,117 @@
 	Vector variables of a class are defined with that class
 */
 
+using namespace std::chrono;
+
+class ImageContainer;
+
+#define		FONT_SIZE					24.0f
+#define 	MEDIUM_FONT_SIZE			18.0f
+#define 	SMALL_FONT_SIZE				12.0f
+#define		TINY_FONT_SIZE				8.0f // Used for the edit button on tags
+#define		PADDING						24.0f
+#define		MOUSE_MENU_PADDING			8.0f
+#define		BOARD_BUTTON_PADDING		8.0f
+#define		BOARD_PADDING				8.0f
+#define		BOARD_BUTTON_SIZE			(FONT_SIZE*6)
+#define		GRID_SIZE					128.0f
+#define		QUALITY						8 // 1-8 (8 being the highest)
+#define		SCROLLBAR_SIZE				32.0f
+#define		VIEW_SPEED					16.0f
+#define		SHADOW_OFFSET				2.0f
+#define		TAG_COLOR_SELECTOR_SIZE		256.0f
+#define		MOUSE_MENU_SIZE				(FONT_SIZE*9)
+#define		SCALE_THRESHOLD				16.0f // How far the mouse has to move before the image gets scaled
+#define		FILE_PADDING				16.0f
+
+#define		IMAGE_BORDER_SIZE			4.0f
+#define		IMAGE_SELECTOR_BORDER_SIZE	2.0f
+#define		MIN_IMAGE_SIZE				32.0f
+#define 	PREVIEW_IMAGE_SIZE			360.0f
+
+#define		STATUS_TIME					5.0f
+
+
 bool WAYLAND = false; // Used by the clipboard to change copying commands on wayland devices
 
 string path = "";
 string board = "Default.brd";
 string exe = "";
+string statusText = "";
 
-bool drawOrigin = true; // Show origin
-bool DnD = false; // If a file was added via Drag and Drop
-bool loaded = false; // True if the app tried to load the save file
-bool lMenu = false; // If the left side menu is open
-bool maximize = true; // Maximize window
-bool pasted = false; // If files had already been pasted
-bool rMenu = false; // If the right side menu is open
-bool rot = false; // Rotate name was already taken. Rotate images
-bool showTutorial = false; // If RIA is in tutorial mode
-bool tagView = false; // If the side menu is view tags
+const string downloadFile = "_downloaded.tmp";
 
-const int minSize = 32; // Minimum image size
-const int scrollbarSize = 32; 
-const int sampleSize = 8; // Anti-Aliasing level
-const int viewSpeed = 16; // How fast to move the view
 
-int borderSize = 4; // Size of the border on selected images
-int editTag = -1; // Index of an edited tag
-int editSub = -1; // Index of an edited sub tag
-float fontSize = 24;
-int gridSize = 128; // The grid in the background
-float menuWidth = 0;
-int save = 0; // Duration to show save messages
-int showZoom = 0; // Duration to show zoom percent
+bool closeThread = false;
+bool maximizeWindow = true; 
+bool pastedFile = false; // If files had already been pasted
+bool rotateImages = false;
+bool scaleImages = false; // If the program should scale images
+bool showImageSelector = false;
+bool showLeftMenu = false;
+bool showOrigin = true;
+bool showMouseMenu = false; // Draws the right click menu when true
+bool showRightMenu = false;
+bool showTutorial = false;
+bool showTags = false;
+bool maximize = false;
 
+//int editedTagIndex = -1;
+//int editedSubTagIndex = -1;
+
+float sideMenuWidth = 0;
+int zoomTextTimer = 0;
+float statusTextTimer = 0;
+int loadedSave = 0; // True if the app tried to load the save file
+int downloadedImageType = 0;
+float sideMenuRatio =	0.25f; // Ratio of the menu width to the window width
 struct stat st;
 
+map<string, bool> fileTagMap;
+
 thread *saveThread = nullptr;
+thread *loadThread = nullptr;
+thread *imageBoardThread = nullptr;
 
 Window Main;
 Window Import;
 Window TagWin;
+Window DownloadWin;
 
-Object previewImg;
-vector<Object> imgs; // Image board
-vector<uint> selImgs; // Index of selected images on the image board
+vector<ImageContainer> imgs; // Images on the board
+vector<uint> selectedImgs; // Indexes of selected images on the image board
 vector<string> internalClipboard; // Paths to images that are copied from RIA
+vector<ImageContainer> loadedImages;
+vector<string> textCache; // Used to load new text characters on the main thread
 
-// Default values for colors and fonts
-Color backing = Color {.2, .2, .2, 1};
-Color cOrigin = Color {1, 1, 1, .5};
-Color fieldBack = Color{.1, .1, .1, 1};
-Color fontColor = White;
-Color grid = Color {.25f, .25f, .25f, 1};
-Color highlight = Color {.7, .7, .7, .5};
-Color imageBorder = Color{.1, .1, .1, 1};
-Color locationHeading = {.05f, .05f, .05f, .5};
-Color locationFile = Color {.7, .7, .7, .25};
-Color menuBackground = Color {0, 0, 0, .5};
-Color RMMenuBacking = Color {0, 0, 0, .5};
+Button openTags_Button = Button{"Tags", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
+Button openLocations_Button = Button{"Locations", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
+Button leftClose_Button = Button{"Close", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
+Button help_Button = Button{"Help", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
 
-// Scroll bar
-Color cSelector = Color{0,1,1,.1f};
-Color scrollbarBacking = Color {.2, .2, .2, .5};
-Color scrollbarNotch = Color {.5, .5, .5, .5};
-Scrollbar boardScroll = Scrollbar{scrollbarBacking, scrollbarNotch, highlight, Transparent};
+Button imagePack_Button = Button{"Image Packs", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
+Button imageBoards_Button = Button{"Boards", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
+Button save_Button = Button{"Save", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
 
-// Import menu
-Color importBacking = Color {.27, .27, .3, 1};
-Color importButton = Color {.1, .1, .1, .9};
+Button add_Button = Button{"+", Transparent, highlightColor, White, FONT_SIZE};
+Button addBoard_Button = Button{"+", Transparent, highlightColor, White, FONT_SIZE};
 
-Button add = Button{"+", Transparent, highlight, White, fontSize};
-Button addBoard = Button{"+", Transparent, highlight, White, fontSize};
+Button downloadImport_Button = Button{"Import Image", menuBackgroundColor, highlightColor, White, FONT_SIZE};
+Button downloadCancel_Button = Button{"Cancel", menuBackgroundColor, highlightColor, White, FONT_SIZE};
 
-Field fCurrentBoard = Field{"default", Transparent, Transparent, fontColor, Black, 0, fontSize/2};
+Scrollbar board_Scrollbar = Scrollbar{scrollbarBackgroundColor, scrollbarNotchColor};
+Scrollbar tags_Scrollbar = Scrollbar{scrollbarBackgroundColor, scrollbarNotchColor};
+Scrollbar locations_Scrollbar = Scrollbar{scrollbarBackgroundColor, scrollbarNotchColor};
 
-Vector2 csPicker = Vector2{256,256};
-Vector2 csSize = Vector2{256, 256};
+Field currentBoard_Field = Field{"default", Transparent, Transparent, fontColor, SMALL_FONT_SIZE};
+Field newTagName_Field = Field{"Tag Name", fieldBackgroundColor, highlightColor, fontColor, FONT_SIZE};
+
+Field downloadedImageName_Field = {"File Name", fieldBackgroundColor, highlightColor, fontColor, FONT_SIZE};
+
+static milliseconds startTime; // Time the next frame started
+static milliseconds endTime; // Time the last frame ended
+
+Vector2 downloadDropPosition;
 
 #ifdef _WIN32
 	string altFonts = {""};

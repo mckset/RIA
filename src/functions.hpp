@@ -11,6 +11,12 @@ void Init(void); // initializes RIA by creating missing folders and setting up t
 int main(int, char**); // Starts the program and handles exiting
 //--------------------------------------------------------------------------------------------------
 
+class File;
+class Location;
+void UpdateFileTags(File*);
+void UpdateFolderTags(Location*, bool);
+void UpdateLocationTags();
+
 
 //--------------------------------------------------------------------------------------------------
 // src/windows/main
@@ -23,14 +29,17 @@ Image GetBoardScreenshot(string); // Reads the screenshot data from an image boa
 void TakeBoardScreenshot(void); // Takes a screenshot of the current image board
 
 // src/windows/main/main_input.cpp
+void BoardInput(); // Handles inputs for the image board
+void ImageInput(); // Handles inputs only for images
 void MainInput(); // Handles all the input for the main window and passes it to area specific functions if needed
 void ReorderImages(); // Reorders the images to put the selected one on top
 void ResetImages(); // Resets the selected image state
 
 // src/windows/main/main_render.cpp
 void DrawApp(); // Draws the main app area
+void DrawBoard(); // Draws the placed images and grid
+void DrawImages();
 void DrawLocations(); // Draws the locations sidebar
-void DrawMain(); // Draws the placed images and grid
 void DrawTags(); // Draws the tag sidebar
 
 // src/windows/main/left_menu_input.cpp
@@ -65,6 +74,7 @@ string GetFolderName(string); // Returns the first folder in the path
 //void ImportTag(Tag, Tag*); // Checks if an image is already in the given tag to prevent double tagging
 bool LoadImport(void); // Loads tags from an image pack
 void MainImportInput(void); // Default input for the import window
+int SelectImage();
 void TagsImportInput(void); // Handles the tag import menu input
 //--------------------------------------------------------------------------------------------------
 
@@ -126,3 +136,5 @@ void DrawTag(); // Draws the tag editor
 void TagInput(); // Tag editor input
 void ResetTagEdit(); // Resets tag editor variables
 //--------------------------------------------------------------------------------------------------
+
+void GetDownloadedFileType();

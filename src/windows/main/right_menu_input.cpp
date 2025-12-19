@@ -4,23 +4,24 @@
 
 void RightMenuInput(){
 	// Menu toggle
-	if ((keyboard.newKey == KEY_ESCAPE && !fCurrentBoard.active && !selImgs.size()) || mouse.Click() && bBoards.Hover()){
-		if (fCurrentBoard.active)
-			fCurrentBoard.Reset();
-		if (!rMenu)
-			rMenu = true;
-		else if (rMenu)
-			rMenu = false;
-		rmMenu.Reset();
-		mouse.state = -1;
+	if ((keyboard.newKey == KEY_ESCAPE && !selectedImgs.size() && statusTextTimer <= 0 && !previewImg.loaded) || imageBoards_Button.pressed){
+		if (!showRightMenu){
+			showRightMenu = true;
+			imageBoards_Button.text = "Close";
+		}else if (showRightMenu){
+			showRightMenu = false;
+			imageBoards_Button.text = "Boards";
+		}
+		mouseMenu.Reset();
+		mouse.state = INPUT_NULL;
 	}
 
 	// Image pack button
-	if (mouse.Click() && import.Hover()){
+	if (imagePack_Button.pressed){
 		ResetImport();
 		Import.Show();
-		keyboard.newKey = -1;
-		mouse.state = -1;
+		keyboard.newKey = INPUT_NULL;
+		mouse.state = INPUT_NULL;
 	}
 
 	// Checks if the saving thread is finished
@@ -30,14 +31,16 @@ void RightMenuInput(){
 	}
 
 	// Save
-	if ((keyboard.newKey == KEY_S && keyboard.ctrl) || mouse.Click() && bSave.Hover()){
-		previewImg.img.loaded = false;
-		for (auto img : selImgs)
-			imgs[img].angle = imgs[img].prevAngle;
-		rot = false;
+	if ((keyboard.newKey == KEY_S && keyboard.ctrl) || save_Button.pressed){
+		// If saved while loading images, unloaded images will be deleted
+		if (loadThread || imageBoardThread) return;
+		previewImg.loaded = false;
+		for (auto i : selectedImgs)
+			imgs[i].angle = imgs[i].prevAngle;
+		rotateImages = false;
 		ResetImages();
 		TagWin.Hide();
-		rmMenu.Reset();
+		mouseMenu.Reset();
 
 		// Detach saving thread if it is hanging (most likely crashed but rare)
 		if (saveThread && saving)
@@ -45,7 +48,7 @@ void RightMenuInput(){
 		
 		TakeBoardScreenshot();
 
+		free(saveThread);
 		saveThread = new thread(Save);
-		importTime = 0;
 	}
 }

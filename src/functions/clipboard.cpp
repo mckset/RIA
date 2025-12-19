@@ -1,19 +1,19 @@
 #ifndef _WIN32
 void Copy(){
-	if (!selImgs.size())
+	if (!selectedImgs.size())
 		return;
 
 	string ext = "";
-	if (imgs[selImgs[0]].path[imgs[selImgs[0]].path.length()-4] == '.')
-		ext = imgs[selImgs[0]].path.substr(imgs[selImgs[0]].path.length()-3);
+	if (imgs[selectedImgs[0]].path[imgs[selectedImgs[0]].path.length()-4] == '.')
+		ext = imgs[selectedImgs[0]].path.substr(imgs[selectedImgs[0]].path.length()-3);
 	else
-		ext = imgs[selImgs[0]].path.substr(imgs[selImgs[0]].path.length()-4);
+		ext = imgs[selectedImgs[0]].path.substr(imgs[selectedImgs[0]].path.length()-4);
 	
 	string cmd = "";
-	if (!WAYLAND) cmd = "xclip -selection clipboard -target image/" + ext + " -i \"" + imgs[selImgs[0]].path + "\"";
-	else cmd = "wl-copy < \"" + imgs[selImgs[0]].path + "\"";
+	if (!WAYLAND) cmd = "xclip -selection clipboard -target image/" + ext + " -i \"" + imgs[selectedImgs[0]].path + "\"";
+	else cmd = "wl-copy < \"" + imgs[selectedImgs[0]].path + "\"";
 
-	for (auto i : selImgs)
+	for (auto i : selectedImgs)
 		internalClipboard.push_back(imgs[i].path);
 	system(cmd.c_str());
 }
@@ -27,7 +27,7 @@ void ReadClipboard(const char *out){
 
 void Paste(){
 	cbReady = false;
-	pasted = true;
+	pastedFile = true;
 	const char* c = "";
 	thread cbThread(ReadClipboard, c);
 	for (int i = 0; i < 50 && !cbReady; i++)
@@ -43,15 +43,15 @@ void Paste(){
 		if (DEBUG) printf("Failed to read clipbord\n");
 		if (internalClipboard.size()){
 			for (auto p : internalClipboard){
-				Object img = Object{{0,0}, {1,1}, 0, 0, p};
-				if (img.path.substr(img.path.length()-4) == "webp")
-					img.img = LoadWebp(img.path);
-				else
-					img.img.LoadImage(img.path);
+				ImageContainer img;
+				img.Load(path);
 				img.size = Vector2{(float)img.img.width, (float)img.img.height};
 				img.position = mouse.ToScreenSpace() - img.size/2;
 				imgs.push_back(img);
 			}
+		}else{
+			statusText = "Failed to read clipboard";
+			statusTextTimer = STATUS_TIME;
 		}
 		internalClipboard.clear();
 		return;
@@ -79,12 +79,9 @@ void Paste(){
 		if (images[i].length() > 7 && images[i].substr(0, 7) == "file://")
 			path = images[i].substr(7);
 
-		Object img;
+		ImageContainer img;
 		if (IsImage(path)){
-				if (path.substr(path.length()-4) == "webp")
-					img.img = LoadWebp(path);
-				else
-					img.img.LoadImage(path.data());
+				img.Load(path);
 				img.size = Vector2{(float)img.img.width, (float)img.img.height};
 				img.position = mouse.ToScreenSpace() - img.size/2;
 				imgs.push_back(img);
@@ -92,8 +89,8 @@ void Paste(){
 		}
 	}
 	if (!paths && internalClipboard.size()){
-		Object img;
-		img.img.LoadImage(internalClipboard[0]);
+		ImageContainer img;
+		img.Load(internalClipboard[0]);
 		img.size = Vector2{(float)img.img.width, (float)img.img.height};
 		img.position = mouse.ToScreenSpace() - img.size/2;
 		imgs.push_back(img);
@@ -111,12 +108,12 @@ typedef struct _DROPFILES {
 } DROPFILES, *LPDROPFILES;
 
 void Copy(){
-	if (!selImgs.size()){
+	if (!selectedImgs.size()){
 		if (DEBUG) printf("No images to copy\n");
 		return;
 	}
 	size_t size = sizeof(DROPFILES) + sizeof(wchar_t);
-	for (auto img : selImgs)
+	for (auto img : selectedImgs)
 		size += (imgs[img].path.length() + 1) * sizeof(wchar_t);
 	auto cHandle{unique_ptr<void, decltype(&GlobalFree)>(GlobalAlloc(GHND, size), GlobalFree)};
 	if (!cHandle){
@@ -129,7 +126,7 @@ void Copy(){
 	df->fWide = true;
 	wchar_t *clipboard = reinterpret_cast<wchar_t*>(df+1);
 
-	for (auto img : selImgs){
+	for (auto img : selectedImgs){
 		copy(imgs[img].path.begin(), imgs[img].path.end(), clipboard);
 		clipboard += imgs[img].path.size();
 		*clipboard++ = L'\0';
@@ -152,7 +149,7 @@ void Paste(){
 	
 	HANDLE cHandle;
 	cHandle = GetClipboardData(CF_HDROP);
-	bool pasted = false;
+	bool pastedFile = false;
 
 	if (cHandle){
 		HDROP hd = static_cast<HDROP>(cHandle);
@@ -166,7 +163,7 @@ void Paste(){
 				string path(sfile.begin(), sfile.end());
 				if (!IsImage(path)) continue;
 				
-				Object img;
+				ImageContainer img;
 				if (path.substr(path.length()-4) == "webp")
 					img.img = LoadWebp(path);
 				else
@@ -174,12 +171,12 @@ void Paste(){
 				img.size = Vector2{(float)img.img.width, (float)img.img.height};
 				img.position = mouse.ToScreenSpace() - img.size/2;
 				imgs.push_back(img);
-				pasted = true;
+				pastedFile = true;
 			}
 		}
 	}
-	if (!pasted && internalClipboard.size()){
-		Object img;
+	if (!pastedFile && internalClipboard.size()){
+		ImageContainer img;
 		img.img.LoadImage(internalClipboard[0]);
 		img.size = Vector2{(float)img.img.width, (float)img.img.height};
 		img.position = mouse.ToScreenSpace() - img.size/2;

@@ -1,237 +1,255 @@
-class File{
-	public:
-		string name = "";
-		string path = "";
+extern Button deleteTag_Button;
+extern Color newTagColor;
+extern ColorSelector newTag_ColorSelector;
+extern Field newTagName_Field;
+
+void UpdateFileTagMap(string);
+
+enum Tag_Options{
+	TAG_NONE,
+	TAG_DELETE,
+	TAG_FILE_ADDED
 };
-bool SortFile(File, File);
-void AppendTag(Image);
 
-Button editB = Button{"Edit", Transparent, highlight, White, fontSize/3};
-Scrollbar tagScroll = Scrollbar{scrollbarBacking, scrollbarNotch, highlight, Transparent};
-Field tagName = Field{"Tag Name", fieldBack, highlight, fontColor, Black, 0, fontSize*.75f}; // Edit tag name
+class Tag;
 
-// Edit tag colors
-Scrollbar rgb[3] = { 
-	Scrollbar{Red, White, highlight, Black, 0, true, 0, 8, 255},
-	Scrollbar{Green, White, highlight, Black, 0, true, 0, 8, 255},
-	Scrollbar{Blue, White, highlight, Black, 0, true, 0, 8, 255}};
+Tag* editTag = nullptr;
+Tag* parentTag = nullptr;
 
-Scrollbar sHue = Scrollbar{Transparent, White, highlight, Transparent, 0, false, 0, 8, 360};
+Button tagAdd_Button = Button{"+", Transparent, highlightColor, White, SMALL_FONT_SIZE};
+Button tagEdit_Button = Button{"Edit", Transparent, highlightColor, White, TINY_FONT_SIZE};
 
 class Tag{
 	public:
 		string name;
 		Color color;
-		vector<File> imgs;
-		File img;
+		bool isSubTag = false;
+		vector<File> files;
 		vector<Tag> subTags;
-		Button addButton = Button{"+", Transparent, highlight, White, fontSize/2};
-		int listSize=0;
-		bool expand = false;
-		bool subTag = false;
-		bool addedImg = false;
-		bool del = false;
+		int listSize = 0;
+		bool expanded = false;
 
-		int Draw(Vector2 position, Vector2 size, int tag = -1, int sub = -1){
-			// Tag shape
-			shape.Draw(position, size, color, true);
-
-			// Hover
-			if (mouse.position.Within(position, size) && Main.Focus())
-				shape.Draw(position, size, highlight, true);
-
-			// Name
-			font.Write(name, position + Vector2{fontSize, 0}, fontSize/2, fontColor, true, size.x-fontSize*3, 1);
-
-			// Add Button
-			if (sub == -1 && expand)
-				addButton.Draw(position, Vector2{fontSize, fontSize}, false, true, Main.Focus());
-
-			// Edit button
-			if (expand){
-				editB.Draw(position+Vector2{size.x-fontSize*2, 0}, Vector2{fontSize*2, fontSize}, false, true);
-
-				if (mouse.Click() && editB.Hover() && Main.Focus()){
-					editTag = tag;
-					editSub = sub;
-					tagName.Reset();
-					tagName.text = name;
-					Color HSV = color.ToHSV();
-					sHue.scroll = 360-HSV.r;
-					csPicker.x = HSV.g/100.0 * csSize.x;
-					csPicker.y = HSV.b/100.0 * csSize.y;
-					TagWin.Show();
-					mouse.prevState = LM_DOWN;
-				}
-				
-			}
-
+		int Draw(Vector2 position, Vector2 size){
 			listSize = size.y;
-			int subPos = 1;
 
-			if (expand){
-				// Sub tags
-				for (int i = 0; i < subTags.size(); i++){
-					int del = subTags[i].Draw(position.Subtract(-16.0f, size.y*subPos), size.Subtract(16, 0), tag, i);
-					if (del == 1){
-						subTags.erase(subTags.begin() + i);
-						return 0;
-					}else if (del == 2){
-						bool exists = false;
-						for (auto img : imgs){
-							if (img.path == previewImg.path){
-								exists = true;
-								break;
-							}
-						}
-						if (!exists){
-							imgs.push_back(File{GetName(previewImg.path), previewImg.path});
-							sort(imgs.begin(), imgs.end(), SortFile);
-						}
-					}
+			// Prevent drawing under the window and return the list size
+			if (position.y - size.y < -size.y*3){
+				GetListSize(size.y);
+				return TAG_NONE;
+			}
 
-					// Expanded
-					if (subTags[i].expand){
-						subPos += subTags[i].imgs.size();
-						listSize += size.y*subTags[i].imgs.size();
+			bool clicked = false;
+			bool hovered = mouse.Within(position, size);
+			bool draw = position.y - size.y*2 <= fHeight; // Prevent drawing above the window
+			int tagOption = TAG_NONE;
+
+			if (draw){
+				// Tag background color
+				shape.Draw(position, size, color, POSITION_FIXED);
+
+				// Tag is hovered
+				if (CurrentWindow->focused && hovered){
+					if (keyboard.newKey == KEY_DELETE)
+						return TAG_DELETE;
+					clicked = mouse.Click();
+					shape.Draw(position, size, highlightColor, POSITION_FIXED);
+				}
+				// Name
+				font.Write(name, position + Vector2{PADDING, 0}, SMALL_FONT_SIZE, fontColor, POSITION_FIXED, size.x-PADDING*2, ALIGN_CENTER);
+
+				if (!expanded && clicked){
+					expanded = true;
+					clicked = false;
+				}
+
+				// Add/remove image from tag
+				if (mouse.Click(RM_DOWN) && hovered){
+					if (!previewImg.loaded){
+						EditTag();
+
+					// Delete image
+					}else if (!DeleteFile(previewImg.path)){
+
+						// Add image
+						AddFile(previewImg.path);
+						if (isSubTag) tagOption = TAG_FILE_ADDED;
 					}
-					subPos++;
+				}
+			}
+
+			
+
+			// Draw indicator that the preview image has this tag
+			if (!expanded){
+
+				listSize = size.y;
+
+				// No preview image or above the window
+				if (!previewImg.loaded || !draw)
+					return tagOption;
+
+				for (int i = 0; i < files.size(); i++)
+					if (previewImg.path == files[i].path.data())
+						shape.DrawCircle(position + Vector2{size.y/2, size.y/2}, size.y-size.y/8, BORDER_NONE, White, POSITION_FIXED);
+				
+				return tagOption;
+			}
+
+			if (draw){
+				// Draw buttons
+				if (!isSubTag)
+					tagAdd_Button.Draw(position, {PADDING, size.y}, ALIGN_CENTER);
+
+				// Add sub tag
+				if (tagAdd_Button.pressed && !editTag && clicked){
+					editTag = nullptr;
+					parentTag = this;
+					newTag_ColorSelector.SetColor(Red);
+					deleteTag_Button.text = "Cancel";
+					newTagName_Field.text = "";
+					TagWin.Show();
+				}
+
+				tagEdit_Button.Draw(position+Vector2{size.x-PADDING*2, 0}, Vector2{PADDING*2, size.y}, ALIGN_CENTER);
+
+				
+				if (clicked && tagEdit_Button.pressed)
+					EditTag();
+
+				// Edit tag
+				if (clicked && !tagEdit_Button.pressed && !tagAdd_Button.pressed)
+					expanded = false;
+			}
+
+			// Draw subtags
+			for (int i = 0; i < subTags.size(); i++){
+				int tagOption = subTags[i].Draw(position - Vector2{-PADDING, (float)listSize}, size - Vector2{PADDING, 0});
+				if (tagOption == TAG_DELETE){
+					keyboard.newKey = INPUT_NULL;
+					subTags.erase(subTags.begin() + i);
+					i--;
+					continue;
+
+				}else if (tagOption == TAG_FILE_ADDED && FileExists(previewImg.path) == -1){
+					files.push_back(File{GetName(previewImg.path), previewImg.path});
+					sort(files.begin(), files.end(), SortFile);
+				}
+				listSize += subTags[i].listSize;
+			}
+
+			draw = position.y - size.y - listSize <= fHeight;
+
+			// Draw files
+			for (int i = 0; i < files.size(); i++){
+				if (!draw){
 					listSize += size.y;
+					draw = position.y - size.y - listSize <= fHeight;
+					continue;
+				}else if (position.y - listSize < -size.y){
+					listSize += size.y * (files.size()-i);
+					break;
 				}
 
-				// Images
-				for (int i = 0; i < imgs.size(); i++){
-					// Image Tagged Indicator
-					if (previewImg.img.loaded && previewImg.path == imgs[i].path){
-						shape.DrawCircle(position + Vector2{8, size.y/2}, fontSize-4, 0, White, true);
-						shape.Draw(position.Subtract(0.0f, size.y*subPos), size, highlight, true);
-					}
-					// Prevents drawing under the window
-					if (position.y - size.y*(i+1) > 0){
-						font.Write(imgs[i].name, position.Subtract(-4.0f, size.y*subPos), fontSize/2, fontColor, true, size.x-fontSize);
-
-						// Hover
-						if (mouse.position.Within(position.Subtract(0.0f, size.y*subPos), size) && Main.Focus()){
-							shape.Draw(position.Subtract(0.0f, size.y*subPos), size, highlight, true);
-
-							// Preview Image
-							if (mouse.Click()){
-								if (imgs[i].path.substr(imgs[i].path.length()-4) != "webp")
-									previewImg.img.LoadImage(imgs[i].path);
-								else
-									previewImg.img = LoadWebp(imgs[i].path);
-								previewImg.path = imgs[i].path;
-								previewImg.GetImgSize();
-								previewImg.ScaleImg(Vector2{(float)Width/5, (float)Width/5});
-								previewImg.path = imgs[i].path;
-							}
-						}
-						subPos++;
-					}
-
-					listSize+= size.y;
+				// Selected file is tagged
+				if (previewImg.path == files[i].path){
+					shape.Draw(position - Vector2{0, (float)listSize}, size, highlightColor, POSITION_FIXED);
+					if (isSubTag)
+						shape.DrawCircle(position + Vector2{size.y/2, size.y/2}, size.y-size.y/8, BORDER_NONE, White, POSITION_FIXED);
 				}
-			}else{
-				// Image Tagged Indicator
-				for (int i = 0; i < imgs.size(); i++)
-					if (previewImg.img.loaded && previewImg.path == imgs[i].path.data())
-						shape.DrawCircle(position + Vector2{8, size.y/2}, fontSize-4, 0, White, true);
 					
 				
-			}
 
-			if (!Main.Focus())
-				return 0;
+				// Name
+				font.Write(files[i].name, position - Vector2{-PADDING, (float)listSize}, SMALL_FONT_SIZE, fontColor, POSITION_FIXED, size.x-PADDING);
 
-			if (mouse.position.Within(position, size)){
-				if (mouse.Click()){
-					if (!addButton.Hover() || sub > -1)
-						expand = !expand;
-					else{
-						editTag = tag;
-						editSub = -2;
-						Color HSV = color.ToHSV();
-						sHue.scroll = 360-HSV.r;
-						csPicker.x = HSV.g/100.0 * csSize.x;
-						csPicker.y = HSV.b/100.0 * csSize.y;
-						tagName.Reset();
-						TagWin.Show();
-					}
-					mouse.prevState = mouse.state;
-
-				}else if (mouse.Click(RM_DOWN)){
-					// Editing a tag
-					if (!previewImg.img.loaded){
-						editTag = tag;
-						editSub = sub;
-						tagName.Reset();
-						tagName.text = name;
-						Color HSV = color.ToHSV();
-						sHue.scroll = 360-HSV.r;
-						csPicker.x = HSV.g/100.0 * csSize.x;
-						csPicker.y = HSV.b/100.0 * csSize.y;
-						TagWin.Show();
+				// Mouse events
+				if (mouse.Within(position - Vector2{0, (float)listSize}, size) && CurrentWindow->focused){
+					shape.Draw(position - Vector2{0, (float)listSize}, size, highlightColor, POSITION_FIXED);
 					
-					// Editing tag images
-					}else if (previewImg.img.loaded){
-						bool exists = false;
-						for (int i = 0; i < imgs.size() && !exists; i++){
-							if (imgs[i].path == previewImg.path){
-								exists = true;
-								imgs.erase(imgs.begin() + i);
-
-								// Sub tag check
-								if (sub < 0){
-									printf("1\n");
-									CheckSubTags();
-								}
-								
-							}
-						}
-
-						// Appending a new image
-						if (!exists){
-							imgs.push_back(File{GetName(previewImg.path), previewImg.path});
-							sort(imgs.begin(), imgs.end(), SortFile);
-
-							// Append to main tag also
-							if (sub > -1)
-								return 2;
-						}
-					}
-
-				}else if (keyboard.newKey == KEY_DELETE){
-					keyboard.newKey = -1;
-					return 1;
+					// Set as preview image
+					if (mouse.Click())
+						previewImg.LoadPreview(files[i].path);
 				}
+				listSize += size.y;
 			}
-			return 0;
+			
+			return tagOption;
 		}
 
-		void CheckSubTags(){
-			for (int s = 0; s < subTags.size(); s++){
-				for (int i = 0; i < subTags[s].imgs.size(); i++){
-					if (subTags[s].imgs[i].path == previewImg.path){
-						subTags[s].imgs.erase(subTags[s].imgs.begin() + i);
+		void AddFile(string path){
+			files.push_back(File{GetName(path), path});
+			
+			if (fileTagMap.find(path) == fileTagMap.end())
+				fileTagMap.insert({path, true});
+			else
+				fileTagMap[path] = true;
+
+			sort(files.begin(), files.end(), SortFile);
+		}
+
+		bool DeleteFile(string path){
+			int index = FileExists(path);
+			if (index == -1) return false;
+
+			files.erase(files.begin() + index);
+
+			if (isSubTag)
+				return true;
+
+			for (auto& subTag : subTags){
+				for (int f = 0; f < subTag.files.size(); f++){
+					if (subTag.files[f].path == path){
+						subTag.files.erase(subTag.files.begin() + f);
 						break;
 					}
 				}
 			}
+
+			UpdateFileTagMap(path);
+
+			return true;
 		}
 
-		int GetSize(Vector2 size){
-			listSize = size.y;
-			if (expand){
-				// Subtags
-				for (int i = 0; i < subTags.size(); i++){
-					listSize += size.y;
-					if (subTags[i].expand)
-						listSize += size.y*subTags[i].imgs.size();
-				}
-				// Images
-				listSize+= size.y*imgs.size();
+		void EditTag(){
+			editTag = this;
+			deleteTag_Button.text = "Delete";
+			newTag_ColorSelector.SetColor(color);
+			newTagColor = color;
+			newTagName_Field.text = name;
+			TagWin.Show();
+		}
+
+		int GetListSize(int size){
+			if (!expanded){
+				listSize = size;
+				return listSize;
 			}
+
+			listSize = 0;
+			for (auto subTag : subTags)
+				listSize += (subTag.expanded ? subTag.files.size() : 0) + 1;
+			
+			listSize += files.size();
+			listSize *= size;
 			return listSize;
 		}
+
+		int FileExists(string path){
+			for (int i = 0; i < files.size(); i++)
+				if (files[i].path == path)
+					return i;
+
+			return -1;
+		}
 };
+
 vector<Tag> tags;
+
+void UpdateFileTagMap(string path){
+	for (auto tag : tags)
+		for (auto file : tag.files)
+			if (file.path == path)
+				return;
+	
+	fileTagMap[path] = false;
+}

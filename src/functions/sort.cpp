@@ -2,8 +2,6 @@
 	Functions for sorting vector lists
 */
 
-bool SortBoards(Board b1, Board b2){return SortString(b1.name, b2.name);}
-
 bool SortFile(File f1, File f2){
 	string s1 = f1.name;
 	string s2 = f2.name;
@@ -52,5 +50,4 @@ bool SortString(string s1, string s2){
 	return n1.length() < n2.length();
 }
 
-bool SortTag(Tag t1, Tag t2){return SortString(t1.name, t2.name);}
 bool SortUint(uint i1, uint i2){return i1 < i2;}

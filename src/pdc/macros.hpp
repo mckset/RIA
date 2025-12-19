@@ -1,7 +1,9 @@
+//
+// macro.hpp
+//
 /*
-	macro.hpp
-
-	Includes common variables and functions that are used throughout applications that aren't specific to the application itself
+	Includes common variables and functions that are used throughout the game engine
+	that are not specific to the engine itself. 
 */
 
 #include <string>
@@ -62,6 +64,8 @@ std::map<int, string> IntToHex{
 	{12, "C"}, {13, "D"}, {14, "E"}, {15, "F"},{10, "a"}, {11, "b"},
 	{12, "c"}, {13, "d"}, {14, "e"}, {15, "f"}
 };
+
+#define		INPUT_NULL			-1
 
 // Keys 
 #define 	KEY_SPACE   		32
@@ -197,6 +201,38 @@ std::map<int, string> IntToHex{
 #define		MFRONT_UP			40
 #define		MFRONT_DOWN			41
 
+// Verbose macros
+#define ALIGN_LEFT				0
+#define ALIGN_CENTER			1
+#define ALIGN_RIGHT				2
+#define TEXT_WRAP				1
+#define LINE_SPACING			1.5f
+#define TAB_SIZE				4
+
+#define VISIBLE 				1
+#define BORDER_NONE				0
+#define	UI_SELECTED				1
+#define	POSITION_FIXED			1
+#define	POSITION_RELATIVE		0
+#define FLIP_HORIZONTAL			1
+#define FLIP_VERTICAL			1
+#define	PDC_TEXT_MARGIN			4
+
+#define	BUTTON_TOGGLED			1
+
+#define	CHECKBOX_CIRCLE			1
+#define CHECKBOX_MARGIN			3
+
+#define SCROLLBAR_HORIZONTAL	1
+#define SCROLLBAR_VERTICAL		0
+
+#define FIELD_INTEGERS			1
+
+#define	COLOR_SELECTOR_VERTICAL					1
+#define COLOR_SELECTOR_PADDING					8
+#define	COLOR_SELECTOR_PICKER_DIAMETER			24
+#define	COLOR_SELECTOR_PICKER_BORDER_SIZE		4
+
 std::map<int, string> MouseTable{
 	{1, "LM"}, {11, "RM"}, {21, "MM"}, {31, "MBACK"}, {41, "MFRONT"}
 };
@@ -218,9 +254,11 @@ string Upper(string s){
 bool IsOdd(int i){return ((i/2)*2 != i);}
 
 int FindIn(string str, string find, int start = 0){
-	for (start; start < str.length(); start++){
-		if (Lower(str.substr(start, find.length())) == Lower(find))
-			return start;
+	for (int s = start; s < str.length(); s++){
+		if (Lower(str.substr(s, find.length())) == Lower(find)){
+			if (s < start) return -1;
+			return s;
+		}
 	}
 	return -1;
 }
@@ -229,7 +267,21 @@ bool IsNumber(char c){
 	return (c >= 48 && c <= 57);
 }
 
-bool operator==(string s1, string s2){return !strcmp(s1.data(), s2.data());}
+double StringToDouble(string s){
+	string buffer = "";
+	bool hasDecimal = false;
+	for (auto c : s)
+		if (IsNumber(c))
+			buffer += c;
+		else if (c == '.'){
+			if (hasDecimal) break;
+			buffer += '.';
+		}
+	return stod(buffer);
+}
+
+bool operator==(string s1, string s2){return strcmp(s1.data(), s2.data()) == 0;}
+bool operator!=(string s1, string s2){return strcmp(s1.data(), s2.data()) != 0;}
 
 float Center(float start, float end){return start+(end-start)/2;}
 

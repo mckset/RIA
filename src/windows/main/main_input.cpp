@@ -2,44 +2,51 @@
 // Responsible for handling mouse and keyboard events in the main window view
 //
 
+enum Selection_Type{
+	SELECT_NONE,
+	SELECT_NEW,
+	SELECT_OLD,
+	SELECT_DELETE
+};
+
 void MainInput(){
-	// Edits the title of a board
-	if (fCurrentBoard.active){
-		RightMenuInput();
-		if (fCurrentBoard.active)
-			return;
+	BoardInput();
+
+	LeftMenuInput();
+	if (showLeftMenu && mouse.position.x < sideMenuWidth+SCROLLBAR_SIZE) return;
+
+	RightMenuInput();
+	if (showRightMenu && mouse.position.x > fWidth-sideMenuWidth-SCROLLBAR_SIZE) return;
+
+	ImageInput();
+}
+
+
+void BoardInput(){
+	// Drag view around
+	if (mouse.Click(MM_DOWN))
+		mouse.dragOffset = mouse.position;
+
+	else if (mouse.state == MM_DOWN){
+		*View = View->Add((mouse.dragOffset.x - mouse.position.x) / *Scale, + (mouse.dragOffset.y - mouse.position.y) / *Scale);
+		mouse.dragOffset = mouse.position;
 	}
+
+	if (currentBoard_Field.active) return;
 
 	// Toggle origin
 	if (keyboard.newKey == KEY_SPACE)
-		drawOrigin = !drawOrigin;
-
-	// Refresh locations
-	if (keyboard.GetKey(KEY_R) && keyboard.ctrl){
-		for (int i = 0; i < locations.size(); i++){
-			locations[i].RefreshTable();
-		}
-	}
+		showOrigin = !showOrigin;
 
 	// View movement
 	if (keyboard.GetKey(KEY_W) || keyboard.GetKey(KEY_UP))
-		View->y += viewSpeed/(*Scale);
+		View->y += VIEW_SPEED/(*Scale);
 	if ((keyboard.GetKey(KEY_S) && !keyboard.ctrl) || keyboard.GetKey(KEY_DOWN))
-		View->y -= viewSpeed/(*Scale);
+		View->y -= VIEW_SPEED/(*Scale);
 	if ((keyboard.GetKey(KEY_A) && !keyboard.ctrl) || keyboard.GetKey(KEY_LEFT))
-		View->x -= viewSpeed/(*Scale);
+		View->x -= VIEW_SPEED/(*Scale);
 	if (keyboard.GetKey(KEY_D) || keyboard.GetKey(KEY_RIGHT))
-		View->x += viewSpeed/(*Scale);
-
-	// Select all
-	if (keyboard.newKey == KEY_A && keyboard.ctrl){
-		selImgs.clear();
-		for (uint i = 0; i < imgs.size(); i++){
-			selImgs.push_back(i);
-			imgs[i].selected = true;
-		}
-	}
-
+		View->x += VIEW_SPEED/(*Scale);
 
 	// Scaling
 	if (keyboard.newKey == KEY_KP_ADD || keyboard.newKey == KEY_EQUAL)
@@ -49,315 +56,296 @@ void MainInput(){
 
 	// Copy to clipboard
 	if (keyboard.newKey == KEY_C && keyboard.ctrl) Copy();
-		
+
 	// Pasting from clipboard
-		if (keyboard.GetKey(KEY_V) && keyboard.ctrl && !pasted)
+	if (keyboard.GetKey(KEY_V) && keyboard.ctrl && !pastedFile)
 		Paste();
-	else if (!(keyboard.GetKey(KEY_V) && keyboard.ctrl) && pasted)
-		pasted = false;
+	else if (!(keyboard.GetKey(KEY_V) && keyboard.ctrl) && pastedFile)
+		pastedFile = false;
+}
 
-	// Left menu input
-	LeftMenuInput();
-	if (lMenu && mouse.position.x < menuWidth+scrollbarSize) return;
-
-	// Right menu input
-	RightMenuInput();
-	if (rMenu && mouse.position.x > fWidth-menuWidth-scrollbarSize) return;
+void ImageInput(){
+	// Select all
+	if (keyboard.newKey == KEY_A && keyboard.ctrl){
+		selectedImgs.clear();
+		for (uint i = 0; i < imgs.size(); i++){
+			selectedImgs.push_back(i);
+			imgs[i].selected = true;
+		}
+	}
 
 	// Reset selected list
 	if (keyboard.newKey == KEY_ESCAPE){
-		previewImg.img.loaded = false;
-		for (auto img : selImgs)
-			imgs[img].angle = imgs[img].prevAngle;
-		rot = false;
+		previewImg.loaded = false;
+		if (rotateImages)
+			for (auto img : selectedImgs)
+				imgs[img].angle = imgs[img].prevAngle;
+		rotateImages = false;
 		ResetImages();
 		TagWin.Hide();
-		rmMenu.Reset();
-		importTime = 0;
+		mouseMenu.Reset();
+		statusTextTimer = 0;
 	}
-
-	//
-	// Image input events
-	//
 
 	//
 	// Deleting	
 	//
-	if (keyboard.newKey == KEY_DELETE && selImgs.size()){
-		sort(selImgs.begin(), selImgs.end(), SortUint);
+	if (keyboard.newKey == KEY_DELETE && selectedImgs.size()){
+		sort(selectedImgs.begin(), selectedImgs.end(), SortUint);
 		int off = 0;
-		for (int i = 0; i < selImgs.size(); i++){
-			imgs.erase(imgs.begin() + selImgs[i]-off);
-				off++;
+		for (int i = 0; i < selectedImgs.size(); i++){
+			imgs.erase(imgs.begin() + selectedImgs[i]-off);
+			off++;
 		}
 		ResetImages();
 	}
 
 	//
-	// Image flip
+	// Flip image
 	//
-	if (selImgs.size()){
+	if (selectedImgs.size()){
 		if (keyboard.newKey == KEY_H)
-			for (auto img : selImgs)
+			for (auto img : selectedImgs)
 				imgs[img].hFlip = !imgs[img].hFlip;
-		if (keyboard.newKey == KEY_V && !keyboard.ctrl)
-			for (auto img : selImgs)
+		else if (keyboard.newKey == KEY_V && !keyboard.ctrl)
+			for (auto img : selectedImgs)
 				imgs[img].vFlip = !imgs[img].vFlip;
 	}
 
 	//
-	// Image rotation
+	// Rotate image
 	//
-	if (rot){
+	if (rotateImages){
 		// Get center of selection
 		Vector2 avg = {0, 0};
-		for (int i = 0; i < selImgs.size(); i++)
-			avg += imgs[selImgs[i]].position + imgs[selImgs[i]].size/2;
+		for (int i = 0; i < selectedImgs.size(); i++)
+			avg += imgs[selectedImgs[i]].position + imgs[selectedImgs[i]].size/2;
 		
-		avg /= (int)selImgs.size();
+		avg /= (int)selectedImgs.size();
+
+		// 128 is a random number used to create a triangle to get the angle from the images to the mouse
 		float a = (mouse.ToScreenSpace().y >= avg.y ? 1 : -1) * (avg + Vector2{128, 0}).Angle(avg, mouse.ToScreenSpace());
+
+		// Snap rotate
 		if (keyboard.shift)
 			a = ((int)a/15)*15;
 
 		// Rotate
-		for (auto img : selImgs){
+		for (auto img : selectedImgs)
 			imgs[img].angle = a;
-		}
 	}
-	if (selImgs.size())
+
+	if (selectedImgs.size())
 		if (keyboard.newKey == KEY_R){
-			rot = true;
-			mouse.dragOff = mouse.position;
+			rotateImages = true;
+			mouse.dragOffset = mouse.position;
 		}
-		
-		
+
 	//
-	// Image board mouse events
+	// Left mouse events
 	//
 	if (mouse.Click()){
-		if (imgScale)
-			imgScale = false;
 
-		//
-		// Rotation, Scaling, Selecting, and such
-		//
+		if (scaleImages){
+			scaleImages = false;
+			return;
+		}
 
-		if (!previewImg.img.loaded){
-			mouse.drag = true;
-			mouse.dragOff = mouse.position;
+		if (rotateImages){
+			// Apply image rotations
+			for (auto i : selectedImgs)
+				imgs[i].prevAngle = imgs[i].angle;
 
-			// Selecting an image on the board
-			if (!selImgs.size()){
-				ResetImages();
+			rotateImages = false;
+			mouse.dragOffset = mouse.position;
+			return;
+		}
 
-				for (int i = imgs.size()-1; i >= 0; i--){
-					if (mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(*Scale))){
-							selImgs.push_back(i);
-							imgs[i].selected  = true;
-							ReorderImages();
-							break;
-					}
-				}
-
-				// Selector window
-				if (!selImgs.size()){
-					mouse.dragOff = mouse.position;
-					selector = true;
-				}
-
-			// Clicking on a selected image/no image
-			}else if (!keyboard.shift && !rot){
-				bool reset = true;
-				for (int i = imgs.size()-1; i >= 0; i--)
-					if (mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(*Scale))){
-						reset = false;
-						if (!imgs[i].selected){
-							ResetImages();
-							imgs[i].selected = true;
-							selImgs.push_back(i);
-							ReorderImages();
-						}
-						break;
-					}
-					
-				// No image was clicked
-				if (reset)
-					ResetImages();
-
-			// Selecting multiple images with shift held down
-			}else if (!rot){
-				for (int i = imgs.size()-1; i >= 0; i--)
-					if (mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(*Scale))){\
-					
-						// Check if the image was already selected
-						bool selected = false;
-						for (vector<uint>:: iterator img = selImgs.begin(); img != selImgs.end(); img++){
-
-							// Already selected
-							if (*img == i){
-								imgs[i].selected = false;
-								selected = true;
-								selImgs.erase(img);
-								break;
-							}
-						}
-
-						// Not selected
-						if (!selected){
-							imgs[i].selected = true;
-							selImgs.push_back(i);
-						}
-						break;
-					}
-				
-			// Ending the rotation command
-			}else{
-				rot = false;
-				for (auto img : selImgs)
-					imgs[img].prevAngle = imgs[img].angle;
-			}
-
-		//
-		// Placing a new image on the board
-		//
-		}else{
-			Object img;
-			img.size = Vector2{(float)previewImg.img.width, (float)previewImg.img.height};
-			img.position = mouse.ToScreenSpace() - img.size/2;
-			img.selected = true;
-			img.img = previewImg.img;
-			img.path = previewImg.path;
-			printf("%s\n", img.path.data());
+		// Add image to board
+		if (previewImg.loaded){
 			ResetImages();
-			imgs.push_back(img);
-			previewImg.img.loaded = false;
-			selImgs.push_back(imgs.size()-1);
-			mouse.dragOff = mouse.position;
-		}
-			
-	}else if (mouse.state == LM_DOWN && mouse.drag && !keyboard.shift & !rot){
-
-		// Moving images
-		if (!selector && selImgs.size()){
-			for (auto img : selImgs)
-				imgs[img].position = imgs[img].position.Add((mouse.position.x - mouse.dragOff.x) / *Scale, (mouse.position.y - mouse.dragOff.y) / *Scale);
-				
-			mouse.dragOff = mouse.position;
+			imgs.push_back(previewImg);
+			imgs.back().size = Vector2{(float)previewImg.img.width, (float)previewImg.img.height};
+			imgs.back().position = mouse.ToScreenSpace() - imgs.back().size/2;
+			imgs.back().selected = true;
+			previewImg.loaded = false;
+			selectedImgs.push_back(imgs.size()-1);
+			mouse.dragOffset = mouse.position;
+			return;
 		}
 
-	//
-	// RMB
-	//
-	}else if (mouse.Click(RM_DOWN)){
-			
-		// Prepare for scaling
-		if (!rot && !imgScale){
-			mouse.dragOff = Vector2{mouse.position.x, mouse.position.y};
-			mouse.drag = true;
-		}else if (imgScale)
-			imgScale = false;
-		else{
-			for (auto img : selImgs)
-				imgs[img].prevAngle = imgs[img].angle;
-			rot = false;
-			mouse.dragOff = mouse.position;
-			mouse.state = -1;
+		// Select images
+		mouse.drag = true;
+		mouse.dragOffset = mouse.position;
+
+		int selectionType = SelectImage();
+
+		// Selecting an image
+		if (selectionType == SELECT_NEW || selectionType == SELECT_OLD)
+			ReorderImages();
+		
+		// Selector window activate
+		else if (selectionType == SELECT_NONE){
+			if (!keyboard.shift) ResetImages();
+			mouse.dragOffset = mouse.position;
+			showImageSelector = true;
+		}
+		
+		return;
+
+	}else if (mouse.state == LM_DOWN && mouse.drag && !keyboard.shift && !rotateImages){
+
+		// Move images
+		if (!showImageSelector && selectedImgs.size()){
+			for (auto img : selectedImgs)
+				imgs[img].position = imgs[img].position + Vector2{(mouse.position.x - mouse.dragOffset.x) / *Scale, (mouse.position.y - mouse.dragOffset.y) / *Scale};
+		
+			mouse.dragOffset = mouse.position;
 		}
 
-	}else if (mouse.state == RM_DOWN && selImgs.size() && abs(mouse.position.x - mouse.dragOff.x) > 16)
-		imgScale = true;
+	// Image selector
+	}else if (mouse.state == LM_UP && showImageSelector){
+		showImageSelector = false;
+		if (!keyboard.shift) ResetImages();
 
-	if (imgScale){
-		// Get corner of the group of images
-		Vector2 min = imgs[selImgs[0]].position;
-		for (auto img : selImgs){
-			if (imgs[img].position.x < min.x)
-				min.x = imgs[img].position.x;
-			if (imgs[img].position.y < min.y)
-				min.y = imgs[img].position.y;
-		}
-		for (auto img : selImgs){
-			if (!keyboard.shift){
-				imgs[img].size.x += (mouse.position.x-mouse.dragOff.x) / *Scale;
-				imgs[img].size.y += (mouse.position.y-mouse.dragOff.y) / *Scale;
-			}else{
-				imgs[img].size.x += (mouse.position.x-mouse.dragOff.x) / *Scale;
-				imgs[img].size.y = imgs[img].img.height * imgs[img].size.x/imgs[img].img.width;
-			}
-			if (imgs[img].size.x <= minSize)
-				imgs[img].size.x = minSize+1;
-			if (imgs[img].size.y <= minSize)
-				imgs[img].size.y = minSize+1;
-		}
-		mouse.dragOff = mouse.position;
-
-	//
-	// Middle Mouse
-	//
-	}else if (mouse.Click(MM_DOWN)){
-		mouse.dragOff = mouse.position;
-	}else if (mouse.state == MM_DOWN){
-		*View = View->Add((mouse.dragOff.x - mouse.position.x) / *Scale, + (mouse.dragOff.y - mouse.position.y) / *Scale);
-		mouse.dragOff = mouse.position;
-	}
-
-	// 
-	// LMB Release
-	//
-	if (mouse.state == LM_UP && selector){
-		selector = false;
-		if (!keyboard.shift)
-			ResetImages();
-
-		for (int i = 0; i < imgs.size(); i++)
-			if (imgs[i].WithinWindow(mouse.position, mouse.dragOff)){
-				selImgs.push_back(i);
+		for (int i = 0; i < imgs.size(); i++){
+			if (imgs[i].WithinWindow(mouse.position, mouse.dragOffset) && !imgs[i].selected){
+				selectedImgs.push_back(i);
 				imgs[i].selected = true;
 			}
-	}
+		}
 
 	//
-	// RM Menu
+	// Right mouse events
 	//
-	if (mouse.state == RM_UP && mouse.prevState == RM_DOWN && !imgScale){
-		// Check that the mouse is not in the left menu and a preview image is not loaded
-		if ((!lMenu || mouse.position.x > menuWidth) && !previewImg.img.loaded){
-			rmMenu.Reset();
-			drawMouseMenu = !drawMouseMenu;
-			rmMenu.position = mouse.position;
-			mouse.state = -1;
 
-			// Selected the clicked image if no images are selected
-			if (!selImgs.size()){
-				for (int i = imgs.size()-1; i >= 0; i--){
-					if (mouse.position.Within(ScreenSpace(imgs[i].position), imgs[i].size.Multiply(*Scale))){
-							selImgs.push_back(i);
-							imgs[i].selected  = true;
-							break;
-					}
-				}
+	}else if (mouse.Click(RM_DOWN)){
+
+		// Prepare to scale images
+		if (!rotateImages && !scaleImages){
+			mouse.dragOffset = mouse.position;
+			mouse.drag = true;
+			return;
+		
+		// Scaled by mouse menu
+		}else if (scaleImages){
+			scaleImages = false;
+			return;
+		}
+
+		// Apply image rotations
+		for (auto i : selectedImgs)
+			imgs[i].prevAngle = imgs[i].angle;
+
+		rotateImages = false;
+		mouse.dragOffset = mouse.position;
+		return;
+	
+	}else if (mouse.state == RM_DOWN && selectedImgs.size() && abs(mouse.position.x - mouse.dragOffset.x) > SCALE_THRESHOLD){
+		scaleImages = true;
+
+	}else if (mouse.state == RM_UP && mouse.prevState == RM_DOWN && !scaleImages){
+		mouseMenu.Reset();
+		mouseMenu.position = mouse.position;
+		showMouseMenu = true;
+
+		// Select the image if it is not selected
+		for (int i = imgs.size()-1; i  > -1; i--){
+			if (mouse.Within(ScreenSpace(imgs[i].position), imgs[i].size*(*Scale))){
+				if (imgs[i].selected) break;
+				if (!keyboard.shift) ResetImages();
+				selectedImgs.push_back(i);
+				imgs[i].selected = true;
+				break;
 			}
 		}
-	}else if (mouse.state == RM_UP && !mouse.drag){
-		imgScale = false;
-		mouse.state = -1;
+		return;
+
+	}else if (mouse.state == RM_UP && !mouse.drag)
+		scaleImages = false;
+
+	if (scaleImages){
+		for (auto i : selectedImgs){
+			if (!keyboard.shift){
+				imgs[i].size.x += (mouse.position.x-mouse.dragOffset.x) / *Scale;
+				imgs[i].size.y += (mouse.position.y-mouse.dragOffset.y) / *Scale;
+			}else{
+				imgs[i].size.x += (mouse.position.x-mouse.dragOffset.x) / *Scale;
+				imgs[i].size.y = imgs[i].img.height * imgs[i].size.x/imgs[i].img.width;
+			}
+			if (imgs[i].size.x <= MIN_IMAGE_SIZE)
+				imgs[i].size.x = MIN_IMAGE_SIZE+1;
+			if (imgs[i].size.y <= MIN_IMAGE_SIZE)
+				imgs[i].size.y = MIN_IMAGE_SIZE+1;
+		}
+		mouse.dragOffset = mouse.position;
 	}
+}
+
+int SelectImage(){
+	for (int i = imgs.size()-1; i > -1; i--){
+		if (mouse.Within(ScreenSpace(imgs[i].position), imgs[i].size*(*Scale))){
+
+			// Selecting multiple images
+			if (keyboard.shift){
+
+				// Deselect already selected image
+				if (imgs[i].selected){
+					imgs[i].selected = false;
+					for (int s = 0; s < selectedImgs.size(); s++)
+						if (selectedImgs[s] == i){
+							selectedImgs.erase(selectedImgs.begin()+s);
+							break;
+						}
+					return SELECT_DELETE;
+				}
+
+				// Adding a new image 
+				selectedImgs.push_back(i);
+				imgs[i].selected = true;
+				return SELECT_NEW;
+			}
+
+			// Check if image was already selected
+			if (selectedImgs.size()){
+				if (imgs[i].selected)
+					return SELECT_OLD;
+
+				ResetImages();
+				selectedImgs.push_back(i);
+				imgs[i].selected = true;
+				return SELECT_NEW;
+			}
+
+			// Selecting a single image
+			selectedImgs.push_back(i);
+			imgs[i].selected = true;
+			return SELECT_NEW;
+		}
+	}
+
+	return SELECT_NONE;
 }
 
 // Clears selection
 void ResetImages(){
-	selImgs.clear();
+	selectedImgs.clear();
 	for (int i = 0; i < imgs.size(); i++)
 		imgs[i].selected = false;
 }
 
 // Moves newest selection to the top of the image order
 void ReorderImages(){
-	int i = selImgs[selImgs.size()-1];
-	Object temp = imgs[i];
+	int i = selectedImgs[selectedImgs.size()-1];
+	ImageContainer temp = imgs[i];
 
 	imgs.erase(imgs.begin() + i);
 
 	imgs.push_back(temp);
-	selImgs[selImgs.size()-1] = imgs.size()-1;
+
+	for (int s = 0; s < selectedImgs.size(); s++)
+		if (selectedImgs[s] > i)
+			selectedImgs[s]--;
+
+	selectedImgs[selectedImgs.size()-1] = imgs.size()-1;
 }
