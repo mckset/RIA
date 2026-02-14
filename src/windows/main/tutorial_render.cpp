@@ -18,10 +18,9 @@ float oldScale = 0;
 Vector2 oldView;
 
 
-void OpenTutorial(){
+void MainWindow::OpenTutorial(){
 	showTutorial = true;
-	Main.Render = &DrawTutorial;
-	Main.Input = &TutorialInput;
+	display = MAIN_TUTORIAL;
 	oldScale = *Scale;
 	oldView = *View;
 	*Scale = 1;
@@ -34,8 +33,24 @@ void OpenTutorial(){
 	Import.Hide();
 }
 
+Location tutorialLocation{
+	"Folder",
+	"",
+	true,
+	true
+};
 
-void DrawEmpty(){
+Tag tutorialTag{
+	"Tag",
+	Red
+};
+
+Board tutorialBoard{
+	"Default",
+	"",
+};
+
+void MainWindow::DrawEmpty(){
 	//
 	// Draw grid
 	//
@@ -80,25 +95,7 @@ void DrawEmpty(){
 	}
 
 	// Preview image
-	if (previewImg.loaded){
-		shape.Draw({fWidth-(PREVIEW_IMAGE_SIZE+PADDING*4) - (showRightMenu ? sideMenuWidth+SCROLLBAR_SIZE : 0), 0}, {PREVIEW_IMAGE_SIZE+PADDING*4, PREVIEW_IMAGE_SIZE+PADDING*2+FONT_SIZE*3}, menuBackgroundColor, POSITION_FIXED);
-
-		// Draw image centered 
-		previewImg.Draw({fWidth - (PREVIEW_IMAGE_SIZE+PADDING*2) + (PREVIEW_IMAGE_SIZE-previewImg.size.x)/2 - (showRightMenu ? sideMenuWidth+SCROLLBAR_SIZE : 0), (PREVIEW_IMAGE_SIZE-previewImg.size.y)/2 + PADDING},
-			previewImg.size, White, POSITION_FIXED);
-
-		font.Write("Preview", 
-			{fWidth-(PREVIEW_IMAGE_SIZE+PADDING*3) - (showRightMenu ? sideMenuWidth+SCROLLBAR_SIZE : 0), PREVIEW_IMAGE_SIZE+PADDING*2}, 
-			FONT_SIZE, White, POSITION_FIXED, PREVIEW_IMAGE_SIZE+PADDING*2, ALIGN_CENTER);
-		
-		// Mouse 
-		if (mouse.position.x > sideMenuWidth || !showLeftMenu){
-			shape.Draw(
-				mouse.position - (Vector2{(float)previewImg.img.width, (float)previewImg.img.height} * (*Scale)/2), 
-				Vector2{(float)previewImg.img.width, (float)previewImg.img.height} * (*Scale), 
-				menuBackgroundColor, POSITION_FIXED);
-		}
-	}else if (tutorialStage == TAGS && tutorialPage == 1)
+	if (tutorialStage == TAGS && tutorialPage == 2)
 		shape.Draw({fWidth-(PREVIEW_IMAGE_SIZE+PADDING*4) - (showRightMenu ? sideMenuWidth+SCROLLBAR_SIZE : 0), 0}, {PREVIEW_IMAGE_SIZE+PADDING*4, PREVIEW_IMAGE_SIZE+PADDING*2+FONT_SIZE*3}, menuBackgroundColor, POSITION_FIXED);
 	
 
@@ -106,12 +103,32 @@ void DrawEmpty(){
 	if (showLeftMenu){
 		shape.Draw({0}, {sideMenuWidth, fHeight}, menuBackgroundColor, POSITION_FIXED);
 
-		if (showTags)
-			DrawTags();
-		else
-			DrawLocations();
+		if (showTags){
+			float y = Height - FONT_SIZE*2;
 
-		if (!((tutorialStage == LOCATIONS || tutorialStage == TAGS) && tutorialPage == 0)){
+			shape.Draw({0, y}, {sideMenuWidth, FONT_SIZE*2}, menuBackgroundColor, POSITION_FIXED);
+			font.Write("Tags", {FONT_SIZE*2, y}, FONT_SIZE, fontColor, POSITION_FIXED, sideMenuWidth-SCROLLBAR_SIZE-FONT_SIZE*3, ALIGN_CENTER);
+			add_Button.Draw({sideMenuWidth-FONT_SIZE*2, y}, {FONT_SIZE*2, FONT_SIZE*2}, ALIGN_CENTER);
+
+			y -= FONT_SIZE;
+
+			tutorialTag.Draw({0, y}, {sideMenuWidth - SCROLLBAR_SIZE, FONT_SIZE});
+		
+		}else{
+			float y = Height - FONT_SIZE*2;
+
+			shape.Draw({0, y}, {sideMenuWidth, FONT_SIZE*2}, menuBackgroundColor, POSITION_FIXED);
+			font.Write("Folders", {FONT_SIZE*2, y}, FONT_SIZE, fontColor, POSITION_FIXED, sideMenuWidth-SCROLLBAR_SIZE-FONT_SIZE*3, ALIGN_CENTER);
+			add_Button.Draw({sideMenuWidth-FONT_SIZE*2, y}, {FONT_SIZE*2, FONT_SIZE*2}, ALIGN_CENTER);
+			refreshLocations_Button.Draw({0, y}, {sideMenuWidth-SCROLLBAR_SIZE-FONT_SIZE, FONT_SIZE*2}, ALIGN_CENTER);
+
+			y -= FONT_SIZE;
+
+			tutorialLocation.Draw({0, y}, {sideMenuWidth - SCROLLBAR_SIZE, FONT_SIZE});
+
+		}
+
+		if (!((tutorialStage == LOCATIONS || tutorialStage == TAGS) && tutorialPage <= 1)){
 			if (showTags){
 				openLocations_Button.Draw({sideMenuWidth-FONT_SIZE+SCROLLBAR_SIZE, fHeight-FONT_SIZE-BOARD_BUTTON_PADDING}, {BOARD_BUTTON_SIZE, FONT_SIZE*1});
 			}else{
@@ -130,7 +147,17 @@ void DrawEmpty(){
 	// Right Menu
 	if (showRightMenu){
 		shape.Draw({fWidth, 0}, {-sideMenuWidth-SCROLLBAR_SIZE, fHeight}, menuBackgroundColor, POSITION_FIXED);
-		DrawBoards();
+
+		float y = fHeight;
+		shape.Draw({fWidth, y}, {-(sideMenuWidth+SCROLLBAR_SIZE), -FONT_SIZE*2}, menuBackgroundColor, POSITION_FIXED);
+		font.Write("Boards", {fWidth-sideMenuWidth+FONT_SIZE*2, y-FONT_SIZE*2}, FONT_SIZE, fontColor, POSITION_FIXED, sideMenuWidth-FONT_SIZE*4, ALIGN_CENTER);
+		addBoard_Button.Draw({fWidth-FONT_SIZE*2, y-FONT_SIZE*2}, {FONT_SIZE*2, FONT_SIZE*2}, ALIGN_CENTER);
+
+		y -= FONT_SIZE;
+
+		// Scroll bar end position
+		y -=  sideMenuWidth+FONT_SIZE*3+BOARD_PADDING;
+		tutorialBoard.Draw({fWidth-sideMenuWidth, y}, {sideMenuWidth, sideMenuWidth+boardNamePlate});
 
 		if (!(tutorialStage == BOARDS && tutorialPage < 2)){
 			imagePack_Button.Draw({fWidth - BOARD_BUTTON_SIZE-BOARD_BUTTON_PADDING-sideMenuWidth-SCROLLBAR_SIZE, fHeight - FONT_SIZE-BOARD_BUTTON_PADDING}, {BOARD_BUTTON_SIZE, FONT_SIZE});
@@ -149,7 +176,7 @@ void DrawEmpty(){
 	board_Scrollbar.scroll = 0;
 }
 
-void DrawStage(){
+void MainWindow::DrawStage(){
 	if (tutorialStage == 0){
 
 		// First message
@@ -181,7 +208,7 @@ void DrawStage(){
 			font.Write("Scrolling or pressing +/- will zoom in and out", {0,fHeight-FONT_SIZE*5-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED, Width, ALIGN_CENTER);
 
 			shape.DrawBox({8, fHeight-FONT_SIZE*2-8}, {BOARD_BUTTON_SIZE, FONT_SIZE}, White, 2);
-			font.Write("Click to open the locations menu", Vector2{24, fHeight-FONT_SIZE*2-8}+Vector2{BOARD_BUTTON_SIZE, FONT_SIZE/2}, SMALL_FONT_SIZE, White, POSITION_FIXED);
+			font.Write("Click to open the folders menu", Vector2{24, fHeight-FONT_SIZE*2-8}+Vector2{BOARD_BUTTON_SIZE, FONT_SIZE/2}, SMALL_FONT_SIZE, White, POSITION_FIXED);
 			font.Write("Or press TAB", Vector2{24, fHeight-FONT_SIZE*2-8}+Vector2{BOARD_BUTTON_SIZE, -FONT_SIZE/2}, SMALL_FONT_SIZE, White, POSITION_FIXED);
 		}
 
@@ -190,21 +217,24 @@ void DrawStage(){
 
 		if (tutorialPage == 0){
 			shape.DrawBox({0, 0}, {sideMenuWidth-SCROLLBAR_SIZE, fHeight-FONT_SIZE*2}, White, 4);
-			shape.DrawBox({sideMenuWidth-FONT_SIZE*2-SCROLLBAR_SIZE-4, fHeight-FONT_SIZE*2}, {FONT_SIZE*2+4, FONT_SIZE*2-4}, White, 4);
-			font.Write("Click to add a new location", {sideMenuWidth+8, fHeight-FONT_SIZE*1.5f}, SMALL_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("All saved folders are displayed here.", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*6}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("Clicking on a folder will display all it's", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*7-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("contents including images and subfolders.", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*8-16}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-
-			font.Write("Files that have been tagged will", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*11+8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("have a white box to the left of", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*12}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("their name.", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*13-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-
-			font.Write("Pressing delete while hovering over", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*16+8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("the main folder will delete it from", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*17}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("the list.", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*18-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
+			shape.DrawBox({sideMenuWidth-FONT_SIZE*2-4, fHeight-FONT_SIZE*2}, {FONT_SIZE*2, FONT_SIZE*2-4}, White, 4);
+			font.Write("Click to add a new folder", {sideMenuWidth+8, fHeight-FONT_SIZE*1.5f}, SMALL_FONT_SIZE, White, POSITION_FIXED, sideMenuWidth*1.5f, ALIGN_LEFT, TEXT_WRAP);
+			
+			font.Write(
+				"All saved folders are displayed here. Clicking on a folder will display all it's contents including images and subfolders.\n\n"
+				"Files that have been tagged will have a white box to the left of their name."
+				, Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*6}, MEDIUM_FONT_SIZE, White, POSITION_FIXED, sideMenuWidth*1.5f, ALIGN_LEFT, TEXT_WRAP);
 
 		}else if (tutorialPage == 1){
+			shape.DrawBox({0, fHeight-FONT_SIZE*2}, {sideMenuWidth-FONT_SIZE*2-4, FONT_SIZE*2-4}, White, 4);
+			shape.DrawBox({sideMenuWidth-FONT_SIZE*2-12, fHeight-FONT_SIZE*3-4}, {FONT_SIZE+4, FONT_SIZE+4}, White, 4);
+
+			font.Write("Click the header to refresh the folders", {sideMenuWidth+8, fHeight-FONT_SIZE*1.5f}, SMALL_FONT_SIZE, White, POSITION_FIXED, sideMenuWidth*1.5f, ALIGN_LEFT, TEXT_WRAP);
+
+			font.Write("Pressing the \"x\" button or delete key while hovering over the main folder will delete it from the list.", 
+				Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*6+8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED, sideMenuWidth*1.5f, ALIGN_LEFT, TEXT_WRAP);
+
+		}else if (tutorialPage == 2){
 			shape.DrawBox({8+sideMenuWidth, fHeight-FONT_SIZE-8}, {BOARD_BUTTON_SIZE, FONT_SIZE}, White, 2);
 			font.Write("Click to open the tag menu", Vector2{24+sideMenuWidth, fHeight-FONT_SIZE-12}+Vector2{BOARD_BUTTON_SIZE, FONT_SIZE/2}, SMALL_FONT_SIZE, White, POSITION_FIXED);
 			font.Write("Or press ~", Vector2{24+sideMenuWidth, fHeight-FONT_SIZE-12}+Vector2{BOARD_BUTTON_SIZE, -FONT_SIZE/2}, SMALL_FONT_SIZE, White, POSITION_FIXED);
@@ -214,48 +244,39 @@ void DrawStage(){
 	}else if (tutorialStage == TAGS){
 		if (tutorialPage == 0){
 			shape.DrawBox({0, 0}, {sideMenuWidth-SCROLLBAR_SIZE, fHeight-FONT_SIZE*2}, White, 4);
-			shape.DrawBox({sideMenuWidth-FONT_SIZE*2-SCROLLBAR_SIZE-4, fHeight-FONT_SIZE*2}, {FONT_SIZE*2+4, FONT_SIZE*2-4}, White, 4);
+			shape.DrawBox({sideMenuWidth-FONT_SIZE*2-4, fHeight-FONT_SIZE*2}, {FONT_SIZE*2+4, FONT_SIZE*2-4}, White, 4);
 			font.Write("Click to add a new tag", {sideMenuWidth+8, fHeight-FONT_SIZE*1.5f}, SMALL_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("All saved tags are displayed here.", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*6}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("Clicking on a tag will display its", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*7-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("images and sub tags. Tags can only", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*8-16}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("handle one level of sub tags.", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*9-24}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
 
-			font.Write("While viewing a tag, 2 buttons", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*12}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("will appear. The edit button", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*13-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("on the right of the tag and the", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*14-16}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("\"+\" or add button on the left.", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*15-24}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
+			font.Write(
+				"All saved tags are displayed here. Clicking on a tag will display its images and sub tags. Tags can only handle one level of sub tags.",				
+				Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*6}, MEDIUM_FONT_SIZE, White, POSITION_FIXED, sideMenuWidth*1.5f, ALIGN_LEFT, TEXT_WRAP);
 
-			font.Write("Pressing the edit button or right", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*18}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("clicking the tag will allow you to", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*19-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("edit the tags name and color.", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*20-16}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			
-			font.Write("Pressing the \"+\" button will", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*23}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("add a new sub tag.", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*24-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
+			}else if (tutorialPage == 1){
 
-			font.Write("Pressing delete while hovering", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*27}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("over a tag or sub tag will ", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*28-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("delete it from the list.", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*29-16}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
+				tutorialTag.expanded = true;
+				shape.DrawBox({0, fHeight-FONT_SIZE*3}, {FONT_SIZE-4, FONT_SIZE-4}, White, 4);
+				shape.DrawBox({sideMenuWidth-SCROLLBAR_SIZE-FONT_SIZE*2, fHeight-FONT_SIZE*3}, {FONT_SIZE*2-4, FONT_SIZE-4}, White, 4);
+				font.Write(
+					"While viewing a tag, 2 buttons will appear. The edit button on the right of the tag and the \"+\" or add button on the left.\n\n"
+					"Pressing the edit button or right clicking the tag will allow you to edit the tags name and color or delete it.\n\n"
+					"You can also press the delete key while hovering over a tag to delete it.\n\n"
+					"Pressing the \"+\" button will add a new sub tag.",				
+					Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*6}, MEDIUM_FONT_SIZE, White, POSITION_FIXED, sideMenuWidth*1.5f, ALIGN_LEFT, TEXT_WRAP);
 		
-		}else if (tutorialPage == 1){
-
+		}else if (tutorialPage == 2){
 			font.Write("Clicking on an image from a tag", {fWidth-(PREVIEW_IMAGE_SIZE+PADDING*4)-FONT_SIZE*5, PREVIEW_IMAGE_SIZE+FONT_SIZE*4 + FONT_SIZE*6+16}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
 			font.Write("or location will load it into",  {fWidth-(PREVIEW_IMAGE_SIZE+PADDING*4)-FONT_SIZE*5, PREVIEW_IMAGE_SIZE+FONT_SIZE*4 + FONT_SIZE*5+8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
 			font.Write("this preview window. Clicking",  {fWidth-(PREVIEW_IMAGE_SIZE+PADDING*4)-FONT_SIZE*5, PREVIEW_IMAGE_SIZE+FONT_SIZE*4 + FONT_SIZE*4}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
 			font.Write("on the board will place the",  {fWidth-(PREVIEW_IMAGE_SIZE+PADDING*4)-FONT_SIZE*5, PREVIEW_IMAGE_SIZE+FONT_SIZE*4 + FONT_SIZE*3-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
 			font.Write("image at the mouse position.",  {fWidth-(PREVIEW_IMAGE_SIZE+PADDING*4)-FONT_SIZE*5, PREVIEW_IMAGE_SIZE+FONT_SIZE*4 + FONT_SIZE*2-16}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
 
-			font.Write("While an image is in the preview", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*5+8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("window, right clicking a tag or sub", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*6}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("tag will add or remove the image", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*7-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("from the tag depending on if it", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*8-16}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("already has the tag.", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*9-24}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
+			font.Write(
+				"While an image is in the preview window, right clicking a tag or sub tag will add or remove the image from the tag depending on it already being tag or not.\n\n"
+				"You can also edit an images tag in a similar way with the right mouse menu.\n\n"
+				"If an image has a tag, a white circle will appear to the left of the tags the image has.\n\n",
+				Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*6}, MEDIUM_FONT_SIZE, White, POSITION_FIXED, sideMenuWidth*1.5f, ALIGN_LEFT, TEXT_WRAP);
 
-			font.Write("If an image has a tag, a white", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*12}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("circle will appear to the left of", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*13-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("the tags the image has.", Vector2{sideMenuWidth+8.0f, fHeight-FONT_SIZE*14-16}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-
-			shape.DrawBox({fWidth - FONT_SIZE*6-12, fHeight - FONT_SIZE*2-8}, {FONT_SIZE*6, FONT_SIZE}, White, 2);
+			shape.DrawBox({fWidth - FONT_SIZE*6-12, fHeight - FONT_SIZE*2-8}, {FONT_SIZE*6+4, FONT_SIZE}, White, 2);
 			font.Write("Click to open the boards menu", {fWidth - FONT_SIZE*22, fHeight - FONT_SIZE*2-8}, SMALL_FONT_SIZE, White, POSITION_FIXED);
 			font.Write("or press escape", {fWidth - FONT_SIZE*22, fHeight - FONT_SIZE*3-8}, SMALL_FONT_SIZE, White, POSITION_FIXED);		
 		}
@@ -263,48 +284,46 @@ void DrawStage(){
 	// Boards
 	}else if (tutorialStage == BOARDS){
 		if (tutorialPage == 0){
-			shape.DrawBox({fWidth - sideMenuWidth, 0}, {sideMenuWidth, fHeight-FONT_SIZE*3}, White, 4);
-			shape.DrawBox({fWidth - sideMenuWidth, fHeight-FONT_SIZE*3}, {sideMenuWidth,FONT_SIZE}, White, 4);
-			font.Write("Shows the name of the current image board.", {fWidth - FONT_SIZE*23 - sideMenuWidth, fHeight - FONT_SIZE*3}, SMALL_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("Clicking it will let you edit the name.", {fWidth - FONT_SIZE*23 - sideMenuWidth, fHeight - FONT_SIZE*4}, SMALL_FONT_SIZE, White, POSITION_FIXED);
+			shape.DrawBox({fWidth - sideMenuWidth, 0}, {sideMenuWidth-4, fHeight-FONT_SIZE*2-4}, White, 4);
+			shape.DrawBox({fWidth - FONT_SIZE*2, fHeight-FONT_SIZE*2}, {FONT_SIZE*2-4,FONT_SIZE*2-4}, White, 4);
 
-			font.Write("All saved image boards are", {fWidth - FONT_SIZE*24 - sideMenuWidth, fHeight/2 + FONT_SIZE*2-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("displayed here. Pressing ", {fWidth - FONT_SIZE*24 - sideMenuWidth, fHeight/2 + FONT_SIZE-16}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);	
-			font.Write("delete while hovering over", {fWidth - FONT_SIZE*24 - sideMenuWidth, fHeight/2 -24}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("an image board will delete it.", {fWidth - FONT_SIZE*24 - sideMenuWidth, fHeight/2 - FONT_SIZE-32}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);	
+			font.Write("Pressing the \"+\" button will let you add or copy an image board.", 
+				{fWidth - FONT_SIZE*23 - sideMenuWidth, fHeight - FONT_SIZE*3}, SMALL_FONT_SIZE, White, POSITION_FIXED, sideMenuWidth*1.0f, ALIGN_LEFT, TEXT_WRAP);
 
-			font.Write("You can also delete an image", {fWidth - FONT_SIZE*24 - sideMenuWidth, fHeight/2 - FONT_SIZE*4-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("board from the boards folder.", {fWidth - FONT_SIZE*24 - sideMenuWidth, fHeight/2 - BOARD_BUTTON_SIZE-16}, MEDIUM_FONT_SIZE, White, POSITION_FIXED);	
+			font.Write("All saved image boards are displayed here. Clicking on one will load it.", 
+				{fWidth - FONT_SIZE*24 - sideMenuWidth, fHeight/2 + FONT_SIZE*2-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED, sideMenuWidth*1.0f, ALIGN_RIGHT, TEXT_WRAP);
 		}else if (tutorialPage == 1){
-			shape.DrawBox({fWidth - sideMenuWidth, fHeight-FONT_SIZE*3}, {sideMenuWidth,FONT_SIZE}, White, 4);
-			font.Write("When adding a new board, the", {fWidth - FONT_SIZE*21 - sideMenuWidth, fHeight - FONT_SIZE*3}, SMALL_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("text will clear for you to type", {fWidth - FONT_SIZE*21 - sideMenuWidth, fHeight - FONT_SIZE*4}, SMALL_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("the name of your new board.", {fWidth - FONT_SIZE*21 - sideMenuWidth, fHeight - BOARD_BUTTON_SIZE}, SMALL_FONT_SIZE, White, POSITION_FIXED);
+			shape.DrawBox({fWidth - FONT_SIZE*2-BOARD_PADDING, fHeight-FONT_SIZE*4-BOARD_PADDING*2}, {FONT_SIZE*2-4,FONT_SIZE*2-4}, White, 4);
+			shape.DrawBox({fWidth - sideMenuWidth, fHeight-FONT_SIZE*2-sideMenuWidth-boardNamePlate-BOARD_PADDING}, {sideMenuWidth-4,FONT_SIZE*2-4}, White, 4);
 
-			font.Write("Pressing enter will create the", {fWidth - FONT_SIZE*21 - sideMenuWidth, fHeight - FONT_SIZE*8}, SMALL_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("board and save all the images", {fWidth - FONT_SIZE*21 - sideMenuWidth, fHeight - FONT_SIZE*9}, SMALL_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("in the view to the new board.", {fWidth - FONT_SIZE*21 - sideMenuWidth, fHeight - FONT_SIZE*10}, SMALL_FONT_SIZE, White, POSITION_FIXED);
-
-			font.Write("Pressing escape will cancel it.", {fWidth - FONT_SIZE*21 - sideMenuWidth, fHeight - FONT_SIZE*11}, SMALL_FONT_SIZE, White, POSITION_FIXED);
+			font.Write(
+				"Pressing the \"x\" button or the delete key while hovering over a board will delete it. This action is permanent.\n\n"
+				"The name of a board is displayed under it's screenshot. A lighter background means that the board is the one currently in use. "
+				"Clicking on the name will let you rename a board.", 
+				{fWidth - FONT_SIZE*21 - sideMenuWidth, fHeight - FONT_SIZE*3}, MEDIUM_FONT_SIZE, White, POSITION_FIXED, sideMenuWidth*1.0f, ALIGN_RIGHT, TEXT_WRAP);
 		}
 	
 	// Image packs
 	}else if (tutorialStage == IMAGE_PACKS){
 		if (tutorialPage == 0){
-			shape.DrawBox({fWidth - FONT_SIZE*6-12, fHeight - FONT_SIZE-8}, {FONT_SIZE*6, FONT_SIZE}, White, 2);
-			shape.DrawBox({fWidth - FONT_SIZE*6-12, fHeight - FONT_SIZE*3-8}, {FONT_SIZE*6, FONT_SIZE}, White, 2);
+			shape.DrawBox({fWidth - FONT_SIZE*6-10, fHeight - FONT_SIZE-8}, {FONT_SIZE*6, FONT_SIZE}, White, 2);
+			shape.DrawBox({fWidth - FONT_SIZE*6-10, fHeight - FONT_SIZE*3-8}, {FONT_SIZE*6, FONT_SIZE}, White, 2);
 
 			font.Write("Click to open the image pack window", {fWidth - FONT_SIZE*26, fHeight - FONT_SIZE-8}, SMALL_FONT_SIZE, White, POSITION_FIXED);
 
 			font.Write("RIA does not save information or", {fWidth - FONT_SIZE*26, fHeight - FONT_SIZE*3-8}, SMALL_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("boards when closed. All changes", {fWidth - FONT_SIZE*26, fHeight - FONT_SIZE*4-8}, SMALL_FONT_SIZE, White, POSITION_FIXED);
-			font.Write("must be saved by the user.", {fWidth - FONT_SIZE*26, fHeight - FONT_SIZE*5-8}, SMALL_FONT_SIZE, White, POSITION_FIXED);
+			font.Write("boards when closed. Be sure to", {fWidth - FONT_SIZE*26, fHeight - FONT_SIZE*4-8}, SMALL_FONT_SIZE, White, POSITION_FIXED);
+			font.Write("save frequently", {fWidth - FONT_SIZE*26, fHeight - FONT_SIZE*5-8}, SMALL_FONT_SIZE, White, POSITION_FIXED);
+
+			font.Write("You can drag and drop images,", {0,fHeight/2+FONT_SIZE}, MEDIUM_FONT_SIZE, White, POSITION_FIXED, Width, ALIGN_CENTER);
+			font.Write("folders, and boards into RIA. Images", {0,fHeight/2-8}, MEDIUM_FONT_SIZE, White, POSITION_FIXED, Width, ALIGN_CENTER);
+			font.Write("from the internet will be downloaded", {0,fHeight/2-FONT_SIZE-16}, MEDIUM_FONT_SIZE, White, POSITION_FIXED, Width, ALIGN_CENTER);
+			font.Write("to RIA's downloads folder.", {0,fHeight/2-FONT_SIZE*2-28}, MEDIUM_FONT_SIZE, White, POSITION_FIXED, Width, ALIGN_CENTER);
 
 		//256 360
 		}else if (tutorialPage == 1){
 			showTutorial = false;
-			Main.Render = &DrawApp;
-			Main.Input = &MainInput;
+			display = MAIN_APP;
 			showLeftMenu = false;
 			showRightMenu = false;
 			*Scale = oldScale;
@@ -313,7 +332,7 @@ void DrawStage(){
 	}
 }
 
-void DrawTutorial(){
+void MainWindow::DrawTutorial(){
 	DrawEmpty();
 	DrawStage();
 }

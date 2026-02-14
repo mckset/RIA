@@ -14,6 +14,7 @@
 			float blink = 1;
 			string prevText = "";
 			bool submitted = false;
+			bool hovered = false;
 
 			void Activate(string t){
 				text = t;
@@ -61,7 +62,14 @@
 					active = false;
 			}
 
-			bool Hover(){return mouse.position.Within(position, size);}
+			bool Hover(){
+				hovered = false;
+				if (mouse.position.Within(position, size)){
+					cursorType = "Text";
+					hovered = true;
+				}
+				return hovered;
+			}
 
 			void Reset(){
 				text = "";

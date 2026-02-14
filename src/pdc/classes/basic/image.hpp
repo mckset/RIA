@@ -207,3 +207,9 @@ Vector2 ScreenSpace(Vector2 position){
 			+ ((Vector2{fWidth, fHeight}/2) - (Vector2{fWidth, fHeight}/2) * (*Scale))
 			- View->Multiply((*Scale));
 }
+
+Image LoadImage(string path){
+	Image img;
+	img.LoadImage(path);
+	return img;
+}

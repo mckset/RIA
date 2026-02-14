@@ -65,11 +65,14 @@ class Keyboard{
 			}
 		}
 
-		char ToChar(int key){
+		char ToChar(int key = -2){
+			if (key == -2) key = newKey;
 			if (key == -1)
 				return 0;
 
-			if (GetKey(KEY_LEFT_SHIFT))
+			if (key == KEY_KP_SUBTRACT) return '-';
+
+			if (shift)
 				return UpperMap[key];
 			else
 				return LowerMap[key];

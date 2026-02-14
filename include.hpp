@@ -3,6 +3,7 @@
 
 #define		FONTTYPE 	1
 #define		PDC_DEBUG	1
+#define		PDC_VSYNC	0
 #define 	UBUNTU		0 // Set to 1 to use older filesystem libraries
 #define		DEBUG		1 // Set to 1 to print debug information to a terminal
 
@@ -15,7 +16,11 @@
 #endif
 
 #include "src/pdc/PDC.hpp"
+#include "src/pdc/classes/basic/variable.hpp"
 using namespace pdc;
+
+#include "src/pdc/src/fps.cpp" // Wayland vsync freezing work around
+
 
 #include <webp/decode.h>
 #include <thread> // Multi threading is used for saving and loading
@@ -25,6 +30,7 @@ using namespace pdc;
 // Common Classes
 //#include "src/functions/shaders.hpp"
 
+bool showTutorial = false;
 
 
 // Functions and variables
@@ -41,10 +47,15 @@ ImageContainer previewImg;
 #include "src/classes/file.hpp"
 #include "src/functions/sort.cpp"
 
-#include "src/classes/board.hpp"
+enum Warnings{
+	WARNING_LOCATION,
+	WARNING_TAG,
+	WARNING_SUBTAG,
+	WARNING_BOARD
+};
+
 #include "src/classes/tag.hpp"
 #include "src/classes/location.hpp"
-#include "src/classes/mouse_menu.hpp"
 
 
 #ifdef _WIN32
@@ -59,9 +70,15 @@ ImageContainer previewImg;
 	const char *usrHome = pw->pw_dir;
 #endif
 
-#include "src/functions/window_events.cpp"
-#include "src/functions/clipboard.cpp"
+#include "src/windows/main/main_window.hpp"
+#include "src/classes/board.hpp"
 
+#include "src/classes/mouse_menu.hpp"
+
+
+#include "src/functions/window_events.cpp"
+#include "src/windows/warning.hpp"
+#include "src/windows/board_window.hpp"
 
 
 // Functions are declared here because they rely on classes
@@ -73,13 +90,10 @@ vector<Tag> LoadTags(ifstream*, bool, bool);
 void SaveTags(ofstream*, vector<Tag>, bool);
 bool SortTag(Tag t1, Tag t2){return SortString(t1.name, t2.name);}
 
-#include "src/windows/main/boards.cpp"
-
-
-#include "src/functions/save.cpp"
-#include "src/functions/load.cpp"
 
 #include "src/windows/tag.cpp"
+#include "src/functions/clipboard.cpp"
+#include "src/windows/main/boards.cpp"
 #include "src/windows/main/main_render.cpp"
 #include "src/windows/main/main_input.cpp"
 #include "src/windows/main/left_menu_input.cpp"
@@ -91,6 +105,13 @@ bool SortTag(Tag t1, Tag t2){return SortString(t1.name, t2.name);}
 #include "src/windows/main/tutorial_render.cpp"
 #include "src/windows/main/tutorial_input.cpp"
 
-#include "src/windows/downloader.cpp"
+
+#include "src/functions/save.cpp"
+#include "src/functions/load.cpp"
+
+#include "src/windows/downloader/downloader_render.cpp"
+#include "src/windows/downloader/downloader_input.cpp"
+
+
 
 #endif

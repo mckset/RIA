@@ -23,8 +23,10 @@ void UpdateLocationTags();
 //
 
 // src/windows/main/boards.cpp
-void DrawBoards(void); // Draws found images boards with their screenshots
+//void DrawBoards(void); // Draws found images boards with their screenshots
 void FindBoards(void); // Gets all the image boards in the folder
+
+/*
 Image GetBoardScreenshot(string); // Reads the screenshot data from an image board save file
 void TakeBoardScreenshot(void); // Takes a screenshot of the current image board
 
@@ -52,6 +54,7 @@ void RightMenuInput(void); // Handles the input for the right menu and adjacent 
 void DrawTutorial(void); // Displays information on the step in the tutorial
 void OpenTutorial(void); // Sets the variables for opening the tutorial
 void TutorialInput(void); // Input for the tutorial
+*/
 //--------------------------------------------------------------------------------------------------
 
 
@@ -138,3 +141,5 @@ void ResetTagEdit(); // Resets tag editor variables
 //--------------------------------------------------------------------------------------------------
 
 void GetDownloadedFileType();
+
+void Warn(int, void*, void*);

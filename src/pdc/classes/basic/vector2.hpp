@@ -10,7 +10,7 @@
 
 class Vector2{
 	public:
-		float x, y;
+		float x = 0, y = 0;
 
 		// Operation overrides because I am dumb
 
@@ -67,7 +67,7 @@ class Vector2{
 
 		// Logic
 		bool operator==(Vector2 v){return (x == v.x && y == v.y);}
-		bool operator!=(Vector2 v){return (x != v.x && y != v.y);}
+		bool operator!=(Vector2 v){return ((float)x != (float)v.x || (float)y != (float)v.y);}
 		bool operator<=(Vector2 v){return (Sum() <= v.Sum());}
 		bool operator<(Vector2 v){return (Sum() < v.Sum());}
 		bool operator>=(Vector2 v){return (Sum() >= v.Sum());}
@@ -125,9 +125,47 @@ class Vector2{
 			return a;
 		}
 		float Distance(Vector2 v2){return (std::abs(x-v2.x) + std::abs(y-v2.y));}
+
+		// Returns the distance of a vector scaled between a value (usually 0-1)
+		Vector2 DistanceScaled(Vector2 to, float i = 1) {
+			float x2 = to.x-x;
+			float y2 = to.y-y;
+
+			if (x2 == 0 && y2 == 0) return {0,0};
+			else if (x2 == 0) return {0, abs(y2)/y2};
+			else if (y2 == 0) return {abs(x2)/x2, 0};
+
+			if (abs(x2) > abs(y2)){
+				return {abs(x2)/x2, y2/abs(x2)};
+			}
+			return {x2/abs(y2), abs(y2)/y2};
+		};
+
 		bool Equal(Vector2 v){return (v.x == x && v.y == y);}
+		
+		// Comparing floats are a pain
+		bool EqualSigns(Vector2 v){
+			int x1 = 0;
+			int x2 = 0;
+			int y1 = 0;
+			int y2 = 0;
+
+			if (x != 0)
+				x1 = x/abs(x);
+			if (v.x != 0)
+				x2 = v.x/abs(v.x);
+
+			if (y != 0)
+				y1 = y/abs(y);
+			if (v.y != 0)
+				y2 = v.y/abs(v.y);
+
+			return x1 == x2 && y1 == y1;
+		}
 		float Magnitude(){return sqrt(Square().Sum());} // Oh Yeah!!!
 		Vector2 Normalize(){return *this/Magnitude();} // Direction
+
+		
 
 		void Rotate(Vector2 center, float a){
 			float rX = cos(a) * (x - center.x) - sin(a) * (y-center.y) + center.x;

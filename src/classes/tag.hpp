@@ -48,14 +48,14 @@ class Tag{
 				shape.Draw(position, size, color, POSITION_FIXED);
 
 				// Tag is hovered
-				if (CurrentWindow->focused && hovered){
+				if (CurrentWindow->focused && hovered && !tagAdd_Button.hovered && !tagEdit_Button.hovered){
 					if (keyboard.newKey == KEY_DELETE)
 						return TAG_DELETE;
 					clicked = mouse.Click();
 					shape.Draw(position, size, highlightColor, POSITION_FIXED);
 				}
 				// Name
-				font.Write(name, position + Vector2{PADDING, 0}, SMALL_FONT_SIZE, fontColor, POSITION_FIXED, size.x-PADDING*2, ALIGN_CENTER);
+				font.Write(name, position+Vector2{PADDING*2, 0}, SMALL_FONT_SIZE, fontColor, POSITION_FIXED, size.x-PADDING*3.5, ALIGN_CENTER);
 
 				if (!expanded && clicked){
 					expanded = true;
@@ -112,11 +112,11 @@ class Tag{
 
 				tagEdit_Button.Draw(position+Vector2{size.x-PADDING*2, 0}, Vector2{PADDING*2, size.y}, ALIGN_CENTER);
 
-				
-				if (clicked && tagEdit_Button.pressed)
+				// Edit tag
+				if (clicked && tagEdit_Button.pressed  && !showTutorial)
 					EditTag();
 
-				// Edit tag
+				// Show files
 				if (clicked && !tagEdit_Button.pressed && !tagAdd_Button.pressed)
 					expanded = false;
 			}
@@ -125,12 +125,9 @@ class Tag{
 			for (int i = 0; i < subTags.size(); i++){
 				int tagOption = subTags[i].Draw(position - Vector2{-PADDING, (float)listSize}, size - Vector2{PADDING, 0});
 				if (tagOption == TAG_DELETE){
-					keyboard.newKey = INPUT_NULL;
-					subTags.erase(subTags.begin() + i);
-					i--;
-					continue;
+					Warn(WARNING_SUBTAG, (void*)&subTags[i], (void*)this);
 
-				}else if (tagOption == TAG_FILE_ADDED && FileExists(previewImg.path) == -1){
+				}else if (tagOption == TAG_FILE_ADDED && FileExists(previewImg.path) == -1  && !showTutorial){
 					files.push_back(File{GetName(previewImg.path), previewImg.path});
 					sort(files.begin(), files.end(), SortFile);
 				}
@@ -167,7 +164,7 @@ class Tag{
 					shape.Draw(position - Vector2{0, (float)listSize}, size, highlightColor, POSITION_FIXED);
 					
 					// Set as preview image
-					if (mouse.Click())
+					if (mouse.Click()  && !showTutorial)
 						previewImg.LoadPreview(files[i].path);
 				}
 				listSize += size.y;
@@ -244,6 +241,7 @@ class Tag{
 };
 
 vector<Tag> tags;
+
 
 void UpdateFileTagMap(string path){
 	for (auto tag : tags)

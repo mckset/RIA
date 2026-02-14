@@ -12,12 +12,20 @@
 	#define 	PDC_DEBUG	0 // Enable for debug information
 #endif
 
+#ifndef	PDC_VSYNC
+	#define		PDC_VSYNC	1 // Enables vsync for windows
+#endif
+
+#ifndef PDC_GAME
+	#define PDC_GAME		0 // Set to 1 to use game classes and variables
+#endif
+
 #ifndef PDC_MACROS
 	#define PDC_MACROS		0 // Set to 1 to import verbose macros
 #endif
 
 #ifndef FONTTYPE
-	#define		FONTTYPE	0 // Set to 1 to use true type font or set leave at 0 for image based fonts
+	#define		FONTTYPE	1 // Set to 1 to use true type font or set leave at 0 for image based fonts
 #endif
 
 #ifndef PDC_ANIMTION_UPDATE
@@ -26,6 +34,11 @@
 
 #ifndef PDC_COLLISIONS
 	#define		PDC_COLLISIONS	1 // Auto updates object animations after they have been drawn
+#endif
+
+// PDC window event function macros
+#ifndef PDC_HANDLE_RESIZE
+	#define		PDC_HANDLE_RESIZE	1
 #endif
 
 #define GLFW_INCLUDE_NONE
@@ -71,9 +84,11 @@ using namespace std;
 typedef unsigned int uint;
 
 // A window handler function needs to have these
-static void Error(int, const char*);
-void GetScrollWheel(GLFWwindow*, double, double);
-void OnResize(GLFWwindow*, int, int);
+static void Error(int e, const char* desc){
+	if (e != 65548) fprintf(stderr, "Error #%d: %s\n", e, desc);
+}
+//void GetScrollWheel(GLFWwindow* w, double x, double y);
+void OnResize(GLFWwindow* w, int width, int height);
 void SetCursorPosition(GLFWwindow*, double, double);
 void SetKeyboardState(GLFWwindow*, int, int, int, int);
 void SetMouseState(GLFWwindow*, int, int, int);
@@ -86,6 +101,9 @@ namespace pdc{
 	float fWidth = 640, fHeight = 480; // Window width and height as a float
 	uint vertexArray, vertexBuffer, elementBuffer; // Buffers used to draw to the screen
 	const GLFWvidmode* mode;
+
+	map<string, GLFWcursor*> cursors;
+	string cursorType = "Normal";
 
 	bool runGame = false; // If user is running a game
 	
@@ -108,6 +126,10 @@ namespace pdc{
 	#include "classes/basic/vector2.hpp"
 	float deltaTime = 0; // Time since last screen draw
 
+	#if PDC_GAME
+		#include "src/fps.cpp"
+	#endif
+
 	// Input classes
 	#include "classes/basic/keyboard.hpp"
 	#include "classes/basic/mouse.hpp"
@@ -119,15 +141,64 @@ namespace pdc{
 	// UI classes
 	#include "classes/basic/shape.hpp"
 	#include "classes/basic/image.hpp" // Relies on shape.hpp
-	
-	#include "classes/basic/truefont.hpp" // Full font support
+
+	#if FONTTYPE
+		#include "classes/basic/truefont.hpp" // Full font support
+	#else
+		#include "classes/basic/font.hpp" // Relies on image.hpp
+	#endif
 
 	// UI
+
 	#include "classes/UI/field.hpp" // Relies on font.hpp and shape.hpp
 	#include "classes/UI/button.hpp" // Relies on image.hpp
 	#include "classes/UI/scrollbar.hpp"
 	#include "classes/UI/colorselector.hpp"
-	
+	#include "classes/UI/dropdown.hpp"
+	#include "classes/UI/checkbox.hpp"
+
+	//
+	// Game classes
+	//
+	#if PDC_GAME
+
+		// Global physics values
+		float gravity = 1;
+		float dragBase = 0;
+		float frictionBase = 0;
+		float maxSlope = 60;
+		float collisionRadius = 256;
+
+		#include "classes/basic/variable.hpp" // Unlimited power and segmentation faults
+		#include "classes/game/action.hpp"
+		#include "classes/game/input_action.hpp"
+		#include "classes/game/controller.hpp"
+		//#include "classes/game/tile.hpp"
+
+		//
+		// Source files (what?)
+		//
+		#include "src/collisions.cpp"
+	#endif
 }
 
 #endif
+
+#if PDC_HANDLE_RESIZE
+void OnResize(GLFWwindow* w, int width, int height){
+	pdc::FocusedWindow->Use();
+	pdc::FocusedWindow->width = width;
+	pdc::FocusedWindow->height = height;
+
+	glViewport(0, 0, width, height);
+}
+#endif
+
+void SetCursorPosition(GLFWwindow* w, double x, double y){
+	int winX, winY;
+	pdc::FocusedWindow->Use();
+	glfwGetWindowPos(w, &winX, &winY);
+	pdc::mouse.prevPosition = pdc::mouse.position;
+	pdc::mouse.position.x = (float)x;
+	pdc::mouse.position.y = pdc::Height - (float)y;
+}

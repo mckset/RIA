@@ -29,7 +29,7 @@ int CreateWindows(){
 	if (err) return err;
 
 	// Set window handler events
-	glfwSetScrollCallback(Main.w, GetScrollWheel);
+	//glfwSetScrollCallback(Main.w, GetScrollWheel);
 	glfwSetWindowMaximizeCallback(Main.w, Maximize);
 	glfwSetDropCallback(Main.w, DragDrop);
 
@@ -37,7 +37,7 @@ int CreateWindows(){
 
 	// Window variables
 	Main.visible = true;
-	Main.Render = &DrawApp;
+	Main.Render = &DrawMain;
 	Main.Input = &MainInput;
 
 	//
@@ -75,7 +75,7 @@ int CreateWindows(){
 
 	// Hide window instead of closing it
 	glfwSetWindowCloseCallback(Import.w, SubClose);
-	glfwSetScrollCallback(Import.w, GetScrollWheel);
+	//glfwSetScrollCallback(Import.w, GetScrollWheel);
 
 	// Window variables
 	Import.Render = &DrawImportMain;
@@ -102,15 +102,48 @@ int CreateWindows(){
 	DownloadWin.Input = &DownloaderInput;
 	DownloadWin.Hide();
 
+
+	//
+	// Warning window
+	//
+
+	// Window flags
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
+	WarningWin.w = glfwCreateWindow(480, 200, "Warning", NULL, Main.w);
+	err = WarningWin.Init(480, 200);
+	if (err) return err;
+
+	// Hide window instead of closing it
+	glfwSetWindowCloseCallback(WarningWin.w, SubClose);
+
+	// Window variables
+	WarningWin.Render = &DrawWarning;
+	WarningWin.Input = &WarningInput;
+	WarningWin.Hide();
+
+	//
+	// Board window
+	//
+
+	// Window flags
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
+	BoardWin.w = glfwCreateWindow(480, 160, "Image Board", NULL, Main.w);
+	err = BoardWin.Init(480, 160);
+	if (err) return err;
+
+	// Hide window instead of closing it
+	glfwSetWindowCloseCallback(BoardWin.w, SubClose);
+
+	// Window variables
+	BoardWin.Render = &DrawBoardWindow;
+	BoardWin.Input = &BoardWindowInput;
+	BoardWin.Hide();
+
 	return 0;
-}
-
-void GetDeltaTime(){
-	endTime = duration_cast<milliseconds>(system_clock::now().time_since_epoch()); // Get current time
-	deltaTime = endTime.count()-startTime.count(); // Get time since last update
-	deltaTime /= 1000; // Convert to milliseconds	
-
-	startTime = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 }
 
 void Init(){
@@ -162,11 +195,54 @@ void Init(){
 	// Create the right click menu
 	InitMenu();
 
+	FindBoards();
+
 	// User is running a wayland desktop
 	if (LINUX && getenv("WAYLAND_DISPLAY"))
 		WAYLAND = true;
 
-	editTag = nullptr;
+	FPSLimit = 120;
+
+	cursors["Normal"] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
+	cursors["Point"] = glfwCreateStandardCursor(GLFW_POINTING_HAND_CURSOR);
+	cursors["Text"] = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
+
+	tutorialLocation.folders = {
+		Location{"Sub folder 1", "", true, true, 0},
+		Location{"Sub folder 2", "", false, true}
+	};
+
+
+	tutorialLocation.folders[0].files = {
+		File{"Sub folder file", ""}
+	};
+
+	tutorialLocation.files = {
+		File{"File 1"},
+		File{"File 2"}
+	};
+
+	tutorialTag.files = {
+		File{"Tagged image 1"},
+		File{"Tagged image 2"}
+	};
+
+	tutorialTag.subTags = {
+		Tag{"Sub tag", Blue, true}
+	};
+
+	tutorialTag.subTags[0].files = {File{"Tagged image 1"}};
+
+	boardScreenshot = (unsigned char*)malloc(480*480*3);
+
+	for (int i = 0; i < 480*480*3; i++){
+		boardScreenshot[i] = (unsigned char)51;
+	}
+	tutorialBoard.img.width = 480;
+	tutorialBoard.img.height = 480;
+
+	SetTextureRBG(boardScreenshot, &tutorialBoard.img);
+
 }
 
 int main(int argCount, char** argValues){
@@ -247,6 +323,8 @@ int main(int argCount, char** argValues){
 		TagWin.Draw(backgroundColor);
 		Import.Draw(backgroundColor);
 		DownloadWin.Draw(backgroundColor);
+		WarningWin.Draw(backgroundColor);
+		BoardWin.Draw(backgroundColor);
 
 		// Loads after drawing the window to show the application did open
 		if (!loadedSave){
@@ -273,13 +351,13 @@ int main(int argCount, char** argValues){
 			loadedImages.erase(loadedImages.begin());
 		}
 
-		if (imageBoardThread && loadedSave == LOAD_FINISHED && imageBoardThread->joinable()){
+		if (imageBoardThread && loadedSave == LOAD_BOARDS_FINISHED && imageBoardThread->joinable()){
 			imageBoardThread->join();
 			free(imageBoardThread);
 			imageBoardThread = nullptr;
 		}
 
-		GetDeltaTime();
+		GetFPS();
 	}
 
 	return 0;

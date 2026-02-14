@@ -15,7 +15,7 @@ void DragDrop(GLFWwindow* w, int c, const char** paths){
 		if (stat(paths[c-1], &st) == 0){ // Is valid
 
 			// Append folder to location menu
-			if (st.st_mode & S_IFDIR && showLeftMenu && !showTags){
+			if (st.st_mode & S_IFDIR && Main.showLeftMenu && !Main.showTags){
 				locations.push_back(Location{GetName(p), p});
 				sort(locations.begin(), locations.end(), Location{}.SortLocations);
 				
@@ -38,8 +38,8 @@ void DragDrop(GLFWwindow* w, int c, const char** paths){
 				imgs.push_back(img);
 			
 			// Load image board
-			}else if (st.st_mode & S_IFREG && p.substr(p.length()-4) == ".brd" && p.length() > path.length()+8){
-				board = p.substr(path.length()+8);
+			}else if (st.st_mode & S_IFREG && p.substr(p.length()-4) == ".brd" && p.length() > path.length()+8 && FindIn(path, p.substr(0, path.length())) != -1){
+				board = p.substr(path.length()+7);
 				if (loadThread || imageBoardThread){
 					closeThread = true;
 
@@ -80,12 +80,8 @@ void DragDrop(GLFWwindow* w, int c, const char** paths){
 	}
 }
 
-// Reports GLFW errors
-static void Error(int e, const char* desc){
-	if (DEBUG) fprintf(stderr, "Error #%d: %s\n", e, desc);
-}
-
 // Handles scrollwheel events
+/*
 void GetScrollWheel(GLFWwindow* w, double x, double y){
 	
 	if (showTutorial){
@@ -105,69 +101,7 @@ void GetScrollWheel(GLFWwindow* w, double x, double y){
 		}
 		return;
 	}
-
-	// Board zoom
-	if ((!showLeftMenu || mouse.position.x > sideMenuWidth+SCROLLBAR_SIZE) && (!showRightMenu || mouse.position.x < fWidth-sideMenuWidth-SCROLLBAR_SIZE)){
-		zoomTextTimer = 60;
-		if (y < 0){ // Zoom out
-			if (*Scale > 1.5f)
-				*Scale -= .3f;
-			else if (*Scale > .11f)
-				*Scale -= .1f;
-		}else{ // Zoom in
-			if (*Scale < 1.5f)
-				*Scale+=.1f;
-			else if (*Scale < 3)
-				*Scale += .3f;
-		}
-
-	// Side menu scrolling
-	}else{
-		if (y < 0){
-			// Left menu
-			if (mouse.position.x <= sideMenuWidth+SCROLLBAR_SIZE)
-				if (showTags){
-					tags_Scrollbar.scroll += 32;
-					if (tags_Scrollbar.scroll > tags_Scrollbar.end)
-						tags_Scrollbar.scroll = tags_Scrollbar.end;
-					return;
-
-				}else{
-					locations_Scrollbar.scroll += 32;
-					if (locations_Scrollbar.scroll > locations_Scrollbar.end)
-						locations_Scrollbar.scroll = locations_Scrollbar.end;
-					return;
-				}
-			
-			// Right menu
-			board_Scrollbar.scroll += 64;
-			if (board_Scrollbar.scroll > board_Scrollbar.end)
-				board_Scrollbar.scroll = board_Scrollbar.end;
-			
-
-		}else{
-			// Left menu
-			if (mouse.position.x <= sideMenuWidth+SCROLLBAR_SIZE)
-				if (showTags){
-					tags_Scrollbar.scroll -= 32;
-					if (tags_Scrollbar.scroll < 0)
-						tags_Scrollbar.scroll = 0;
-					return;
-
-				}else{
-					locations_Scrollbar.scroll -= 32;
-					if (locations_Scrollbar.scroll < 0)
-						locations_Scrollbar.scroll = 0;
-					return;
-				}
-
-			// Right menu
-			board_Scrollbar.scroll -= 64;
-			if (board_Scrollbar.scroll < 0)
-				board_Scrollbar.scroll = 0;
-		}
-	}
-}
+}*/
 
 // Shifts a character to upper case when shift is held
 char KeyToChar(int key){
@@ -182,6 +116,7 @@ char KeyToChar(int key){
 void Maximize(GLFWwindow* w, int max){  }
 
 // Handles resize events
+/*
 void OnResize(GLFWwindow* w, int width, int height){
 	if (w == Main.w){
 		Main.Use();
@@ -213,7 +148,7 @@ void SetCursorPosition(GLFWwindow* w, double x, double y){
 	mouse.position.x = (float)x;
 	mouse.position.y = Height - (float)y;
 
-}
+}*/
 
 // Handles keyboard events
 void SetKeyboardState(GLFWwindow* w, int key, int code, int action, int mod){
@@ -233,12 +168,5 @@ void SetMouseState(GLFWwindow* w, int button, int action, int mod){
 // Hides sub windows
 void SubClose(GLFWwindow *w){
 	glfwSetWindowShouldClose(w, GL_FALSE);
-	if (w == TagWin.w)
-		TagWin.Hide();
-	
-	if (w == Import.w)
-		Import.Hide();
-	
-	if (w == DownloadWin.w)
-		DownloadWin.Hide();
+	FocusedWindow->Hide();
 }

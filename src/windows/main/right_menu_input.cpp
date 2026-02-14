@@ -2,7 +2,7 @@
     Handles all the input for the right side menu and adjacent button functions other than what is covered in the classes
 */
 
-void RightMenuInput(){
+void MainWindow::RightMenuInput(){
 	// Menu toggle
 	if ((keyboard.newKey == KEY_ESCAPE && !selectedImgs.size() && statusTextTimer <= 0 && !previewImg.loaded) || imageBoards_Button.pressed){
 		if (!showRightMenu){
@@ -50,5 +50,14 @@ void RightMenuInput(){
 
 		free(saveThread);
 		saveThread = new thread(Save);
+	}
+
+	// Scrollbars
+	if (mouse.scrollY != 0){
+		board_Scrollbar.scroll -= 64*mouse.scrollY;
+		if (board_Scrollbar.scroll > board_Scrollbar.end)
+			board_Scrollbar.scroll = board_Scrollbar.end;
+		else if (board_Scrollbar.scroll < 0)
+			board_Scrollbar.scroll = 0;
 	}
 }

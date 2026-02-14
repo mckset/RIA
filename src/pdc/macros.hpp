@@ -280,7 +280,37 @@ double StringToDouble(string s){
 	return stod(buffer);
 }
 
-bool operator==(string s1, string s2){return strcmp(s1.data(), s2.data()) == 0;}
+int StringToInt(string s){
+	string temp = "";
+	for (auto c : s){
+		if (IsNumber(c))
+			temp += c;
+	}	
+	if (!temp.length()) temp = "0";
+	return stoi(temp);
+}
+
+bool operator==(string s1, string s2){
+	return strcmp(s1.data(), s2.data()) == 0;
+}
+
+bool operator==(string s1, char* s2){
+	return strcmp(s1.data(), s2) == 0;
+}
+
+bool operator==(string s1, const char* s2){
+	return strcmp(s1.data(), s2) == 0;
+}
+
+bool operator==(char* s1, string s2){
+	return strcmp(s1, s2.data()) == 0;
+}
+
+bool operator==(const char* s1, string s2){
+	return strcmp(s1, s2.data()) == 0;
+}
+
+
 bool operator!=(string s1, string s2){return strcmp(s1.data(), s2.data()) != 0;}
 
 float Center(float start, float end){return start+(end-start)/2;}

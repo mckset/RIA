@@ -37,7 +37,11 @@ class Font{
 			float offset = 0;
 			fontSize /= 32; // Magic numbers
 			fontSize *= 48.0f/(float)fontResolution;
+
+			string cropped = ""; // Cuts off text before it bleeds past the limit
 			for (int i = 0; i < text.length(); i++){
+				string textChar = "";
+				textChar += text[i];
 				int ch = text[i];
 				if (text[i] < 0){
 					string c = "";
@@ -49,32 +53,18 @@ class Font{
 					}
 					i--;
 					ch = UTF16(c);
+					textChar = c;
 				}
-				Unichar c = characters[ch];
-				length += (c.advance >> 6) * fontSize*1.145;
+				float t = GlyphSize(ch, size);
+				if (wrap || length < limit){
+					length += t;
+					cropped += textChar;
+				}
 			}
-
+			text = cropped;
 			
 			if (!wrap){
-				// Crop the text if text bleeds past the width
-				if (text.length()*size > limit && limit != Width){
-					int textSize = (int)(limit/size);
-					string cropped = "";
-					for (int i = 0; i < text.length() && textSize > 0; i++){
-						if (text[i] < 0){
-							cropped += text[i];
-							i++;
-							while (text[i] <= -65){
-								cropped += text[i];
-								i++;
-							}
-							i--;
-						}else
-							cropped += text[i];
-						textSize--;
-					}
-					text = cropped;
-				}else if (align == ALIGN_CENTER)
+				if (align == ALIGN_CENTER)
 					offset = (float)(limit - length)/2;
 				else if (align == ALIGN_RIGHT)
 					offset = (float)(limit - length - size);
@@ -271,7 +261,7 @@ class Font{
 			glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); 
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			// Color
-			glUniform3f(glGetUniformLocation(sFont.ID, "textColor"), color.r, color.g, color.b);
+			glUniform4f(glGetUniformLocation(sFont.ID, "textColor"), color.r, color.g, color.b, color.a);
 			// render quad
 
 			glDrawArrays(GL_TRIANGLES, 0, 6);

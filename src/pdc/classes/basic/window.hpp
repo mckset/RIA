@@ -10,7 +10,7 @@ float defaultScale = 1.0f;
 class Window{
 	public:
 		bool visible = true, scalable = true, focused = false;
-		unsigned int width, height; // Window width and height
+		int width, height; // Window width and height
 		unsigned int vA, vB, eB; // Buffers used to draw to the screen
 		GLFWwindow* w; // Window pointer
 		Vector2 view; // Window view offset
@@ -29,14 +29,17 @@ class Window{
 		void Resize(int Width, int Height){glfwSetWindowSize(w, Width, Height);}
 		void Move(int x, int y){glfwSetWindowPos(w, x, y);}
 
-		void Draw(Color clear = Color{0,0,0,1}){
+		virtual void Draw(Color clear = Color{0,0,0,1}){
 			ShaderID = -1;
 
 			if (!visible){
 				if (focused) focused = false;
 				return;
 			}
+			glfwGetWindowSize(w, &width, &height);
+
 			Use();
+
 			// Background clear
 			glClearColor(clear.r,clear.g,clear.b,clear.a);
 
@@ -45,6 +48,7 @@ class Window{
 
 			CurrentWindow = this;
 
+			cursorType = "Normal";
 			Render();
 			if (focused = IsFocused()){
 				FocusedWindow = this;
@@ -55,12 +59,15 @@ class Window{
 				keyboard.newKey = -1;
 				mouse.scrollX = 0;
 				mouse.scrollY = 0;
+				if (cursors[cursorType]){
+					glfwSetCursor(w, cursors[cursorType]);
+				}
 			}
 
 			glfwSwapBuffers(w);
 		}
 
-		int Init(unsigned int wi=Width, unsigned int h=Height, bool vSync = true){
+		int Init(unsigned int wi=Width, unsigned int h=Height, bool vSync = PDC_VSYNC){
 			// Check if window was created
 			if (w == NULL){
 				if (PDC_DEBUG) printf("Failed to create window\n");
@@ -68,6 +75,7 @@ class Window{
 				return WINDOW_ERROR_CREATION;
 			}
 			glfwMakeContextCurrent(w);
+			FocusedWindow = this;
 				
 			// Initialize GLAD
 			if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
@@ -84,7 +92,7 @@ class Window{
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 			// Set window flags
-			glfwSetWindowAttrib(w, GLFW_RESIZABLE, GLFW_TRUE);
+			//glfwSetWindowAttrib(w, GLFW_RESIZABLE, GLFW_TRUE);
 
 			if (PDC_DEBUG) printf("[Init] Set Flags\n");
 
@@ -98,6 +106,7 @@ class Window{
 			// Bind mouse events
 			glfwSetMouseButtonCallback(w, SetMouseState);
 			glfwSetCursorPosCallback(w, SetCursorPosition);
+			glfwSetScrollCallback(w, GetScrollWheel);
 
 			if (PDC_DEBUG) printf("[Init] Bound Events\n");
 

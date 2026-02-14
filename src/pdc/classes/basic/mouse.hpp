@@ -35,3 +35,8 @@ void SetMouseState(GLFWwindow* w, int button, int action, int mod){
 	if ((mouse.state != LM_DOWN && mouse.state != RM_DOWN) && mouse.drag)
 		mouse.drag = false;
 }
+
+void GetScrollWheel(GLFWwindow* w, double x, double y){
+	mouse.scrollX = x;
+	mouse.scrollY = y;
+}

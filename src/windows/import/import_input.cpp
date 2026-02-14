@@ -33,6 +33,16 @@ void CreateImport(){
 	filesystem::rename(importPath + slash + "temp.dat", importFile);
 }
 
+void CheckScroll(){
+	if (mouse.scrollY){
+		import_Scrollbar.scroll -= 32*mouse.scrollY;
+		if (import_Scrollbar.scroll > import_Scrollbar.end)
+			import_Scrollbar.scroll = import_Scrollbar.end;
+		else if (import_Scrollbar.scroll < 0)
+			import_Scrollbar.scroll = 0;
+	}
+}
+
 // Checks a tag to see if it contains any given files and returns a tag with only matching files
 Tag FilterTag(Tag tag, vector<File> files){
 	int pathSize = importPath.length();
@@ -75,6 +85,8 @@ Tag FilterTag(Tag tag, vector<File> files){
 
 // Get tags to import
 void FoldersImportInput(){
+	CheckScroll();
+
 	if (mouse.Click() && imagePackImport_Button.Hover()){
 		importFiles = folders.GetHidden();
 		import_Scrollbar.scroll = 0;
@@ -183,7 +195,9 @@ bool LoadImport(){
 
 // Handles the tag import menu input
 void TagsImportInput(){
-		
+	
+	CheckScroll();
+
 	// Toggle sub tag import
 	if (imagePackCreate_Button.pressed)
 		imagePackCreate_Button.toggled = !imagePackCreate_Button.toggled;
@@ -253,6 +267,8 @@ void TagsImportInput(){
 
 // Default input for the import window
 void MainImportInput(){
+
+	CheckScroll();
 
 	// Create import file
 	if (imagePackCreate_Button.pressed){

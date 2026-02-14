@@ -5,8 +5,6 @@
 #include<iostream>
 #include<fstream>
 
-ifstream f;
-bool saving = false;
 const char lineEnd[1] = {'\0'};
 
 // Main save function

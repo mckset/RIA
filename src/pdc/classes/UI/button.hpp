@@ -15,6 +15,7 @@ class Button{
 		bool Hover(){
 			hovered = (mouse.position.Within(position, size)) && CurrentWindow->focused;
 			pressed = hovered && mouse.Click();
+			if (hovered) cursorType = "Point";
 			return hovered;
 		}
 

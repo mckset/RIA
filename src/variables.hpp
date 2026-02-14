@@ -46,28 +46,21 @@ const string downloadFile = "_downloaded.tmp";
 
 bool closeThread = false;
 bool maximizeWindow = true; 
+bool oldSave = false; // True if an old save file
 bool pastedFile = false; // If files had already been pasted
-bool rotateImages = false;
-bool scaleImages = false; // If the program should scale images
-bool showImageSelector = false;
-bool showLeftMenu = false;
-bool showOrigin = true;
-bool showMouseMenu = false; // Draws the right click menu when true
-bool showRightMenu = false;
-bool showTutorial = false;
-bool showTags = false;
+
+bool saving = false;
+
 bool maximize = false;
 
-//int editedTagIndex = -1;
-//int editedSubTagIndex = -1;
-
-float sideMenuWidth = 0;
-int zoomTextTimer = 0;
 float statusTextTimer = 0;
 int loadedSave = 0; // True if the app tried to load the save file
 int downloadedImageType = 0;
-float sideMenuRatio =	0.25f; // Ratio of the menu width to the window width
+
 struct stat st;
+
+ifstream f;
+
 
 map<string, bool> fileTagMap;
 
@@ -75,7 +68,6 @@ thread *saveThread = nullptr;
 thread *loadThread = nullptr;
 thread *imageBoardThread = nullptr;
 
-Window Main;
 Window Import;
 Window TagWin;
 Window DownloadWin;
@@ -86,32 +78,15 @@ vector<string> internalClipboard; // Paths to images that are copied from RIA
 vector<ImageContainer> loadedImages;
 vector<string> textCache; // Used to load new text characters on the main thread
 
-Button openTags_Button = Button{"Tags", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
-Button openLocations_Button = Button{"Locations", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
-Button leftClose_Button = Button{"Close", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
-Button help_Button = Button{"Help", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
-
-Button imagePack_Button = Button{"Image Packs", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
-Button imageBoards_Button = Button{"Boards", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
-Button save_Button = Button{"Save", menuBackgroundColor, highlightColor, White, SMALL_FONT_SIZE};
-
 Button add_Button = Button{"+", Transparent, highlightColor, White, FONT_SIZE};
-Button addBoard_Button = Button{"+", Transparent, highlightColor, White, FONT_SIZE};
+
 
 Button downloadImport_Button = Button{"Import Image", menuBackgroundColor, highlightColor, White, FONT_SIZE};
 Button downloadCancel_Button = Button{"Cancel", menuBackgroundColor, highlightColor, White, FONT_SIZE};
 
-Scrollbar board_Scrollbar = Scrollbar{scrollbarBackgroundColor, scrollbarNotchColor};
-Scrollbar tags_Scrollbar = Scrollbar{scrollbarBackgroundColor, scrollbarNotchColor};
-Scrollbar locations_Scrollbar = Scrollbar{scrollbarBackgroundColor, scrollbarNotchColor};
-
-Field currentBoard_Field = Field{"default", Transparent, Transparent, fontColor, SMALL_FONT_SIZE};
 Field newTagName_Field = Field{"Tag Name", fieldBackgroundColor, highlightColor, fontColor, FONT_SIZE};
 
 Field downloadedImageName_Field = {"File Name", fieldBackgroundColor, highlightColor, fontColor, FONT_SIZE};
-
-static milliseconds startTime; // Time the next frame started
-static milliseconds endTime; // Time the last frame ended
 
 Vector2 downloadDropPosition;
 

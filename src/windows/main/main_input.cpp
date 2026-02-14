@@ -9,7 +9,7 @@ enum Selection_Type{
 	SELECT_DELETE
 };
 
-void MainInput(){
+void MainWindow::AppInput(){
 	BoardInput();
 
 	LeftMenuInput();
@@ -22,7 +22,7 @@ void MainInput(){
 }
 
 
-void BoardInput(){
+void MainWindow::BoardInput(){
 	// Drag view around
 	if (mouse.Click(MM_DOWN))
 		mouse.dragOffset = mouse.position;
@@ -32,7 +32,10 @@ void BoardInput(){
 		mouse.dragOffset = mouse.position;
 	}
 
-	if (currentBoard_Field.active) return;
+	if (boardName_Field){
+		if (boardName_Field->active) return;
+		boardName_Field = nullptr;
+	}
 
 	// Toggle origin
 	if (keyboard.newKey == KEY_SPACE)
@@ -48,12 +51,6 @@ void BoardInput(){
 	if (keyboard.GetKey(KEY_D) || keyboard.GetKey(KEY_RIGHT))
 		View->x += VIEW_SPEED/(*Scale);
 
-	// Scaling
-	if (keyboard.newKey == KEY_KP_ADD || keyboard.newKey == KEY_EQUAL)
-		GetScrollWheel(Main.w, 0, 1);
-	else if (keyboard.newKey == KEY_MINUS || keyboard.newKey == KEY_KP_SUBTRACT)
-		GetScrollWheel(Main.w, 0, -1);
-
 	// Copy to clipboard
 	if (keyboard.newKey == KEY_C && keyboard.ctrl) Copy();
 
@@ -64,7 +61,7 @@ void BoardInput(){
 		pastedFile = false;
 }
 
-void ImageInput(){
+void MainWindow::ImageInput(){
 	// Select all
 	if (keyboard.newKey == KEY_A && keyboard.ctrl){
 		selectedImgs.clear();
@@ -280,9 +277,31 @@ void ImageInput(){
 		}
 		mouse.dragOffset = mouse.position;
 	}
+
+	// Scaling board
+	if (keyboard.newKey == KEY_KP_ADD || keyboard.newKey == KEY_EQUAL)
+		mouse.scrollY = 1;
+	else if (keyboard.newKey == KEY_MINUS || keyboard.newKey == KEY_KP_SUBTRACT)
+		mouse.scrollY = -1;
+
+	if (mouse.scrollY != 0){
+		zoomTextTimer = 60;
+		if (mouse.scrollY < 0){ // Zoom out
+			if (*Scale > 1.5f)
+				*Scale -= .3f;
+			else if (*Scale > .11f)
+				*Scale -= .1f;
+		}else{ // Zoom in
+			if (*Scale < 1.5f)
+				*Scale+=.1f;
+			else if (*Scale < 3)
+				*Scale += .3f;
+		}
+	}
+
 }
 
-int SelectImage(){
+int MainWindow::SelectImage(){
 	for (int i = imgs.size()-1; i > -1; i--){
 		if (mouse.Within(ScreenSpace(imgs[i].position), imgs[i].size*(*Scale))){
 
@@ -328,14 +347,14 @@ int SelectImage(){
 }
 
 // Clears selection
-void ResetImages(){
+void MainWindow::ResetImages(){
 	selectedImgs.clear();
 	for (int i = 0; i < imgs.size(); i++)
 		imgs[i].selected = false;
 }
 
 // Moves newest selection to the top of the image order
-void ReorderImages(){
+void MainWindow::ReorderImages(){
 	int i = selectedImgs[selectedImgs.size()-1];
 	ImageContainer temp = imgs[i];
 

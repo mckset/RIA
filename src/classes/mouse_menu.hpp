@@ -44,7 +44,7 @@ class MenuItem{
 				if (mouse.Click()){
 					if (action){
 						keyboard.newKey = action;
-						showMouseMenu = false;
+						Main.showMouseMenu = false;
 					}else if (name == "Filter" || name == "Disable Filter"){
 						for (auto i : selectedImgs){
 							glBindTexture(GL_TEXTURE_2D, imgs[i].img.ID);
@@ -55,7 +55,7 @@ class MenuItem{
 							imgs[i].img.SetTexture(pixels, name == "Disable Filter");
 						}
 					}else if (name == "Resize"){
-						scaleImages = true;
+						Main.scaleImages = true;
 					}
 					mouse.state = INPUT_NULL;
 				}
@@ -256,7 +256,7 @@ class Menu{
 
 		void Reset(){
 			tagsMenu->items.clear();
-			showMouseMenu = false;
+			Main.showMouseMenu = false;
 			expanded = 0;
 			menuSubTagIndex = -1;
 			mouse.state = INPUT_NULL;

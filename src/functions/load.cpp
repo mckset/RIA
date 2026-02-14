@@ -8,12 +8,12 @@ enum Loading_Progress{
 	LOAD_LOCATIONS,
 	LOAD_TAGS,
 	LOAD_BOARDS,
+	LOAD_BOARDS_FINISHED,
 	LOAD_FINISHED
 };
 
 ifstream readFile;
 
-bool oldSave = false; // True if an old save file
 
 // Converts path slashes to match system
 void FixString(string *s){
@@ -100,6 +100,7 @@ string GetStringOld(){
 	return temp;
 }
 
+
 // Checks if an image already exists in a list
 bool Duplicate(string img, vector<File>* list){
 	for (auto file : *list)
@@ -165,14 +166,12 @@ void Load(){
 
 	readFile.close();
 
-
-	FindBoards();
 	LoadImageBoard();
 
 	if (DEBUG) printf("[Loading] Finished\n");
     
-    if (sideMenuWidth == 0)
-        sideMenuWidth = Main.width*sideMenuRatio;
+    if (Main.sideMenuWidth == 0)
+        Main.sideMenuWidth = Main.width*Main.sideMenuRatio;
 	
 	loadedSave = LOAD_FINISHED;
 }
@@ -186,10 +185,12 @@ void LoadImageBoard(){
 
 	loadedImages.clear();
 
-	currentBoard_Field.text = board.substr(0,board.length()-4);
+	//currentBoard_Field.text = board.substr(0,board.length()-4);
 	readFile.open("boards/"+board, ios::in | ios::binary);
     if (!readFile.good()){
 		if (DEBUG) printf("[Loading] Unable to load image board\n");
+		statusText = "Unable to load " + board;
+		statusTextTimer = STATUS_TIME;
 		return;
 	}
 	if (DEBUG) printf("[Loading] Image board\n");
@@ -239,7 +240,7 @@ void LoadImageBoard(){
 	readFile.read(reinterpret_cast<char*>(&s), sizeof(float));
 	readFile.read(reinterpret_cast<char*>(&maximize), sizeof(bool));
 	Main.view = Vector2{vX, vY};
-	if (s > 0)
+	if (s > .01)
 		Main.scale = s;
 
 	readFile.close();
@@ -255,10 +256,9 @@ void LoadImageBoard(){
 		if (img.loaded)
 			loadedImages.push_back(img);
 	}
-			
-
-	statusText = "Loaded " + board;
+	loadedSave = LOAD_BOARDS_FINISHED;
 	statusTextTimer = STATUS_TIME;
+	statusText = "Loaded " + board;
 }
 
 // Loads tags

@@ -2,8 +2,7 @@
 // Responsible for rendering everything in the main window
 //
 
-
-void DrawApp(){
+void MainWindow::DrawApp(){
 	DrawBoard();
 
 	// Left menu
@@ -65,7 +64,7 @@ void DrawApp(){
 }
 
 // Draw images and grid
-void DrawBoard(){
+void MainWindow::DrawBoard(){
 	DrawImages();
 	
 	// Selector box
@@ -107,7 +106,7 @@ void DrawBoard(){
 	}
 }
 
-void DrawImages(){
+void MainWindow::DrawImages(){
 	// The % adds parallax to the background
 	for (int w = -2; w < (Height/GRID_SIZE)/(*Scale) + 1; w++)
 		shape.Draw({0, ((float)w*GRID_SIZE*(*Scale) - ((int)(View->y/5) % (int)GRID_SIZE*(*Scale)))*2}, {fWidth*2, 3}, gridColor, POSITION_FIXED);
@@ -128,21 +127,22 @@ void DrawImages(){
 }
 
 // Draw locations
-void DrawLocations(){
+void MainWindow::DrawLocations(){
 	float y = Height - FONT_SIZE*2 + locations_Scrollbar.scroll;
 
-	shape.Draw({0, y}, {sideMenuWidth-SCROLLBAR_SIZE, FONT_SIZE*2}, menuBackgroundColor, POSITION_FIXED);
-	font.Write("Locations", {FONT_SIZE/2, y}, FONT_SIZE, fontColor, POSITION_FIXED, sideMenuWidth-SCROLLBAR_SIZE-FONT_SIZE*2, ALIGN_CENTER);
-	add_Button.Draw({sideMenuWidth-FONT_SIZE*2-SCROLLBAR_SIZE, y}, {FONT_SIZE*2, FONT_SIZE*2}, ALIGN_CENTER);
+	shape.Draw({0, y}, {sideMenuWidth, FONT_SIZE*2}, menuBackgroundColor, POSITION_FIXED);
+	font.Write("Folders", {FONT_SIZE*2, y}, FONT_SIZE, fontColor, POSITION_FIXED, sideMenuWidth-SCROLLBAR_SIZE-FONT_SIZE*3, ALIGN_CENTER);
+	add_Button.Draw({sideMenuWidth-FONT_SIZE*2, y}, {FONT_SIZE*2, FONT_SIZE*2}, ALIGN_CENTER);
+	refreshLocations_Button.Draw({0, y}, {sideMenuWidth-SCROLLBAR_SIZE-FONT_SIZE, FONT_SIZE*2}, ALIGN_CENTER);
 
 	y -= FONT_SIZE;
 
 	for (int i = 0; i < locations.size(); i++){
+		if (refreshLocations_Button.pressed)
+			locations[i].initialized = false;
+
 		if (locations[i].Draw({0, y}, {sideMenuWidth - SCROLLBAR_SIZE, FONT_SIZE}) == LOCATION_DELETE){
-			// Delete tag
-			locations.erase(locations.begin() + i);
-			i--;
-			continue;
+			Warn(WARNING_LOCATION, (void*)&locations[i], nullptr);
 		}
 		y -= locations[i].listSize;
 	}
@@ -155,26 +155,22 @@ void DrawLocations(){
 	}else
 		locations_Scrollbar.end = -y;
 
-	locations_Scrollbar.Draw({sideMenuWidth-SCROLLBAR_SIZE}, {SCROLLBAR_SIZE, fHeight});
+	locations_Scrollbar.Draw({sideMenuWidth-SCROLLBAR_SIZE}, {SCROLLBAR_SIZE, fHeight-FONT_SIZE*2});
 }
 
 // Draw tags
-void DrawTags(){
+void MainWindow::DrawTags(){
 	float y = Height - FONT_SIZE*2 + tags_Scrollbar.scroll;
 
-	shape.Draw({0, y}, {sideMenuWidth-SCROLLBAR_SIZE, FONT_SIZE*2}, menuBackgroundColor, POSITION_FIXED);
-	font.Write("Tags", {FONT_SIZE/2, y}, FONT_SIZE, fontColor, POSITION_FIXED, sideMenuWidth-SCROLLBAR_SIZE-FONT_SIZE*2, ALIGN_CENTER);
-	add_Button.Draw({sideMenuWidth-FONT_SIZE*2-SCROLLBAR_SIZE, y}, {FONT_SIZE*2, FONT_SIZE*2}, ALIGN_CENTER);
+	shape.Draw({0, y}, {sideMenuWidth, FONT_SIZE*2}, menuBackgroundColor, POSITION_FIXED);
+	font.Write("Tags", {FONT_SIZE*2, y}, FONT_SIZE, fontColor, POSITION_FIXED, sideMenuWidth-SCROLLBAR_SIZE-FONT_SIZE*3, ALIGN_CENTER);
+	add_Button.Draw({sideMenuWidth-FONT_SIZE*2, y}, {FONT_SIZE*2, FONT_SIZE*2}, ALIGN_CENTER);
 
 	y -= FONT_SIZE;
 
 	for (int i = 0; i < tags.size(); i++){
 		if (tags[i].Draw({0, y}, {sideMenuWidth - SCROLLBAR_SIZE, FONT_SIZE}) == TAG_DELETE){
-			// Delete tag
-			tags.erase(tags.begin() + i);
-			i--;
-			keyboard.newKey = INPUT_NULL;
-			continue;
+			Warn(WARNING_TAG, (void*)&tags[i], nullptr);
 		}
 		y -= tags[i].listSize;
 	}
@@ -187,5 +183,5 @@ void DrawTags(){
 	}else
 		tags_Scrollbar.end = -y;
 
-	tags_Scrollbar.Draw({sideMenuWidth-SCROLLBAR_SIZE}, {SCROLLBAR_SIZE, fHeight});
+	tags_Scrollbar.Draw({sideMenuWidth-SCROLLBAR_SIZE}, {SCROLLBAR_SIZE, fHeight-FONT_SIZE*2});
 }

@@ -15,7 +15,11 @@ class Location{
 		vector<Location> folders;
 		vector<File> files;
 
+		Button delete_Button{"x", Transparent, highlightColor, fontColor, SMALL_FONT_SIZE};
+
 		int Draw(Vector2 position, Vector2 size, bool isSubFolder = false){
+			bool deleteLocation = false;
+
 			if (!initialized)
 				GetFiles();
 
@@ -33,27 +37,36 @@ class Location{
 				shape.Draw(position, size, locationHeadingColor, POSITION_FIXED);
 			
 				// Text
-				font.Write(name, position, SMALL_FONT_SIZE, fontColor, POSITION_FIXED, size.x);
+				font.Write(name, position, SMALL_FONT_SIZE, fontColor, POSITION_FIXED, size.x-FONT_SIZE);
+
+				// Delete button
+				if (!isSubFolder){
+					delete_Button.Draw({size.x-FONT_SIZE, position.y}, {FONT_SIZE, FONT_SIZE}, ALIGN_CENTER);
+					if (delete_Button.pressed){
+						deleteLocation = true;
+					}
+				}
 
 				// Input
-				if (mouse.Within(position, size)){
+				if (mouse.Within(position, size) && CurrentWindow->focused){
 					// Deleting
 					if (!isSubFolder && keyboard.newKey == KEY_DELETE){
 						keyboard.newKey = INPUT_NULL;
-						return LOCATION_DELETE;
+						deleteLocation = true;
 					}
 
 					// Expand folder
-					if (mouse.Click())
+					if (mouse.Click() && !delete_Button.hovered)
 						expanded = !expanded;
-					if (CurrentWindow->focused)
+
+					if (!isSubFolder && !delete_Button.hovered)
 						shape.Draw(position, size, highlightColor, POSITION_FIXED);
 					
 				}
 			}
 
 			if (!expanded)
-				return LOCATION_NONE;
+				return !deleteLocation ? LOCATION_NONE : LOCATION_DELETE;
 
 			// Folders
 			for (auto& folder : folders){
@@ -82,7 +95,7 @@ class Location{
 					if (mouse.Within(position + Vector2{0, (float)-listSize}, size - Vector2{FILE_PADDING, 0}) && CurrentWindow->focused){
 						
 						// Preview Image
-						if (mouse.Click())
+						if (mouse.Click() && !showTutorial)
 							previewImg.LoadPreview(file.path);
 						
 						shape.Draw(position + Vector2{FILE_PADDING, (float)-listSize}, size + Vector2{-FILE_PADDING, 0}, highlightColor, POSITION_FIXED);
@@ -91,7 +104,7 @@ class Location{
 					draw = position.y - size.y*2 - listSize <= fHeight;
 				listSize += size.y;
 			}
-			return LOCATION_NONE;
+			return !deleteLocation ? LOCATION_NONE : LOCATION_DELETE;
 		}
 
 		void GetFiles(bool checkText = true){

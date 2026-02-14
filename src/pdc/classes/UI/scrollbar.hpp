@@ -9,7 +9,7 @@ class Scrollbar{
 		int scroll = 0;
 
 		void Draw(Vector2 position, Vector2 size, bool fixed = true, bool disableScroll = false){
-			if (end == 0) return;
+			if (end <= 0) return;
 			
 			if (!horizontal){
 					

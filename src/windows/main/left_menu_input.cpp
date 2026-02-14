@@ -2,7 +2,7 @@
     Handles all the input for the left side menu and adjacent button functions other than what is covered in the classes
 */
 
-void LeftMenuInput(){
+void MainWindow::LeftMenuInput(){
     // Menu toggle
 	if ((keyboard.newKey == KEY_TAB) || openLocations_Button.pressed){
 		if (!showLeftMenu)
@@ -30,6 +30,7 @@ void LeftMenuInput(){
 	// Close Menu
 	if (showLeftMenu && leftClose_Button.pressed){
 		showLeftMenu = false;
+		showTags = false;
 		mouseMenu.Reset();
 		mouse.state = INPUT_NULL;
 		leftClose_Button.pressed = false;
@@ -59,6 +60,24 @@ void LeftMenuInput(){
 					locations.push_back(Location{GetName(folder), folder});
 					sort(locations.begin(), locations.end(), locations[0].SortLocations);
 				}
+			}
+		}
+
+		// Scrollbars
+		if (mouse.scrollY != 0){
+			if (showTags){
+				tags_Scrollbar.scroll -= 32*mouse.scrollY;
+				if (tags_Scrollbar.scroll > tags_Scrollbar.end)
+					tags_Scrollbar.scroll = tags_Scrollbar.end;
+				else if (tags_Scrollbar.scroll < 0)
+					tags_Scrollbar.scroll = 0;
+
+			}else{
+				locations_Scrollbar.scroll -= 32*mouse.scrollY;
+				if (locations_Scrollbar.scroll > locations_Scrollbar.end)
+					locations_Scrollbar.scroll = locations_Scrollbar.end;
+				else if (locations_Scrollbar.scroll < 0)
+					locations_Scrollbar.scroll = 0;	
 			}
 		}
     }

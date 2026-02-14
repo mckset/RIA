@@ -13,11 +13,15 @@ tutorialStage
 4 - Image packs
 */
 
-void TutorialInput(){
+void MainWindow::TutorialInput(){
+	if (boardName_Field){
+		boardName_Field->active = false;
+		boardName_Field = nullptr;
+	}
+
 	if (keyboard.newKey == KEY_ESCAPE){
 		showTutorial = false;
-		Main.Render = &DrawApp;
-		Main.Input = &MainInput;
+		display = MAIN_APP;
 		showLeftMenu = false;
 		showRightMenu = false;
 		*Scale = oldScale;
@@ -30,12 +34,12 @@ void TutorialInput(){
 			tutorialPage = 0;
 			showLeftMenu = true;
 			showTags = false;
-		}else if (tutorialStage == LOCATIONS && tutorialPage == 1){
+		}else if (tutorialStage == LOCATIONS && tutorialPage == 2){
 			tutorialStage = TAGS;
 			tutorialPage = 0;
 			showLeftMenu = true;
 			showTags = true;
-		}else if (tutorialStage == TAGS && tutorialPage == 1){
+		}else if (tutorialStage == TAGS && tutorialPage == 2){
 			tutorialStage = BOARDS;
 			tutorialPage = 0;
 			showLeftMenu = false;
@@ -57,10 +61,12 @@ void TutorialInput(){
 		}
 	}
 	if (keyboard.newKey == KEY_TILDE){
-		tutorialStage = TAGS;
-		tutorialPage = 0;
-		showLeftMenu = true;
-		showTags = true;
+		if (tutorialStage == LOCATIONS && tutorialPage == 2){
+			tutorialStage = TAGS;
+			tutorialPage = 0;
+			showLeftMenu = true;
+			showTags = true;
+		}
 	}
 
 	if (openLocations_Button.pressed){
@@ -74,7 +80,7 @@ void TutorialInput(){
 	}
 
 	if (openTags_Button.pressed){
-		if (tutorialStage == LOCATIONS && tutorialPage == 1){
+		if (tutorialStage == LOCATIONS && tutorialPage == 2){
 			tutorialStage = TAGS;
 			tutorialPage = 0;
 			showLeftMenu = true;
@@ -83,7 +89,7 @@ void TutorialInput(){
 		}
 	}
 	if (imageBoards_Button.pressed){
-		if (tutorialStage == LOCATIONS && tutorialPage == 1){
+		if (tutorialStage == LOCATIONS && tutorialPage == 2){
 			tutorialStage = BOARDS;
 			tutorialPage = 0;
 			showLeftMenu = false;
@@ -100,36 +106,19 @@ void TutorialInput(){
 			showLeftMenu = false;
 		}else if (tutorialStage == TAGS && tutorialPage == 0){
 			tutorialStage = LOCATIONS; 
-			tutorialPage = 1;
+			tutorialPage = 2;
 			showTags = false;
 		}else if (tutorialStage == BOARDS && tutorialPage == 0){
 			tutorialStage = TAGS; 
-			tutorialPage = 1;
+			tutorialPage = 2;
 			showTags = true;
 			showLeftMenu = true;
 			showRightMenu = false;
-			currentBoard_Field.Reset();
 		}else if (tutorialStage == IMAGE_PACKS && tutorialPage == 0){
 			tutorialStage = BOARDS; 
 			tutorialPage = 1;
 			showRightMenu = true;
-			currentBoard_Field.Reset();
 		}else if (tutorialPage != 0)
 			tutorialPage--;
 	}
-
-	if (showLeftMenu && mouse.position.x < sideMenuWidth){
-		if (add_Button.pressed && tutorialPage == 0 && (tutorialStage == LOCATIONS || tutorialStage == TAGS)){
-			if (showTags){
-				editTag = nullptr;
-				TagWin.Show();
-			}else{
-				string folder = GetFolder();
-				if (folder.length() && !((stat(folder.c_str(), &st) == 0) == 0)){
-					locations.push_back(Location{GetName(folder), folder});
-					sort(locations.begin(), locations.end(), locations[0].SortLocations);
-				}
-			}
-		}
-    }
 }
